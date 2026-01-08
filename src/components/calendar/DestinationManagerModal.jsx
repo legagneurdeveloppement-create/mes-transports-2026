@@ -1,0 +1,246 @@
+import { useState } from 'react'
+import { X, Plus, Trash2 } from 'lucide-react'
+
+export default function DestinationManagerModal({ isOpen, onClose, destinations, onUpdate }) {
+    const [newDestination, setNewDestination] = useState('')
+    const [newDefaultClass, setNewDefaultClass] = useState('')
+    const [newColor, setNewColor] = useState('#3b82f6') // Default blue
+    const [confirmingDelete, setConfirmingDelete] = useState(null)
+    const [error, setError] = useState('')
+
+    const schoolClasses = [
+        "MAT / CP", "CE / CM",
+        "Petite Section", "Moyenne Section", "Grande Section",
+        "CP", "CE1", "CE2", "CM1", "CM2",
+        "6ème", "5ème", "4ème", "3ème",
+        "Seconde", "Première", "Terminale"
+    ]
+
+    // Predefined colors (same as EventModal)
+    const colors = [
+        { name: 'Bleu', value: '#3b82f6' },
+        { name: 'Vert', value: '#22c55e' },
+        { name: 'Rouge', value: '#ef4444' },
+        { name: 'Orange', value: '#f97316' },
+        { name: 'Violet', value: '#a855f7' },
+        { name: 'Rose', value: '#ec4899' },
+        { name: 'Gris', value: '#64748b' },
+    ]
+
+    if (!isOpen) return null
+
+    const handleAdd = (e) => {
+        e.preventDefault()
+        const trimmedName = newDestination.trim()
+        if (trimmedName) {
+            // Check for duplicates: a duplicate only if BOTH name and class match
+            const exists = destinations.some(d => {
+                const dName = typeof d === 'string' ? d : d.name
+                const dClass = typeof d === 'string' ? '' : (d.defaultClass || '')
+                return dName.toLowerCase() === trimmedName.toLowerCase() && dClass === newDefaultClass
+            })
+
+            if (exists) {
+                setError(`Ce lieu avec cette classe (${newDefaultClass || 'Sans classe'}) existe déjà.`)
+                return
+            }
+
+            // Always add as object now
+            onUpdate([...destinations, { name: trimmedName, color: newColor, defaultClass: newDefaultClass }])
+            setNewDestination('')
+            setNewDefaultClass('')
+            setNewColor('#3b82f6') // Reset to default
+            setError('')
+        }
+    }
+
+    const handleDelete = (destToRemove) => {
+        const name = typeof destToRemove === 'string' ? destToRemove : destToRemove.name
+        onUpdate(destinations.filter(d => (typeof d === 'string' ? d : d.name) !== name))
+        setConfirmingDelete(null)
+    }
+
+    return (
+        <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1100
+        }}>
+            <div style={{
+                backgroundColor: 'white',
+                borderRadius: '0.75rem',
+                padding: '1.5rem',
+                width: '100%',
+                maxWidth: '500px',
+                maxHeight: '80vh',
+                display: 'flex',
+                flexDirection: 'column',
+                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+                position: 'relative'
+            }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>
+                        Gérer les lieux et couleurs
+                    </h3>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                        <X size={24} />
+                    </button>
+                </div>
+
+                {/* Confirmation Overlay */}
+                {confirmingDelete && (
+                    <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        zIndex: 10,
+                        borderRadius: '0.75rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '2rem',
+                        textAlign: 'center'
+                    }}>
+                        <Trash2 size={48} color="#ef4444" style={{ marginBottom: '1rem' }} />
+                        <h4 style={{ fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Confirmer la suppression ?</h4>
+                        <p style={{ color: '#64748b', marginBottom: '1.5rem' }}>
+                            Voulez-vous vraiment supprimer "<strong>{typeof confirmingDelete === 'string' ? confirmingDelete : confirmingDelete.name}</strong>" ?
+                        </p>
+                        <div style={{ display: 'flex', gap: '1rem', width: '100%' }}>
+                            <button
+                                onClick={() => setConfirmingDelete(null)}
+                                className="btn"
+                                style={{ flex: 1, backgroundColor: '#f1f5f9' }}
+                            >
+                                Annuler
+                            </button>
+                            <button
+                                onClick={() => handleDelete(confirmingDelete)}
+                                className="btn"
+                                style={{ flex: 1, backgroundColor: '#ef4444', color: 'white' }}
+                            >
+                                Supprimer
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                <form onSubmit={handleAdd} style={{ marginBottom: '1.5rem' }}>
+                    <div style={{ marginBottom: '1rem' }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                            <input
+                                type="text"
+                                value={newDestination}
+                                onChange={(e) => {
+                                    setNewDestination(e.target.value)
+                                    if (error) setError('')
+                                }}
+                                placeholder="Nom du lieu (ex: Gymnase)..."
+                                className="input"
+                                style={{ flex: 1, padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.375rem' }}
+                            />
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <select
+                                value={newDefaultClass}
+                                onChange={(e) => {
+                                    setNewDefaultClass(e.target.value)
+                                    if (error) setError('')
+                                }}
+                                className="input"
+                                style={{ flex: 1, padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.375rem', fontSize: '0.9rem' }}
+                            >
+                                <option value="">Classe par défaut (Optionnel)</option>
+                                {schoolClasses.map((c) => (
+                                    <option key={c} value={c}>{c}</option>
+                                ))}
+                            </select>
+                            <button type="submit" className="btn btn-primary" disabled={!newDestination.trim()} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <Plus size={18} /> Ajouter
+                            </button>
+                        </div>
+                        {error && (
+                            <div style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.5rem', fontWeight: '500' }}>
+                                {error}
+                            </div>
+                        )}
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Couleur par défaut :</span>
+                        {colors.map((c) => (
+                            <button
+                                key={c.value}
+                                type="button"
+                                onClick={() => setNewColor(c.value)}
+                                style={{
+                                    width: '1.5rem',
+                                    height: '1.5rem',
+                                    borderRadius: '50%',
+                                    backgroundColor: c.value,
+                                    border: newColor === c.value ? '2px solid black' : '2px solid transparent',
+                                    cursor: 'pointer'
+                                }}
+                                title={c.name}
+                            />
+                        ))}
+                    </div>
+                </form>
+
+                <div style={{ overflowY: 'auto', flex: 1, borderTop: '1px solid #e2e8f0' }}>
+                    {destinations.length === 0 ? (
+                        <p style={{ padding: '1rem', color: '#64748b', textAlign: 'center' }}>Aucun lieu défini.</p>
+                    ) : (
+                        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                            {destinations.map((dest, index) => {
+                                const name = typeof dest === 'string' ? dest : dest.name
+                                const color = typeof dest === 'string' ? '#3b82f6' : dest.color
+                                // Use a stable unique key: name + index
+                                const uniqueKey = `${name}-${index}`
+                                return (
+                                    <li key={uniqueKey} style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        padding: '0.75rem 0',
+                                        borderBottom: '1px solid #f1f5f9'
+                                    }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                            <div style={{ width: '1rem', height: '1rem', borderRadius: '50%', backgroundColor: color }} />
+                                            <span>
+                                                {name}
+                                                {dest.defaultClass && <span style={{ fontSize: '0.8em', color: '#64748b', marginLeft: '0.5rem' }}>({dest.defaultClass})</span>}
+                                            </span>
+                                        </div>
+                                        <button
+                                            onClick={() => setConfirmingDelete(dest)}
+                                            style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }}
+                                            title="Supprimer"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </li>
+                                )
+                            })}
+                        </ul>
+                    )}
+                </div>
+
+                <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e2e8f0', textAlign: 'right' }}>
+                    <button onClick={onClose} className="btn" style={{ background: '#f1f5f9' }}>Fermer</button>
+                </div>
+            </div>
+        </div>
+    )
+}

@@ -1,0 +1,50 @@
+/* Styles spécifiques à l'application */
+
+@media print {
+
+    /* Masquer tous les éléments non essentiels */
+    nav,
+    footer,
+    .btn,
+    .no-print {
+        display: none !important;
+    }
+
+    /* Afficher uniquement le calendrier en pleine page */
+    body {
+        background: white;
+    }
+
+    .container {
+        max-width: 100%;
+        padding: 0;
+        margin: 0;
+    }
+
+    .card {
+        box-shadow: none;
+        padding: 0;
+        border: none;
+    }
+
+    /* Ajuster la grille du calendrier pour l'impression landscape si possible */
+    @page {
+        size: landscape;
+        margin: 1cm;
+    }
+
+    h1,
+    h2,
+    p {
+        display: none;
+        /* Masquer les titres de dashboard */
+    }
+
+    /* Sauf le titre du mois dans Calendar qui doit rester */
+    h3 {
+        display: block !important;
+        text-align: center;
+        font-size: 2rem;
+        margin-bottom: 2rem;
+    }
+}
