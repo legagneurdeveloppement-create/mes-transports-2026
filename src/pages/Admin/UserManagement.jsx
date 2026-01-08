@@ -136,6 +136,7 @@ export default function UserManagement() {
                                 >
                                     <option value="USER">Utilisateur</option>
                                     <option value="ADMIN">Administrateur</option>
+                                    <option value="SUPER_ADMIN">Super Administrateur</option>
                                 </select>
                             </div>
                             <div style={{ gridColumn: 'span 2', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
