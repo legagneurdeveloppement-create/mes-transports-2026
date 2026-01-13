@@ -64,12 +64,12 @@ export default function UserManagement() {
     return (
         <div style={{ minHeight: '100vh', background: 'var(--bg)', padding: '2rem' }}>
             <div className="container">
-                <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div className="admin-header">
+                    <div className="admin-header-left">
                         <Link to="/dashboard" className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem' }}>
                             <ArrowLeft size={18} /> Retour au Dashboard
                         </Link>
-                        <h1 style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--primary)' }}>Gestion des Utilisateurs</h1>
+                        <h1 className="admin-title">Gestion des Utilisateurs</h1>
                     </div>
                     <button
                         onClick={() => setShowAddForm(!showAddForm)}
