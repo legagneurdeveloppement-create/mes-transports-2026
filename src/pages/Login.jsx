@@ -27,39 +27,25 @@ export default function Login() {
     }
 
     return (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
-            <div style={{ padding: '1rem' }}>
+        <div className="auth-page">
+            <div className="auth-nav">
                 <Link to="/" className="btn btn-outline" style={{ display: 'inline-flex', gap: '0.5rem', border: 'none' }}>
                     ← Retour à l'accueil
                 </Link>
             </div>
 
-            <div className="container flex items-center justify-center" style={{ flex: 1, padding: '2rem 0' }}>
-                <div className="card" style={{ width: '100%', maxWidth: '400px' }}>
-                    <div className="flex flex-col items-center" style={{ marginBottom: '2rem' }}>
-                        <div style={{
-                            background: 'rgba(212, 175, 55, 0.1)',
-                            padding: '1rem',
-                            borderRadius: '50%',
-                            marginBottom: '1rem',
-                            color: 'var(--accent)'
-                        }}>
+            <div className="container auth-container">
+                <div className="card auth-card">
+                    <div className="auth-header">
+                        <div className="auth-icon-wrapper gold">
                             <LogIn size={32} />
                         </div>
-                        <h1 style={{ fontSize: '1.75rem' }}>Connexion</h1>
-                        <p style={{ color: 'var(--text-light)' }}>Accédez à votre espace</p>
+                        <h1 className="auth-title">Connexion</h1>
+                        <p className="auth-subtitle">Accédez à votre espace</p>
                     </div>
 
                     {error && (
-                        <div style={{
-                            padding: '0.75rem',
-                            background: '#fee2e2',
-                            color: '#b91c1c',
-                            borderRadius: '0.375rem',
-                            marginBottom: '1rem',
-                            fontSize: '0.875rem',
-                            textAlign: 'center'
-                        }}>
+                        <div className="auth-error">
                             {error}
                         </div>
                     )}
@@ -96,8 +82,8 @@ export default function Login() {
                         </button>
                     </form>
 
-                    <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.875rem', color: 'var(--text-light)' }}>
-                        Pas encore de compte ? <Link to="/register" style={{ color: 'var(--primary)', fontWeight: '600' }}>S'inscrire</Link>
+                    <div className="auth-footer">
+                        Pas encore de compte ? <Link to="/register" className="auth-footer-link">S'inscrire</Link>
                     </div>
                 </div>
             </div>

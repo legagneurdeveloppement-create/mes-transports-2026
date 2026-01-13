@@ -54,9 +54,6 @@ export default function Landing() {
                         <Link to="/register" className="btn btn-primary" style={{ padding: '1rem 2.5rem', fontSize: '1.1rem' }}>
                             Réserver maintenant
                         </Link>
-                        <Link to="/login" className="btn btn-outline" style={{ padding: '1rem 2.5rem', fontSize: '1.1rem', background: 'white' }}>
-                            En savoir plus
-                        </Link>
                     </div>
                 </div>
 
@@ -90,8 +87,7 @@ export default function Landing() {
                     }}>
                         {[
                             { icon: Shield, title: "Sécurité Maximale", desc: "Chauffeurs vérifiés et véhicules contrôlés." },
-                            { icon: Clock, title: "Ponctualité", desc: "Nous respectons votre temps, à chaque trajet." },
-                            { icon: Star, title: "Confort Premium", desc: "Voyagez dans des véhicules haut de gamme." }
+                            { icon: Clock, title: "Ponctualité", desc: "Nous respectons votre temps, à chaque trajet." }
                         ].map((item, index) => (
                             <div key={index} className="card" style={{ transition: 'transform 0.3s' }}>
                                 <div style={{

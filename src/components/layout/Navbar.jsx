@@ -7,36 +7,20 @@ export default function Navbar({ hideUserInfo = false }) {
     const navigate = useNavigate()
 
     return (
-        <nav style={{
-            padding: '1.5rem 0',
-            position: 'relative',
-            width: '100%',
-            zIndex: 50,
-            background: 'white',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-        }}>
-            <div className="container flex justify-between items-center">
-                <Link to="/" className="flex items-center gap-2" style={{ textDecoration: 'none' }}>
+        <nav className="navbar">
+            <div className="container navbar-container">
+                <Link to="/" className="navbar-logo">
                     <img
                         src="/logo.jpg"
                         alt="Logo Mes Transports"
-                        style={{
-                            height: '48px',
-                            width: 'auto',
-                            borderRadius: '0.5rem',
-                        }}
+                        className="navbar-logo-img"
                     />
-                    <span style={{
-                        fontSize: '1.25rem',
-                        fontWeight: '800',
-                        color: 'var(--primary)',
-                        letterSpacing: '-0.025em'
-                    }}>
+                    <span className="navbar-logo-text">
                         Mes Transports
                     </span>
                 </Link>
 
-                <div className="flex items-center gap-4">
+                <div className="navbar-actions">
                     {user ? (
                         hideUserInfo ? (
                             <div className="flex gap-4 items-center">
@@ -54,17 +38,11 @@ export default function Navbar({ hideUserInfo = false }) {
                             </div>
                         ) : (
                             <>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }} className="flex-col-mobile justify-center items-center">
                                     <span style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>{user.email}</span>
-                                    <span style={{
-                                        padding: '0.25rem 0.75rem',
-                                        borderRadius: '1rem',
-                                        fontSize: '0.75rem',
-                                        fontWeight: '600',
-                                        background: user.role === 'SUPER_ADMIN' ? '#dc2626' :
-                                            user.role === 'ADMIN' ? '#2563eb' : '#16a34a',
-                                        color: 'white'
-                                    }}>
+                                    <span className={`user-badge ${user.role === 'SUPER_ADMIN' ? 'badge-super-admin' :
+                                            user.role === 'ADMIN' ? 'badge-admin' : 'badge-user'
+                                        }`}>
                                         {user.role === 'SUPER_ADMIN' ? 'SUPER ADMIN' :
                                             user.role === 'ADMIN' ? 'ADMIN' : 'USER'}
                                     </span>

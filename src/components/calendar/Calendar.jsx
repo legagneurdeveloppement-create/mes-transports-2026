@@ -70,17 +70,17 @@ export default function Calendar({ userRole }) {
 
     return (
         <div>
-            <div className="flex justify-between items-center no-print" style={{ marginBottom: '1.5rem' }}>
-                <div className="flex gap-2">
-                    <button onClick={() => changeMonth(-1)} className="btn btn-outline" style={{ padding: '0.5rem', border: 'none' }}>
+            <div className="calendar-header no-print">
+                <div className="calendar-controls">
+                    <button onClick={() => changeMonth(-1)} className="btn btn-outline calendar-control-btn">
                         <ChevronLeft size={24} />
                     </button>
-                    <button onClick={() => changeMonth(1)} className="btn btn-outline" style={{ padding: '0.5rem', border: 'none' }}>
+                    <button onClick={() => changeMonth(1)} className="btn btn-outline calendar-control-btn">
                         <ChevronRight size={24} />
                     </button>
                 </div>
 
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--primary)' }}>
+                <h3 className="calendar-title">
                     {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
                 </h3>
 
@@ -92,16 +92,7 @@ export default function Calendar({ userRole }) {
             </div>
 
             {/* Legend */}
-            <div style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '1.5rem',
-                marginBottom: '1.5rem',
-                padding: '0.75rem 1rem',
-                background: '#f8fafc',
-                borderRadius: '0.5rem',
-                border: '1px solid #e2e8f0'
-            }}>
+            <div className="calendar-legend">
                 {destinations.length === 0 && <span style={{ color: '#64748b', fontSize: '0.8rem' }}>Aucun lieu défini.</span>}
                 {destinations
                     .filter((dest, index, self) =>
@@ -121,13 +112,13 @@ export default function Calendar({ userRole }) {
                     })}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.5rem', marginBottom: '1rem' }}>
+            <div className="calendar-weekdays">
                 {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map(d => (
-                    <div key={d} style={{ textAlign: 'center', fontWeight: '600', color: 'var(--text-light)', fontSize: '0.875rem' }}>{d}</div>
+                    <div key={d} className="calendar-weekday">{d}</div>
                 ))}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.5rem' }}>
+            <div className="calendar-grid">
                 {[...Array(startOffset)].map((_, i) => <div key={`empty-${i}`} style={{ background: 'transparent' }} />)}
 
                 {[...Array(days)].map((_, i) => {
@@ -140,16 +131,9 @@ export default function Calendar({ userRole }) {
                         <div
                             key={day}
                             onClick={() => handleDayClick(day)}
-                            className="print-compact-day"
+                            className={`calendar-day ${isToday ? 'today' : ''} ${userRole === 'ADMIN' ? 'clickable' : ''}`}
                             style={{
-                                minHeight: '120px',
-                                background: 'white',
-                                borderRadius: '0.5rem',
-                                padding: '0.75rem',
                                 cursor: userRole === 'ADMIN' ? 'pointer' : 'default',
-                                border: isToday ? '2px solid var(--accent)' : '1px solid #e2e8f0',
-                                position: 'relative',
-                                transition: 'transform 0.2s, box-shadow 0.2s'
                             }}
                             onMouseEnter={e => {
                                 if (userRole === 'ADMIN') {
@@ -164,26 +148,14 @@ export default function Calendar({ userRole }) {
                                 }
                             }}
                         >
-                            <div style={{
-                                fontWeight: 'bold',
-                                marginBottom: '0.5rem',
-                                color: isToday ? 'var(--accent)' : 'var(--text)',
-                                display: 'flex',
-                                justifyContent: 'space-between'
-                            }}>
-                                {day}
+                            <div className="calendar-day-header">
+                                <span className={`calendar-day-number ${isToday ? 'today' : ''}`}>{day}</span>
                                 {userRole === 'ADMIN' && !hasEvent && <Plus size={14} style={{ opacity: 0.3 }} />}
                             </div>
 
                             {hasEvent && (
-                                <div style={{
-                                    fontSize: '0.75rem',
+                                <div className="calendar-event" style={{
                                     background: hasEvent.color || 'var(--primary)',
-                                    color: 'white',
-                                    padding: '0.35rem 0.5rem',
-                                    borderRadius: '0.35rem',
-                                    fontWeight: '500',
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                                 }}>
                                     {hasEvent.title}
                                     {hasEvent.schoolClass && <span style={{ marginLeft: '4px', opacity: 0.8, fontSize: '0.7em' }}>({hasEvent.schoolClass})</span>}

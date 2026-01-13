@@ -31,9 +31,9 @@ export default function Register() {
 
     if (success) {
         return (
-            <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
-                <div className="container flex items-center justify-center" style={{ flex: 1 }}>
-                    <div className="card text-center" style={{ maxWidth: '400px' }}>
+            <div className="auth-page">
+                <div className="container auth-container">
+                    <div className="card text-center auth-card">
                         <div style={{ color: 'var(--success)', marginBottom: '1rem' }}>
                             <UserPlus size={48} />
                         </div>
@@ -51,39 +51,25 @@ export default function Register() {
     }
 
     return (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
-            <div style={{ padding: '1rem' }}>
+        <div className="auth-page">
+            <div className="auth-nav">
                 <Link to="/" className="btn btn-outline" style={{ display: 'inline-flex', gap: '0.5rem', border: 'none' }}>
                     ← Retour à l'accueil
                 </Link>
             </div>
 
-            <div className="container flex items-center justify-center" style={{ flex: 1, padding: '2rem 0' }}>
-                <div className="card" style={{ width: '100%', maxWidth: '400px' }}>
-                    <div className="flex flex-col items-center" style={{ marginBottom: '2rem' }}>
-                        <div style={{
-                            background: 'rgba(15, 23, 42, 0.1)',
-                            padding: '1rem',
-                            borderRadius: '50%',
-                            marginBottom: '1rem',
-                            color: 'var(--primary)'
-                        }}>
+            <div className="container auth-container">
+                <div className="card auth-card">
+                    <div className="auth-header">
+                        <div className="auth-icon-wrapper">
                             <UserPlus size={32} />
                         </div>
-                        <h1 style={{ fontSize: '1.75rem' }}>Créer un compte</h1>
-                        <p style={{ color: 'var(--text-light)' }}>Rejoignez Mes Transports</p>
+                        <h1 className="auth-title">Créer un compte</h1>
+                        <p className="auth-subtitle">Rejoignez Mes Transports</p>
                     </div>
 
                     {error && (
-                        <div style={{
-                            padding: '0.75rem',
-                            background: '#fee2e2',
-                            color: '#b91c1c',
-                            borderRadius: '0.375rem',
-                            marginBottom: '1rem',
-                            fontSize: '0.875rem',
-                            textAlign: 'center'
-                        }}>
+                        <div className="auth-error">
                             {error}
                         </div>
                     )}
@@ -133,8 +119,8 @@ export default function Register() {
                         </button>
                     </form>
 
-                    <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.875rem', color: 'var(--text-light)' }}>
-                        Déjà un compte ? <Link to="/login" style={{ color: 'var(--primary)', fontWeight: '600' }}>Se connecter</Link>
+                    <div className="auth-footer">
+                        Déjà un compte ? <Link to="/login" className="auth-footer-link">Se connecter</Link>
                     </div>
                 </div>
             </div>

@@ -177,8 +177,8 @@ export default function DestinationManagerModal({ isOpen, onClose, destinations,
                         )}
                     </div>
 
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                        <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Couleur par défaut :</span>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Couleur :</span>
                         {colors.map((c) => (
                             <button
                                 key={c.value}
@@ -195,6 +195,23 @@ export default function DestinationManagerModal({ isOpen, onClose, destinations,
                                 title={c.name}
                             />
                         ))}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '0.5rem' }}>
+                            <span style={{ fontSize: '0.875rem', color: '#64748b' }}>ou</span>
+                            <input
+                                type="color"
+                                value={newColor}
+                                onChange={(e) => setNewColor(e.target.value)}
+                                style={{
+                                    width: '2.5rem',
+                                    height: '1.5rem',
+                                    border: '1px solid #cbd5e1',
+                                    borderRadius: '0.25rem',
+                                    cursor: 'pointer'
+                                }}
+                                title="Choisir une couleur personnalisée"
+                            />
+                            <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontFamily: 'monospace' }}>{newColor}</span>
+                        </div>
                     </div>
                 </form>
 
