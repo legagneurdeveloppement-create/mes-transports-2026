@@ -151,24 +151,24 @@ export default function UserManagement() {
                     </div>
                 )}
 
-                <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                        <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                <div className="table-container">
+                    <table className="responsive-table">
+                        <thead>
                             <tr>
-                                <th style={{ padding: '1rem' }}>Utilisateur</th>
-                                <th style={{ padding: '1rem' }}>Rôle</th>
-                                <th style={{ padding: '1rem' }}>Statut</th>
-                                <th style={{ padding: '1rem', textAlign: 'right' }}>Actions</th>
+                                <th>Utilisateur</th>
+                                <th>Rôle</th>
+                                <th>Statut</th>
+                                <th style={{ textAlign: 'right' }}>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {users.map(u => (
-                                <tr key={u.email} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                    <td style={{ padding: '1rem' }}>
+                                <tr key={u.email}>
+                                    <td data-label="Utilisateur">
                                         <div style={{ fontWeight: '600' }}>{u.name}</div>
                                         <div style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>{u.email}</div>
                                     </td>
-                                    <td style={{ padding: '1rem' }}>
+                                    <td data-label="Rôle">
                                         <select
                                             value={u.role}
                                             onChange={(e) => handleChangeRole(u.email, e.target.value)}
@@ -177,7 +177,8 @@ export default function UserManagement() {
                                                 borderRadius: '0.375rem',
                                                 border: '1px solid #e2e8f0',
                                                 fontSize: '0.875rem',
-                                                background: 'white'
+                                                background: 'white',
+                                                width: '100%' // Full width on mobile
                                             }}
                                             disabled={u.role === 'SUPER_ADMIN'}
                                         >
@@ -186,7 +187,7 @@ export default function UserManagement() {
                                             {u.role === 'SUPER_ADMIN' && <option value="SUPER_ADMIN">Super Admin</option>}
                                         </select>
                                     </td>
-                                    <td style={{ padding: '1rem' }}>
+                                    <td data-label="Statut">
                                         {u.approved ? (
                                             <span style={{
                                                 display: 'inline-flex',
@@ -217,8 +218,8 @@ export default function UserManagement() {
                                             </span>
                                         )}
                                     </td>
-                                    <td style={{ padding: '1rem', textAlign: 'right' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                                    <td data-label="Actions">
+                                        <div className="table-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                                             {!u.approved && (
                                                 <button
                                                     onClick={() => handleApprove(u.email)}
