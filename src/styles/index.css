@@ -744,3 +744,120 @@ h6 {
     font-size: 2rem;
   }
 }
+
+/* Responsive Table Classes (Cards on Mobile) */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--radius);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.responsive-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.responsive-table thead {
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.responsive-table th,
+.responsive-table td {
+  padding: 1rem;
+}
+
+.responsive-table tr {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+@media (max-width: 768px) {
+
+  .responsive-table,
+  .responsive-table tbody,
+  .responsive-table tr,
+  .responsive-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .responsive-table thead {
+    display: none;
+    /* Hide headers on mobile */
+  }
+
+  .responsive-table tr {
+    margin-bottom: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    background: white;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  .responsive-table td {
+    padding: 0.5rem 0.75rem;
+    text-align: right;
+    position: relative;
+    padding-left: 40%;
+    border-bottom: 1px solid #f1f5f9;
+    min-height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    word-break: break-word;
+  }
+
+  .responsive-table td:last-child {
+    border-bottom: none;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    justify-content: center;
+    display: block;
+  }
+
+  /* Add labels via data-label attribute */
+  .responsive-table td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 0.75rem;
+    width: 35%;
+    font-weight: 600;
+    text-align: left;
+    color: var(--text-light);
+    font-size: 0.8rem;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  /* User info specific - Allow wrapping for long emails */
+  .responsive-table td:first-child {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+    padding: 0.75rem;
+    display: block;
+    height: auto;
+  }
+
+  .responsive-table td:first-child::before {
+    display: none;
+  }
+
+  /* Force container to hide scrollbar if content fits */
+  .table-container {
+    overflow-x: hidden;
+  }
+
+  .table-actions {
+    justify-content: stretch;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .table-actions .btn {
+    flex: 1;
+    min-width: 100px;
+  }
+}
