@@ -155,14 +155,14 @@ export default function AdminCalendar() {
                             <h4 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '0.75rem', color: 'var(--primary)' }}>{monthName}</h4>
 
                             {/* Days Header */}
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '600' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '2px', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '600' }}>
                                 {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, index) => (
                                     <div key={index} style={{ textAlign: 'center' }}>{d}</div>
                                 ))}
                             </div>
 
                             {/* Calendar Grid */}
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '2px' }}>
                                 {[...Array(startOffset)].map((_, i) => <div key={`empty-${i}`} />)}
 
                                 {[...Array(days)].map((_, i) => {
@@ -216,14 +216,14 @@ export default function AdminCalendar() {
                             <h4 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '0.75rem', color: 'var(--primary)' }}>{monthName}</h4>
 
                             {/* Days Header */}
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '600' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '2px', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '600' }}>
                                 {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, index) => (
                                     <div key={index} style={{ textAlign: 'center' }}>{d}</div>
                                 ))}
                             </div>
 
                             {/* Calendar Grid */}
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '2px' }}>
                                 {[...Array(startOffset)].map((_, i) => <div key={`empty-${i}`} />)}
 
                                 {[...Array(days)].map((_, i) => {
