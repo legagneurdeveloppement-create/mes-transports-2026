@@ -90,7 +90,7 @@ export default function AdminCalendar() {
     return (
         <div>
             {/* Header / Year Navigation */}
-            <div className="flex justify-between items-center no-print" style={{ marginBottom: '2rem' }}>
+            <div className="admin-header no-print">
                 <div className="flex gap-2">
                     <button onClick={() => changeYear(-1)} className="btn btn-outline" style={{ padding: '0.5rem', border: 'none' }}>
                         <ChevronLeft size={24} />
@@ -100,11 +100,11 @@ export default function AdminCalendar() {
                     </button>
                 </div>
 
-                <h3 style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--primary)' }}>
+                <h3 className="admin-title" style={{ fontSize: '2rem', marginBottom: 0 }}>
                     {currentYear}
                 </h3>
 
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div className="admin-header-actions">
                     <button onClick={() => setIsDestManagerOpen(true)} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <Settings size={18} /> Gérer les lieux
                     </button>

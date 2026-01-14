@@ -904,6 +904,18 @@ h6 {
   color: var(--primary);
 }
 
+.admin-header-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .admin-header-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+}
+
 /* Admin Form Classes */
 .admin-form {
   display: grid;
