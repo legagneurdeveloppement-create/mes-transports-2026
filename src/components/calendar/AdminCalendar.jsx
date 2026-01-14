@@ -156,8 +156,8 @@ export default function AdminCalendar() {
 
                             {/* Days Header */}
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '600' }}>
-                                {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map(d => (
-                                    <div key={d} style={{ textAlign: 'center' }}>{d}</div>
+                                {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, index) => (
+                                    <div key={index} style={{ textAlign: 'center' }}>{d}</div>
                                 ))}
                             </div>
 
@@ -217,8 +217,8 @@ export default function AdminCalendar() {
 
                             {/* Days Header */}
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '600' }}>
-                                {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map(d => (
-                                    <div key={d} style={{ textAlign: 'center' }}>{d}</div>
+                                {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, index) => (
+                                    <div key={index} style={{ textAlign: 'center' }}>{d}</div>
                                 ))}
                             </div>
 
