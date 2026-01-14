@@ -180,7 +180,8 @@ export default function AdminCalendar() {
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
                                                 cursor: 'pointer',
-                                                fontSize: '0.8rem',
+                                                fontSize: '0.9rem',
+                                                fontWeight: '600',
                                                 borderRadius: '0.25rem',
                                                 backgroundColor: hasEvent ? hasEvent.color || 'var(--primary)' : 'transparent',
                                                 color: hasEvent ? 'white' : 'inherit',
@@ -189,12 +190,7 @@ export default function AdminCalendar() {
                                             }}
                                             title={hasEvent ? `${hasEvent.title} (${hasEvent.schoolClass || ''})` : ''}
                                         >
-                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: '1.2' }}>
-                                                <span>{day}</span>
-                                                {hasEvent && hasEvent.schoolClass && (
-                                                    <span style={{ fontSize: '0.65rem', opacity: 0.9 }}>{hasEvent.schoolClass}</span>
-                                                )}
-                                            </div>
+                                            {day}
                                         </div>
                                     )
                                 })}
@@ -241,7 +237,8 @@ export default function AdminCalendar() {
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
                                                 cursor: 'pointer',
-                                                fontSize: '0.8rem',
+                                                fontSize: '0.9rem',
+                                                fontWeight: '600',
                                                 borderRadius: '0.25rem',
                                                 backgroundColor: hasEvent ? hasEvent.color || 'var(--primary)' : 'transparent',
                                                 color: hasEvent ? 'white' : 'inherit',
@@ -250,12 +247,7 @@ export default function AdminCalendar() {
                                             }}
                                             title={hasEvent ? `${hasEvent.title} (${hasEvent.schoolClass || ''})` : ''}
                                         >
-                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: '1.2' }}>
-                                                <span>{day}</span>
-                                                {hasEvent && hasEvent.schoolClass && (
-                                                    <span style={{ fontSize: '0.65rem', opacity: 0.9 }}>{hasEvent.schoolClass}</span>
-                                                )}
-                                            </div>
+                                            {day}
                                         </div>
                                     )
                                 })}
