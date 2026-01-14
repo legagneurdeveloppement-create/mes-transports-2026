@@ -903,3 +903,34 @@ h6 {
   font-weight: bold;
   color: var(--primary);
 }
+
+/* Admin Form Classes */
+.admin-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.admin-form-actions {
+  grid-column: span 2;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .admin-form {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-form-actions {
+    grid-column: span 1;
+    flex-direction: column-reverse;
+    /* Keep buttons stacked or adjusted as needed */
+  }
+
+  .admin-form-actions .btn {
+    width: 100%;
+  }
+}
