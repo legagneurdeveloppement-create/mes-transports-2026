@@ -140,9 +140,6 @@ export default function UserManagement() {
                                 </select>
                             </div>
                             <div className="admin-form-actions">
-                                <button type="button" onClick={() => { setShowAddForm(false); setError(''); }} className="btn btn-outline">
-                                    Annuler
-                                </button>
                                 <button type="submit" className="btn btn-primary">
                                     Créer l'utilisateur
                                 </button>
