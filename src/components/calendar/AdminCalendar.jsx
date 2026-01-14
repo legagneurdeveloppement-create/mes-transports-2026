@@ -135,10 +135,14 @@ export default function AdminCalendar() {
                     .map((dest, idx) => {
                         const name = typeof dest === 'string' ? dest : dest.name
                         const color = typeof dest === 'string' ? '#3b82f6' : dest.color
+                        const defaultClass = typeof dest === 'string' ? '' : dest.defaultClass
                         return (
                             <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
                                 <div style={{ width: '1rem', height: '1rem', borderRadius: '50%', backgroundColor: color, boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}></div>
-                                <span style={{ fontWeight: '500', color: '#334155' }}>{name}</span>
+                                <span style={{ fontWeight: '500', color: '#334155' }}>
+                                    {name}
+                                    {defaultClass && <span style={{ color: '#64748b', fontWeight: 'normal', marginLeft: '4px' }}>({defaultClass})</span>}
+                                </span>
                             </div>
                         )
                     })}
