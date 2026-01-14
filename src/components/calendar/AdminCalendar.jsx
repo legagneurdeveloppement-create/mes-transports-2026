@@ -128,9 +128,13 @@ export default function AdminCalendar() {
                 {destinations.length === 0 && <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Aucun lieu défini.</span>}
                 {destinations
                     .filter((dest, index, self) =>
-                        index === self.findIndex((t) => (
-                            (typeof t === 'string' ? t : t.name) === (typeof dest === 'string' ? dest : dest.name)
-                        ))
+                        index === self.findIndex((t) => {
+                            const tName = typeof t === 'string' ? t : t.name
+                            const tClass = typeof t === 'string' ? '' : (t.defaultClass || '')
+                            const destName = typeof dest === 'string' ? dest : dest.name
+                            const destClass = typeof dest === 'string' ? '' : (dest.defaultClass || '')
+                            return tName === destName && tClass === destClass
+                        })
                     )
                     .map((dest, idx) => {
                         const name = typeof dest === 'string' ? dest : dest.name
