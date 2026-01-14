@@ -67,7 +67,7 @@ export default function UserManagement() {
                 <div className="admin-header">
                     <div className="admin-header-left">
                         <Link to="/dashboard" className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem' }}>
-                            <ArrowLeft size={18} /> Retour au Dashboard
+                            <ArrowLeft size={18} /> Retour au tableau de bord
                         </Link>
                         <h1 className="admin-title">Gestion des Utilisateurs</h1>
                     </div>
