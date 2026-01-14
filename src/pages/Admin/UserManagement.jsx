@@ -95,7 +95,7 @@ export default function UserManagement() {
                                 {error}
                             </div>
                         )}
-                        <form onSubmit={handleAddUser} style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+                        <form onSubmit={handleAddUser} className="admin-form">
                             <div>
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>Nom complet</label>
                                 <input
@@ -139,7 +139,7 @@ export default function UserManagement() {
                                     <option value="SUPER_ADMIN">Super Administrateur</option>
                                 </select>
                             </div>
-                            <div style={{ gridColumn: 'span 2', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                            <div className="admin-form-actions">
                                 <button type="button" onClick={() => { setShowAddForm(false); setError(''); }} className="btn btn-outline">
                                     Annuler
                                 </button>
