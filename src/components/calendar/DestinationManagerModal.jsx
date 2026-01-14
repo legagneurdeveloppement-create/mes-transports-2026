@@ -5,8 +5,13 @@ export default function DestinationManagerModal({ isOpen, onClose, destinations,
     const [newDestination, setNewDestination] = useState('')
     const [newDefaultClass, setNewDefaultClass] = useState('')
     const [newColor, setNewColor] = useState('#3b82f6') // Default blue
+    const [isCustomDestination, setIsCustomDestination] = useState(false)
     const [confirmingDelete, setConfirmingDelete] = useState(null)
     const [error, setError] = useState('')
+
+    // Extract unique names from destinations list
+    const uniqueExistingNames = Array.from(new Set(destinations.map(d => typeof d === 'string' ? d : d.name))).sort()
+
 
     const schoolClasses = [
         "MAT / CP", "CE / CM",
@@ -139,17 +144,68 @@ export default function DestinationManagerModal({ isOpen, onClose, destinations,
                 <form onSubmit={handleAdd} style={{ marginBottom: '1.5rem' }}>
                     <div style={{ marginBottom: '1rem' }}>
                         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                            <input
-                                type="text"
-                                value={newDestination}
-                                onChange={(e) => {
-                                    setNewDestination(e.target.value)
-                                    if (error) setError('')
-                                }}
-                                placeholder="Nom du lieu (ex: Gymnase)..."
-                                className="input"
-                                style={{ flex: 1, padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.375rem' }}
-                            />
+                            {/* Logic to choose between Select (existing) and Input (new) */}
+                            {(!isCustomDestination && uniqueExistingNames.length > 0) ? (
+                                <div style={{ flex: 1, display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                    <select
+                                        value={uniqueExistingNames.includes(newDestination) ? newDestination : ''}
+                                        onChange={(e) => {
+                                            const val = e.target.value
+                                            if (val === 'NEW') {
+                                                setIsCustomDestination(true)
+                                                setNewDestination('')
+                                            } else {
+                                                setNewDestination(val)
+                                                // Auto-set color from existing item if possible
+                                                const existing = destinations.find(d => (typeof d === 'string' ? d : d.name) === val)
+                                                if (existing) {
+                                                    setNewColor(typeof existing === 'string' ? '#3b82f6' : existing.color)
+                                                }
+                                            }
+                                        }}
+                                        className="input"
+                                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.375rem' }}
+                                    >
+                                        <option value="" disabled>Choisir un lieu existant...</option>
+                                        {uniqueExistingNames.map((name, i) => (
+                                            <option key={i} value={name}>{name}</option>
+                                        ))}
+                                        <option value="NEW">➕ Nouveau lieu...</option>
+                                    </select>
+                                </div>
+                            ) : (
+                                <div style={{ flex: 1, display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                    <input
+                                        type="text"
+                                        value={newDestination}
+                                        onChange={(e) => {
+                                            setNewDestination(e.target.value)
+                                            if (error) setError('')
+                                        }}
+                                        placeholder="Nom du lieu (ex: Gymnase)..."
+                                        className="input"
+                                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.375rem' }}
+                                        autoFocus={isCustomDestination}
+                                    />
+                                    {uniqueExistingNames.length > 0 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => { setIsCustomDestination(false); setNewDestination('') }}
+                                            style={{
+                                                fontSize: '0.8rem',
+                                                color: '#64748b',
+                                                background: 'none',
+                                                border: 'none',
+                                                textDecoration: 'underline',
+                                                cursor: 'pointer',
+                                                whiteSpace: 'nowrap'
+                                            }}
+                                        >
+                                            Liste
+                                        </button>
+                                    )}
+                                </div>
+                            )}
                         </div>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                             <select
