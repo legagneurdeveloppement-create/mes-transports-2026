@@ -51,11 +51,7 @@ export default function Dashboard() {
                                 )}
                             </Link>
                         )}
-                        {(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') && (
-                            <div className="btn btn-primary">
-                                Paramètres Admin
-                            </div>
-                        )}
+
                     </div>
                 </header>
 
