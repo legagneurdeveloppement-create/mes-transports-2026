@@ -145,12 +145,7 @@ export default function AdminCalendar() {
             </div>
 
             {/* Semester 1: Jan - Jun */}
-            <div className="print-compact-grid" style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                gap: '1.5rem',
-                pageBreakAfter: 'always'
-            }}>
+            <div className="calendar-semester-grid">
                 {monthNames.slice(0, 6).map((monthName, monthIndex) => {
                     const { days, firstDay } = getDaysInMonth(currentYear, monthIndex)
                     const startOffset = firstDay === 0 ? 6 : firstDay - 1
@@ -210,12 +205,7 @@ export default function AdminCalendar() {
             </div>
 
             {/* Semester 2: Jul - Dec */}
-            <div className="print-compact-grid" style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                gap: '1.5rem',
-                marginTop: '1.5rem'
-            }}>
+            <div className="calendar-semester-grid" style={{ marginTop: '1.5rem' }}>
                 {monthNames.slice(6, 12).map((monthName, i) => {
                     const monthIndex = i + 6
                     const { days, firstDay } = getDaysInMonth(currentYear, monthIndex)

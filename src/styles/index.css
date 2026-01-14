@@ -909,6 +909,22 @@ h6 {
   gap: 1rem;
 }
 
+.calendar-semester-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  justify-content: center;
+}
+
+@media print {
+  .calendar-semester-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 1rem !important;
+    page-break-after: always;
+  }
+}
+
 @media (max-width: 768px) {
   .admin-header-actions {
     flex-direction: column;
