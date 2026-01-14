@@ -137,8 +137,60 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
                         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Destination</label>
                         {!isCustomTitle ? (
                             <select
-                                value={availableDestinations.some(d => (typeof d === 'string' ? d : d.name) === title) ? title : (title ? 'Autre' : '')}
-                                onChange={handleDestinationChange}
+                                value={(() => {
+                                    // Complex logic to find the best matching value for the select
+                                    // We need to match Name AND Class if possible
+                                    const match = availableDestinations.find(d => {
+                                        const dName = typeof d === 'string' ? d : d.name
+                                        const dClass = typeof d === 'string' ? '' : (d.defaultClass || '')
+                                        return dName === title && dClass === schoolClass
+                                    })
+                                    if (match) {
+                                        // Return a unique identifier string we can parse back
+                                        const dName = typeof match === 'string' ? match : match.name
+                                        const dClass = typeof match === 'string' ? '' : (match.defaultClass || '')
+                                        return JSON.stringify({ name: dName, defaultClass: dClass })
+                                    }
+                                    // Fallback if we have title but no exact class match (or custom class)
+                                    // Just show "Autre" or try to find name match?
+                                    // Actually if we are here, it means the current state might NOT be in the list exactly
+                                    // But we want to allow selecting FROM the list.
+                                    return ""
+                                })()}
+                                onChange={(e) => {
+                                    const val = e.target.value
+                                    if (val === 'Autre') {
+                                        setIsCustomTitle(true)
+                                        setTitle('')
+                                        setSchoolClass('') // Reset class as we leave the preset
+                                    } else {
+                                        const selected = JSON.parse(val)
+                                        setIsCustomTitle(false)
+                                        setTitle(selected.name)
+
+                                        // Apply preset class and color
+                                        const destObj = availableDestinations.find(d => {
+                                            const dName = typeof d === 'string' ? d : d.name
+                                            const dClass = typeof d === 'string' ? '' : (d.defaultClass || '')
+                                            return dName === selected.name && dClass === selected.defaultClass
+                                        })
+
+                                        if (destObj) {
+                                            if (typeof destObj !== 'string') {
+                                                setColor(destObj.color || '#3b82f6')
+                                                if (destObj.defaultClass) {
+                                                    setSchoolClass(destObj.defaultClass)
+                                                    setIsCustomClass(false)
+                                                } else {
+                                                    setSchoolClass('') // Logic: default to empty if no class in preset
+                                                }
+                                            } else {
+                                                setColor('#3b82f6')
+                                                setSchoolClass('')
+                                            }
+                                        }
+                                    }
+                                }}
                                 className="input"
                                 style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.375rem', marginBottom: '0.5rem' }}
                                 required
@@ -146,7 +198,15 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
                                 <option value="" disabled>Sélectionner une destination</option>
                                 {availableDestinations.map((d, index) => {
                                     const name = typeof d === 'string' ? d : d.name
-                                    return <option key={index} value={name}>{name}</option>
+                                    const defaultClass = typeof d === 'string' ? '' : (d.defaultClass || '')
+                                    // Create a unique value object for each option
+                                    const valueStr = JSON.stringify({ name, defaultClass })
+
+                                    return (
+                                        <option key={index} value={valueStr}>
+                                            {name} {defaultClass ? `(${defaultClass})` : ''}
+                                        </option>
+                                    )
                                 })}
                                 <option value="Autre">Autre (Saisir manuellement)...</option>
                             </select>
@@ -179,7 +239,28 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
                         {!isCustomClass ? (
                             <select
                                 value={schoolClasses.includes(schoolClass) ? schoolClass : (schoolClass ? 'Autre' : '')}
-                                onChange={handleClassChange}
+                                onChange={(e) => {
+                                    const val = e.target.value
+                                    if (val === 'Autre') {
+                                        setIsCustomClass(true)
+                                        setSchoolClass('')
+                                    } else {
+                                        setIsCustomClass(false)
+                                        setSchoolClass(val)
+
+                                        // Try to find a matching destination definition for this (Title + NewClass)
+                                        // to auto-update color if a specific variant exists
+                                        const matchingVariant = availableDestinations.find(d => {
+                                            const dName = typeof d === 'string' ? d : d.name
+                                            const dClass = typeof d === 'string' ? '' : (d.defaultClass || '')
+                                            return dName === title && dClass === val
+                                        })
+
+                                        if (matchingVariant && typeof matchingVariant !== 'string') {
+                                            setColor(matchingVariant.color)
+                                        }
+                                    }
+                                }}
                                 className="input"
                                 style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.375rem', marginBottom: '0.5rem' }}
                             >
