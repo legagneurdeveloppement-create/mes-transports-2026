@@ -11,7 +11,8 @@ export default function Register() {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        password: ''
+        password: '',
+        role: 'USER'
     })
 
     const handleChange = (e) => {
@@ -112,6 +113,20 @@ export default function Register() {
                                 value={formData.password}
                                 onChange={handleChange}
                             />
+                        </div>
+
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Type de compte</label>
+                            <select
+                                name="role"
+                                className="input"
+                                value={formData.role}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="USER">Utilisateur (Parent / Élève)</option>
+                                <option value="CHAUFFEUR">Chauffeur</option>
+                            </select>
                         </div>
 
                         <button type="submit" className="btn btn-primary" style={{ marginTop: '1rem' }}>

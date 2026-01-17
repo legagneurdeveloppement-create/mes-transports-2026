@@ -18,6 +18,13 @@ export const AuthProvider = ({ children }) => {
                     password: 'admin',
                     role: 'SUPER_ADMIN',
                     approved: true
+                },
+                {
+                    name: 'Chauffeur Demo',
+                    email: 'chauffeur@demo.com',
+                    password: 'demo',
+                    role: 'CHAUFFEUR',
+                    approved: true
                 }
             ]
             localStorage.setItem('all_users', JSON.stringify(initialUsers))
@@ -27,6 +34,25 @@ export const AuthProvider = ({ children }) => {
         const stored = localStorage.getItem('user')
         if (stored) {
             setUser(JSON.parse(stored))
+        }
+
+        // Migration: Ensure Chauffeur Demo exists for testing and has the correct role
+        const allUsers = JSON.parse(localStorage.getItem('all_users') || '[]')
+        const chauffeurUser = allUsers.find(u => u.email === 'chauffeur@demo.com')
+
+        if (!chauffeurUser) {
+            allUsers.push({
+                name: 'Chauffeur Demo',
+                email: 'chauffeur@demo.com',
+                password: 'demo',
+                role: 'CHAUFFEUR',
+                approved: true
+            })
+            localStorage.setItem('all_users', JSON.stringify(allUsers))
+        } else if (chauffeurUser.role !== 'CHAUFFEUR') {
+            // Force the role to CHAUFFEUR if it was changed or incorrectly set
+            chauffeurUser.role = 'CHAUFFEUR'
+            localStorage.setItem('all_users', JSON.stringify(allUsers))
         }
     }, [])
 

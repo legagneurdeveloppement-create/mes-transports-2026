@@ -41,7 +41,7 @@ export default function Login() {
                             <LogIn size={32} />
                         </div>
                         <h1 className="auth-title">Connexion</h1>
-                        <p className="auth-subtitle">Accédez à votre espace</p>
+                        <p className="auth-subtitle">Accédez à votre espace <small style={{ opacity: 0.5 }}>v1.2</small></p>
                     </div>
 
                     {error && (

@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, Settings } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Settings, CloudUpload, RefreshCw } from 'lucide-react'
 import EventModal from './EventModal'
 import DestinationManagerModal from './DestinationManagerModal'
+import { supabase } from '../../lib/supabase'
 
 export default function AdminCalendar() {
     const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
     const [events, setEvents] = useState({})
+    const [isSyncing, setIsSyncing] = useState(false)
 
-    // Destinations state - Now using objects to store color as well
+    // Destinations state
     const [destinations, setDestinations] = useState([
         { name: "Aéroport Charles de Gaulle", color: "#3b82f6" },
         { name: "Aéroport d'Orly", color: "#3b82f6" },
@@ -20,37 +22,116 @@ export default function AdminCalendar() {
         { name: "Versailles", color: "#f97316" }
     ])
 
-    // Modals state
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isDestManagerOpen, setIsDestManagerOpen] = useState(false)
     const [selectedDateKey, setSelectedDateKey] = useState(null)
     const [selectedEventData, setSelectedEventData] = useState(null)
 
     useEffect(() => {
-        const storedEvents = localStorage.getItem('transport_events')
-        if (storedEvents) setEvents(JSON.parse(storedEvents))
+        const fetchData = async () => {
+            const { data: transportData, error: tError } = await supabase
+                .from('transports')
+                .select('*')
 
-        const storedDestinations = localStorage.getItem('transport_destinations')
-        if (storedDestinations) {
-            const parsed = JSON.parse(storedDestinations)
-            // Migration check: if array of strings, convert to objects
-            if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === 'string') {
-                const migrated = parsed.map(d => ({ name: d, color: '#3b82f6' }))
-                setDestinations(migrated)
+            if (!tError && transportData) {
+                const eventMap = {}
+                transportData.forEach(item => {
+                    eventMap[item.date_key] = item
+                })
+                setEvents(eventMap)
             } else {
-                setDestinations(parsed)
+                const storedEvents = localStorage.getItem('transport_events')
+                if (storedEvents) setEvents(JSON.parse(storedEvents))
+            }
+
+            const { data: destData, error: dError } = await supabase
+                .from('destinations')
+                .select('*')
+
+            if (!dError && destData && destData.length > 0) {
+                setDestinations(destData)
+            } else {
+                const storedDestinations = localStorage.getItem('transport_destinations')
+                if (storedDestinations) {
+                    const parsed = JSON.parse(storedDestinations)
+                    if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === 'string') {
+                        setDestinations(parsed.map(d => ({ name: d, color: '#3b82f6' })))
+                    } else {
+                        setDestinations(parsed)
+                    }
+                }
             }
         }
+
+        fetchData()
     }, [])
 
-    const saveEvents = (newEvents) => {
-        setEvents(newEvents)
-        localStorage.setItem('transport_events', JSON.stringify(newEvents))
+    const syncLocalToCloud = async () => {
+        if (!window.confirm("Voulez-vous envoyer vos transports locaux vers le Cloud ? Cela les rendra visibles sur votre téléphone.")) return
+
+        setIsSyncing(true)
+        try {
+            const storedEvents = JSON.parse(localStorage.getItem('transport_events') || '{}')
+            const entries = Object.entries(storedEvents)
+
+            for (const [dateKey, data] of entries) {
+                await supabase.from('transports').upsert({
+                    date_key: dateKey,
+                    title: data.title,
+                    school_class: data.schoolClass,
+                    color: data.color,
+                    status: data.status || 'pending',
+                    time_departure_origin: data.time_departure_origin,
+                    time_departure_destination: data.time_departure_destination
+                })
+            }
+
+            // Refresh local state after sync
+            const { data } = await supabase.from('transports').select('*')
+            if (data) {
+                const map = {}
+                data.forEach(e => map[e.date_key] = e)
+                setEvents(map)
+            }
+
+            alert("Synchronisation terminée ! Vos données sont maintenant sur le Cloud.")
+        } catch (error) {
+            console.error(error)
+            alert("Erreur lors de la synchronisation.")
+        } finally {
+            setIsSyncing(false)
+        }
     }
 
-    const saveDestinations = (newDestinations) => {
+    const saveEvents = async (newEvents, updatedKey, updatedData) => {
+        setEvents(newEvents)
+        localStorage.setItem('transport_events', JSON.stringify(newEvents))
+
+        if (updatedKey) {
+            if (!updatedData) {
+                await supabase.from('transports').delete().eq('date_key', updatedKey)
+            } else {
+                await supabase.from('transports').upsert({
+                    date_key: updatedKey,
+                    title: updatedData.title,
+                    school_class: updatedData.schoolClass,
+                    color: updatedData.color,
+                    status: updatedData.status || 'pending',
+                    time_departure_origin: updatedData.time_departure_origin,
+                    time_departure_destination: updatedData.time_departure_destination
+                })
+            }
+        }
+    }
+
+    const saveDestinations = async (newDestinations) => {
         setDestinations(newDestinations)
         localStorage.setItem('transport_destinations', JSON.stringify(newDestinations))
+        await supabase.from('destinations').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+        await supabase.from('destinations').insert(newDestinations.map(d => ({
+            name: d.name,
+            color: d.color
+        })))
     }
 
     const changeYear = (delta) => {
@@ -66,16 +147,15 @@ export default function AdminCalendar() {
 
     const handleSaveEvent = (eventData) => {
         if (!eventData) {
-            // Delete event
             const newEv = { ...events }
             delete newEv[selectedDateKey]
-            saveEvents(newEv)
+            saveEvents(newEv, selectedDateKey, null)
         } else {
-            // Add/Update event
+            const updatedData = { ...eventData, type: 'available', status: eventData.status || 'pending' }
             saveEvents({
                 ...events,
-                [selectedDateKey]: { ...eventData, type: 'available' }
-            })
+                [selectedDateKey]: updatedData
+            }, selectedDateKey, updatedData)
         }
     }
 
@@ -89,7 +169,6 @@ export default function AdminCalendar() {
 
     return (
         <div>
-            {/* Header / Year Navigation */}
             <div className="admin-header no-print">
                 <div className="flex gap-2">
                     <button onClick={() => changeYear(-1)} className="btn btn-outline" style={{ padding: '0.5rem', border: 'none' }}>
@@ -105,6 +184,15 @@ export default function AdminCalendar() {
                 </h3>
 
                 <div className="admin-header-actions">
+                    <button
+                        onClick={syncLocalToCloud}
+                        className="btn btn-outline"
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#0891b2', borderColor: '#0891b2' }}
+                        disabled={isSyncing}
+                    >
+                        {isSyncing ? <RefreshCw size={18} className="animate-spin" /> : <CloudUpload size={18} />}
+                        {isSyncing ? "Envoi..." : "Envoyer vers Cloud"}
+                    </button>
                     <button onClick={() => setIsDestManagerOpen(true)} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <Settings size={18} /> Gérer les lieux
                     </button>
@@ -114,7 +202,6 @@ export default function AdminCalendar() {
                 </div>
             </div>
 
-            {/* Legend */}
             <div style={{
                 display: 'flex',
                 flexWrap: 'wrap',
@@ -128,31 +215,19 @@ export default function AdminCalendar() {
                 {destinations.length === 0 && <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Aucun lieu défini.</span>}
                 {destinations
                     .filter((dest, index, self) =>
-                        index === self.findIndex((t) => {
-                            const tName = typeof t === 'string' ? t : t.name
-                            const tClass = typeof t === 'string' ? '' : (t.defaultClass || '')
-                            const destName = typeof dest === 'string' ? dest : dest.name
-                            const destClass = typeof dest === 'string' ? '' : (dest.defaultClass || '')
-                            return tName === destName && tClass === destClass
-                        })
+                        index === self.findIndex((t) => (t.name === dest.name))
                     )
-                    .map((dest, idx) => {
-                        const name = typeof dest === 'string' ? dest : dest.name
-                        const color = typeof dest === 'string' ? '#3b82f6' : dest.color
-                        const defaultClass = typeof dest === 'string' ? '' : dest.defaultClass
-                        return (
-                            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
-                                <div style={{ width: '1rem', height: '1rem', borderRadius: '50%', backgroundColor: color, boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}></div>
-                                <span style={{ fontWeight: '500', color: '#334155' }}>
-                                    {name}
-                                    {defaultClass && <span style={{ color: '#64748b', fontWeight: 'normal', marginLeft: '4px' }}>({defaultClass})</span>}
-                                </span>
-                            </div>
-                        )
-                    })}
+                    .map((dest, idx) => (
+                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
+                            <div style={{ width: '1rem', height: '1rem', borderRadius: '50%', backgroundColor: dest.color, boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}></div>
+                            <span style={{ fontWeight: '500', color: '#334155' }}>
+                                {dest.name}
+                                {dest.defaultClass && <span style={{ color: '#64748b', fontWeight: 'normal', marginLeft: '4px' }}>({dest.defaultClass})</span>}
+                            </span>
+                        </div>
+                    ))}
             </div>
 
-            {/* Semester 1: Jan - Jun */}
             <div className="calendar-semester-grid">
                 {monthNames.slice(0, 6).map((monthName, monthIndex) => {
                     const { days, firstDay } = getDaysInMonth(currentYear, monthIndex)
@@ -161,23 +236,17 @@ export default function AdminCalendar() {
                     return (
                         <div key={monthName} className="print-compact-month" style={{ background: 'white', padding: '1rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                             <h4 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '0.75rem', color: 'var(--primary)' }}>{monthName}</h4>
-
-                            {/* Days Header */}
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '2px', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '600' }}>
                                 {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, index) => (
                                     <div key={index} style={{ textAlign: 'center' }}>{d}</div>
                                 ))}
                             </div>
-
-                            {/* Calendar Grid */}
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '2px' }}>
                                 {[...Array(startOffset)].map((_, i) => <div key={`empty-${i}`} />)}
-
                                 {[...Array(days)].map((_, i) => {
                                     const day = i + 1
                                     const dateKey = `${currentYear}-${monthIndex}-${day}`
                                     const hasEvent = events[dateKey]
-
                                     return (
                                         <div
                                             key={day}
@@ -193,8 +262,10 @@ export default function AdminCalendar() {
                                                 borderRadius: '0.25rem',
                                                 backgroundColor: hasEvent ? hasEvent.color || 'var(--primary)' : 'transparent',
                                                 color: hasEvent ? 'white' : 'inherit',
-                                                border: '1px solid #f1f5f9',
-                                                position: 'relative'
+                                                border: hasEvent?.status === 'validated' ? '3px solid #16a34a' :
+                                                    hasEvent?.status === 'rejected' ? '3px solid #dc2626' : '1px solid #f1f5f9',
+                                                position: 'relative',
+                                                boxShadow: hasEvent?.status === 'pending' ? '0 0 0 2px #eab308' : 'none'
                                             }}
                                             title={hasEvent ? `${hasEvent.title} (${hasEvent.schoolClass || ''})` : ''}
                                         >
@@ -208,33 +279,25 @@ export default function AdminCalendar() {
                 })}
             </div>
 
-            {/* Semester 2: Jul - Dec */}
             <div className="calendar-semester-grid" style={{ marginTop: '1.5rem' }}>
                 {monthNames.slice(6, 12).map((monthName, i) => {
                     const monthIndex = i + 6
                     const { days, firstDay } = getDaysInMonth(currentYear, monthIndex)
                     const startOffset = firstDay === 0 ? 6 : firstDay - 1
-
                     return (
                         <div key={monthName} className="print-compact-month" style={{ background: 'white', padding: '1rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                             <h4 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '0.75rem', color: 'var(--primary)' }}>{monthName}</h4>
-
-                            {/* Days Header */}
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '2px', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '600' }}>
                                 {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, index) => (
                                     <div key={index} style={{ textAlign: 'center' }}>{d}</div>
                                 ))}
                             </div>
-
-                            {/* Calendar Grid */}
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '2px' }}>
                                 {[...Array(startOffset)].map((_, i) => <div key={`empty-${i}`} />)}
-
                                 {[...Array(days)].map((_, i) => {
                                     const day = i + 1
                                     const dateKey = `${currentYear}-${monthIndex}-${day}`
                                     const hasEvent = events[dateKey]
-
                                     return (
                                         <div
                                             key={day}
@@ -250,8 +313,10 @@ export default function AdminCalendar() {
                                                 borderRadius: '0.25rem',
                                                 backgroundColor: hasEvent ? hasEvent.color || 'var(--primary)' : 'transparent',
                                                 color: hasEvent ? 'white' : 'inherit',
-                                                border: '1px solid #f1f5f9',
-                                                position: 'relative'
+                                                border: hasEvent?.status === 'validated' ? '3px solid #16a34a' :
+                                                    hasEvent?.status === 'rejected' ? '3px solid #dc2626' : '1px solid #f1f5f9',
+                                                position: 'relative',
+                                                boxShadow: hasEvent?.status === 'pending' ? '0 0 0 2px #eab308' : 'none'
                                             }}
                                             title={hasEvent ? `${hasEvent.title} (${hasEvent.schoolClass || ''})` : ''}
                                         >

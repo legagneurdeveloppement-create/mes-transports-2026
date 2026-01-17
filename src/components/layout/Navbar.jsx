@@ -41,10 +41,12 @@ export default function Navbar({ hideUserInfo = false }) {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }} className="flex-col-mobile justify-center items-center">
                                     <span style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>{user.email}</span>
                                     <span className={`user-badge ${user.role === 'SUPER_ADMIN' ? 'badge-super-admin' :
-                                            user.role === 'ADMIN' ? 'badge-admin' : 'badge-user'
+                                        user.role === 'ADMIN' ? 'badge-admin' :
+                                            user.role === 'CHAUFFEUR' ? 'badge-chauffeur' : 'badge-user'
                                         }`}>
                                         {user.role === 'SUPER_ADMIN' ? 'SUPER ADMIN' :
-                                            user.role === 'ADMIN' ? 'ADMIN' : 'USER'}
+                                            user.role === 'ADMIN' ? 'ADMIN' :
+                                                user.role === 'CHAUFFEUR' ? 'CHAUFFEUR' : 'USER'}
                                     </span>
                                 </div>
                                 <button onClick={logout} className="btn btn-outline" style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}>

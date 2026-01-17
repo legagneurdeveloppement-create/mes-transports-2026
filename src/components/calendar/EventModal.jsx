@@ -8,6 +8,10 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
     const [isCustomTitle, setIsCustomTitle] = useState(false)
     const [isCustomClass, setIsCustomClass] = useState(false)
 
+    // New time fields
+    const [timeDeparture, setTimeDeparture] = useState('')
+    const [timeReturn, setTimeReturn] = useState('')
+
     // Fallback if no destinations provided
     const availableDestinations = destinations.length > 0 ? destinations : [
         { name: "Aéroport Charles de Gaulle", color: "#3b82f6" },
@@ -40,12 +44,18 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
             // Check if class exists in list
             const classExists = schoolClasses.includes(eventData.schoolClass)
             setIsCustomClass(!!eventData.schoolClass && !classExists)
+
+            // Times
+            setTimeDeparture(eventData.time_departure_origin || '')
+            setTimeReturn(eventData.time_departure_destination || '')
         } else {
             setTitle('')
             setSchoolClass('')
             setColor('#3b82f6')
             setIsCustomTitle(false)
             setIsCustomClass(false)
+            setTimeDeparture('')
+            setTimeReturn('')
         }
     }, [eventData, isOpen, availableDestinations])
 
@@ -53,54 +63,23 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
 
     const handleSubmit = (e) => {
         e.preventDefault()
-        onSave({ title, schoolClass, color })
+        onSave({
+            title,
+            schoolClass,
+            color,
+            time_departure_origin: timeDeparture,
+            time_departure_destination: timeReturn
+        })
         onClose()
     }
 
     const handleDelete = () => {
         if (window.confirm('Voulez-vous vraiment supprimer cet événement ?')) {
-            onSave(null) // Signal to delete
+            onSave(null)
             onClose()
         }
     }
 
-    const handleDestinationChange = (e) => {
-        const val = e.target.value
-        if (val === 'Autre') {
-            setIsCustomTitle(true)
-            setTitle('')
-        } else {
-            setIsCustomTitle(false)
-            setTitle(val)
-
-            // Auto-set color if destination has one
-            const destObj = availableDestinations.find(d => {
-                const dName = typeof d === 'string' ? d : d.name
-                return dName === val
-            })
-
-            if (destObj && typeof destObj !== 'string') {
-                if (destObj.color) setColor(destObj.color)
-                if (destObj.defaultClass) {
-                    setSchoolClass(destObj.defaultClass)
-                    setIsCustomClass(false)
-                }
-            }
-        }
-    }
-
-    const handleClassChange = (e) => {
-        const val = e.target.value
-        if (val === 'Autre') {
-            setIsCustomClass(true)
-            setSchoolClass('')
-        } else {
-            setIsCustomClass(false)
-            setSchoolClass(val)
-        }
-    }
-
-    // Predefined colors
     const colors = [
         { name: 'Bleu', value: '#3b82f6' },
         { name: 'Vert', value: '#22c55e' },
@@ -116,7 +95,7 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
             <div className="modal-content">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                     <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>
-                        {eventData ? 'Modifier le transport' : 'Nouveau transport'}
+                        {eventData ? 'Modifier le transport' : 'Nouveau transport'} <small style={{ opacity: 0.5, fontSize: '0.6em' }}>v1.2</small>
                     </h3>
                     <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
                         <X size={24} />
@@ -132,29 +111,20 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
                 </div>
 
                 <form onSubmit={handleSubmit}>
-                    {/* Destination Field */}
                     <div style={{ marginBottom: '1rem' }}>
                         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Destination</label>
                         {!isCustomTitle ? (
                             <select
                                 value={(() => {
-                                    // Complex logic to find the best matching value for the select
-                                    // We need to match Name AND Class if possible
+                                    // Match only on title (name) so changing class doesn't reset this select
                                     const match = availableDestinations.find(d => {
                                         const dName = typeof d === 'string' ? d : d.name
-                                        const dClass = typeof d === 'string' ? '' : (d.defaultClass || '')
-                                        return dName === title && dClass === schoolClass
+                                        return dName === title
                                     })
                                     if (match) {
-                                        // Return a unique identifier string we can parse back
                                         const dName = typeof match === 'string' ? match : match.name
-                                        const dClass = typeof match === 'string' ? '' : (match.defaultClass || '')
-                                        return JSON.stringify({ name: dName, defaultClass: dClass })
+                                        return dName
                                     }
-                                    // Fallback if we have title but no exact class match (or custom class)
-                                    // Just show "Autre" or try to find name match?
-                                    // Actually if we are here, it means the current state might NOT be in the list exactly
-                                    // But we want to allow selecting FROM the list.
                                     return ""
                                 })()}
                                 onChange={(e) => {
@@ -162,31 +132,22 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
                                     if (val === 'Autre') {
                                         setIsCustomTitle(true)
                                         setTitle('')
-                                        setSchoolClass('') // Reset class as we leave the preset
+                                        // We don't necessarily reset schoolClass here, let the user decide
                                     } else {
-                                        const selected = JSON.parse(val)
                                         setIsCustomTitle(false)
-                                        setTitle(selected.name)
+                                        setTitle(val)
 
-                                        // Apply preset class and color
+                                        // Auto-set color and class IF the destination has presets
                                         const destObj = availableDestinations.find(d => {
                                             const dName = typeof d === 'string' ? d : d.name
-                                            const dClass = typeof d === 'string' ? '' : (d.defaultClass || '')
-                                            return dName === selected.name && dClass === selected.defaultClass
+                                            return dName === val
                                         })
 
-                                        if (destObj) {
-                                            if (typeof destObj !== 'string') {
-                                                setColor(destObj.color || '#3b82f6')
-                                                if (destObj.defaultClass) {
-                                                    setSchoolClass(destObj.defaultClass)
-                                                    setIsCustomClass(false)
-                                                } else {
-                                                    setSchoolClass('') // Logic: default to empty if no class in preset
-                                                }
-                                            } else {
-                                                setColor('#3b82f6')
-                                                setSchoolClass('')
+                                        if (destObj && typeof destObj !== 'string') {
+                                            if (destObj.color) setColor(destObj.color)
+                                            if (destObj.defaultClass) {
+                                                setSchoolClass(destObj.defaultClass)
+                                                setIsCustomClass(false)
                                             }
                                         }
                                     }
@@ -198,13 +159,9 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
                                 <option value="" disabled>Sélectionner une destination</option>
                                 {availableDestinations.map((d, index) => {
                                     const name = typeof d === 'string' ? d : d.name
-                                    const defaultClass = typeof d === 'string' ? '' : (d.defaultClass || '')
-                                    // Create a unique value object for each option
-                                    const valueStr = JSON.stringify({ name, defaultClass })
-
                                     return (
-                                        <option key={index} value={valueStr}>
-                                            {name} {defaultClass ? `(${defaultClass})` : ''}
+                                        <option key={index} value={name}>
+                                            {name}
                                         </option>
                                     )
                                 })}
@@ -233,7 +190,6 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
                         )}
                     </div>
 
-                    {/* Class Field */}
                     <div style={{ marginBottom: '1rem' }}>
                         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Classe (Optionnel)</label>
                         {!isCustomClass ? (
@@ -247,18 +203,6 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
                                     } else {
                                         setIsCustomClass(false)
                                         setSchoolClass(val)
-
-                                        // Try to find a matching destination definition for this (Title + NewClass)
-                                        // to auto-update color if a specific variant exists
-                                        const matchingVariant = availableDestinations.find(d => {
-                                            const dName = typeof d === 'string' ? d : d.name
-                                            const dClass = typeof d === 'string' ? '' : (d.defaultClass || '')
-                                            return dName === title && dClass === val
-                                        })
-
-                                        if (matchingVariant && typeof matchingVariant !== 'string') {
-                                            setColor(matchingVariant.color)
-                                        }
                                     }
                                 }}
                                 className="input"
@@ -292,7 +236,31 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
                         )}
                     </div>
 
-                    {/* Color Field */}
+                    <div style={{ marginBottom: '1rem', padding: '1rem', background: '#f8fafc', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
+                        <h4 style={{ margin: '0 0 1rem 0', fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--primary)', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.5rem' }}>Horaires Détaillés</h4>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.8rem', fontWeight: '600' }}>Départ</label>
+                                <input
+                                    type="time"
+                                    value={timeDeparture}
+                                    onChange={(e) => setTimeDeparture(e.target.value)}
+                                    style={{ width: '100%', padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: '0.375rem' }}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.8rem', fontWeight: '600' }}>Retour</label>
+                                <input
+                                    type="time"
+                                    value={timeReturn}
+                                    onChange={(e) => setTimeReturn(e.target.value)}
+                                    style={{ width: '100%', padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: '0.375rem' }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
                     <div style={{ marginBottom: '1.5rem' }}>
                         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Couleur</label>
                         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -316,22 +284,9 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
                     </div>
 
                     <div style={{ display: 'flex', gap: '1rem' }}>
-                        <button
-                            type="submit"
-                            className="btn btn-primary"
-                            style={{ flex: 1 }}
-                        >
-                            Enregistrer
-                        </button>
+                        <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Enregistrer</button>
                         {eventData && (
-                            <button
-                                type="button"
-                                onClick={handleDelete}
-                                className="btn"
-                                style={{ flex: 1, backgroundColor: '#fee2e2', color: '#dc2626' }}
-                            >
-                                Supprimer
-                            </button>
+                            <button type="button" onClick={handleDelete} className="btn" style={{ flex: 1, backgroundColor: '#fee2e2', color: '#dc2626' }}>Supprimer</button>
                         )}
                     </div>
                 </form>

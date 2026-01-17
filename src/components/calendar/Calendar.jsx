@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import { supabase } from '../../lib/supabase'
 
 export default function Calendar({ userRole }) {
     const [currentDate, setCurrentDate] = useState(new Date())
@@ -7,19 +8,32 @@ export default function Calendar({ userRole }) {
     const [destinations, setDestinations] = useState([])
 
     useEffect(() => {
-        const stored = localStorage.getItem('transport_events')
-        if (stored) setEvents(JSON.parse(stored))
+        const fetchData = async () => {
+            // Fetch Transports
+            const { data: tData } = await supabase.from('transports').select('*')
+            if (tData) {
+                const map = {}
+                tData.forEach(e => map[e.date_key] = e)
+                setEvents(map)
+            }
 
-        const storedDestinations = localStorage.getItem('transport_destinations')
-        if (storedDestinations) {
-            setDestinations(JSON.parse(storedDestinations))
+            // Fetch Destinations
+            const { data: dData } = await supabase.from('destinations').select('*')
+            if (dData) setDestinations(dData)
         }
+
+        fetchData()
+
+        const channel = supabase
+            .channel('public-events')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'transports' }, () => {
+                fetchData()
+            })
+            .subscribe()
+
+        return () => { supabase.removeChannel(channel) }
     }, [])
 
-    const saveEvents = (newEvents) => {
-        setEvents(newEvents)
-        localStorage.setItem('transport_events', JSON.stringify(newEvents))
-    }
 
     const getDaysInMonth = (date) => {
         const year = date.getFullYear()
@@ -33,33 +47,41 @@ export default function Calendar({ userRole }) {
     // Adjust for Monday start (0 = Sun, 1 = Mon)
     const startOffset = firstDay === 0 ? 6 : firstDay - 1
 
-    const handleDayClick = (day) => {
-        if (userRole !== 'ADMIN') return
+    const [selectedEventDetails, setSelectedEventDetails] = useState(null)
 
+    const handleDayClick = (day) => {
         const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${day}`
         const currentEvent = events[dateKey]
 
-        if (currentEvent) {
-            if (!window.confirm("Un transport est déjà prévu ce jour-là. Voulez-vous le modifier/supprimer ?")) return
-        }
+        if (userRole === 'ADMIN') {
+            if (currentEvent) {
+                if (!window.confirm("Un transport est déjà prévu ce jour-là. Voulez-vous le modifier/supprimer ?")) return
+            }
 
-        const title = prompt(
-            "Titre du transport (laisser vide pour supprimer) :",
-            currentEvent?.title || ""
-        )
+            const title = prompt(
+                "Titre du transport (laesser vide pour supprimer) :",
+                currentEvent?.title || ""
+            )
 
-        if (title) {
-            saveEvents({ ...events, [dateKey]: { title, type: 'available' } })
-        } else if (title === "") {
-            if (currentEvent && !window.confirm("Confirmer la suppression ?")) return
-            const newEv = { ...events }
-            delete newEv[dateKey]
-            saveEvents(newEv)
+            if (title) {
+                saveEvents({ ...events, [dateKey]: { title, type: 'available' } })
+            } else if (title === "") {
+                if (currentEvent && !window.confirm("Confirmer la suppression ?")) return
+                const newEv = { ...events }
+                delete newEv[dateKey]
+                saveEvents(newEv)
+            }
+        } else {
+            // Chauffeur or User: show details
+            if (currentEvent) {
+                setSelectedEventDetails({ ...currentEvent, day, month: currentDate.getMonth(), year: currentDate.getFullYear() })
+            }
         }
     }
 
     const changeMonth = (delta) => {
         setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + delta, 1))
+        setSelectedEventDetails(null) // Close modal on month change
     }
 
     const handlePrint = () => {
@@ -156,15 +178,94 @@ export default function Calendar({ userRole }) {
                             {hasEvent && (
                                 <div className="calendar-event" style={{
                                     background: hasEvent.color || 'var(--primary)',
+                                    border: hasEvent.status === 'validated' ? '2px solid #16a34a' :
+                                        hasEvent.status === 'rejected' ? '2px solid #dc2626' :
+                                            hasEvent.status === 'pending' ? '2px dotted #eab308' : 'none',
+                                    height: userRole === 'CHAUFFEUR' ? '12px' : 'auto',
+                                    borderRadius: userRole === 'CHAUFFEUR' ? '10px' : '4px',
+                                    padding: userRole === 'CHAUFFEUR' ? '0' : '2px 4px'
                                 }}>
-                                    {hasEvent.title}
-                                    {hasEvent.schoolClass && <span style={{ marginLeft: '4px', opacity: 0.8, fontSize: '0.7em' }}>({hasEvent.schoolClass})</span>}
+                                    {userRole !== 'CHAUFFEUR' && (
+                                        <>
+                                            {hasEvent.title}
+                                            {hasEvent.schoolClass && <span style={{ marginLeft: '4px', opacity: 0.8, fontSize: '0.7em' }}>({hasEvent.schoolClass})</span>}
+                                        </>
+                                    )}
                                 </div>
                             )}
                         </div>
                     )
                 })}
             </div>
+
+            {/* Read-only Detail Modal */}
+            {selectedEventDetails && (
+                <div className="modal-overlay" style={{ display: 'flex', zIndex: 3000 }} onClick={() => setSelectedEventDetails(null)}>
+                    <div className="modal-content" style={{ maxWidth: '400px', width: '90%' }} onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <div style={{ width: '1rem', height: '1rem', borderRadius: '50%', backgroundColor: selectedEventDetails.color }}></div>
+                                Détails du Transport
+                            </h3>
+                            <button className="btn-close" onClick={() => setSelectedEventDetails(null)}>×</button>
+                        </div>
+                        <div style={{ padding: '1.5rem' }}>
+                            <div style={{ marginBottom: '1.5rem' }}>
+                                <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: '600' }}>Destination</label>
+                                <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--primary)', marginTop: '0.25rem' }}>{selectedEventDetails.title}</div>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <div>
+                                    <label style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: '600' }}>Date</label>
+                                    <div style={{ fontWeight: '500' }}>{new Date(selectedEventDetails.year, selectedEventDetails.month, selectedEventDetails.day).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</div>
+                                </div>
+                                {selectedEventDetails.schoolClass && (
+                                    <div>
+                                        <label style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: '600' }}>Classe</label>
+                                        <div style={{ fontWeight: '500' }}>{selectedEventDetails.schoolClass}</div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Detailed Times Display */}
+                            <div style={{ marginTop: '1.5rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <div style={{ background: '#f8fafc', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
+                                    <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.75rem', color: '#0891b2', textTransform: 'uppercase' }}>Départ</h4>
+                                    <div style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--primary)' }}>
+                                        {selectedEventDetails.time_departure_origin || '--:--'}
+                                    </div>
+                                </div>
+                                <div style={{ background: '#f8fafc', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
+                                    <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.75rem', color: '#0891b2', textTransform: 'uppercase' }}>Retour</h4>
+                                    <div style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--primary)' }}>
+                                        {selectedEventDetails.time_departure_destination || '--:--'}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #f1f5f9' }}>
+                                <div style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    padding: '0.4rem 0.75rem',
+                                    borderRadius: '1rem',
+                                    fontSize: '0.85rem',
+                                    fontWeight: '600',
+                                    background: selectedEventDetails.status === 'validated' ? '#dcfce7' : selectedEventDetails.status === 'rejected' ? '#fee2e2' : '#fef3c7',
+                                    color: selectedEventDetails.status === 'validated' ? '#166534' : selectedEventDetails.status === 'rejected' ? '#991b1b' : '#92400e'
+                                }}>
+                                    {selectedEventDetails.status === 'validated' ? '✓ Validé' : selectedEventDetails.status === 'rejected' ? '✕ Refusé' : '⌚ En attente'}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => setSelectedEventDetails(null)}>Fermer</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

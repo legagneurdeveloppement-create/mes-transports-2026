@@ -69,7 +69,7 @@ export default function UserManagement() {
                         <Link to="/dashboard" className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem' }}>
                             <ArrowLeft size={18} /> Retour au tableau de bord
                         </Link>
-                        <h1 className="admin-title">Gestion des Utilisateurs</h1>
+                        <h1 className="admin-title">Gestion des Utilisateurs <small style={{ fontSize: '0.5em', opacity: 0.5 }}>v1.1</small></h1>
                     </div>
                     <button
                         onClick={() => setShowAddForm(!showAddForm)}
@@ -134,6 +134,7 @@ export default function UserManagement() {
                                     onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
                                     style={{ width: '100%' }}
                                 >
+                                    <option value="CHAUFFEUR">Chauffeur</option>
                                     <option value="USER">Utilisateur</option>
                                     <option value="ADMIN">Administrateur</option>
                                     <option value="SUPER_ADMIN">Super Administrateur</option>
@@ -179,6 +180,7 @@ export default function UserManagement() {
                                             }}
                                             disabled={u.role === 'SUPER_ADMIN'}
                                         >
+                                            <option value="CHAUFFEUR">Chauffeur</option>
                                             <option value="USER">Utilisateur</option>
                                             <option value="ADMIN">Administrateur</option>
                                             {u.role === 'SUPER_ADMIN' && <option value="SUPER_ADMIN">Super Admin</option>}

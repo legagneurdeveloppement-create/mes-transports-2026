@@ -3,8 +3,10 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/layout/Navbar'
 import { Shield } from 'lucide-react'
-import Calendar from '../components/calendar/Calendar' // To be created
+import Calendar from '../components/calendar/Calendar'
 import AdminCalendar from '../components/calendar/AdminCalendar'
+import ChauffeurDashboard from '../components/chauffeur/ChauffeurDashboard'
+import { supabase } from '../lib/supabase'
 
 export default function Dashboard() {
     const { user } = useAuth()
@@ -14,13 +16,45 @@ export default function Dashboard() {
     useEffect(() => {
         if (!user) {
             navigate('/login')
+            return
         }
 
-        // Count pending users for Super Admin
-        if (user?.role === 'SUPER_ADMIN') {
-            const allUsers = JSON.parse(localStorage.getItem('all_users') || '[]')
-            const pending = allUsers.filter(u => !u.approved).length
-            setPendingCount(pending)
+        const fetchPending = async () => {
+            if (user.role === 'SUPER_ADMIN') {
+                const allUsers = JSON.parse(localStorage.getItem('all_users') || '[]')
+                const pending = allUsers.filter(u => !u.approved).length
+                setPendingCount(pending)
+            } else if (user.role === 'CHAUFFEUR') {
+                const { data, error } = await supabase
+                    .from('transports')
+                    .select('status')
+                    .eq('status', 'pending')
+
+                if (!error && data) {
+                    setPendingCount(data.length)
+                } else {
+                    const storedEvents = JSON.parse(localStorage.getItem('transport_events') || '{}')
+                    const pending = Object.values(storedEvents).filter(e => (e.status === 'pending' || !e.status)).length
+                    setPendingCount(pending)
+                }
+            }
+        }
+
+        fetchPending()
+
+        // Sync realtime for Chauffeur
+        let channel;
+        if (user.role === 'CHAUFFEUR') {
+            channel = supabase
+                .channel('dashboard-pending')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'transports' }, () => {
+                    fetchPending()
+                })
+                .subscribe()
+        }
+
+        return () => {
+            if (channel) supabase.removeChannel(channel)
         }
     }, [user, navigate])
 
@@ -36,7 +70,8 @@ export default function Dashboard() {
                         <p className="dashboard-welcome">
                             Bienvenue, {user.email}. Vous êtes connecté en tant que <span className="dashboard-role">
                                 {user.role === 'SUPER_ADMIN' ? 'ADMINISTRATEUR GÉNÉRAL' :
-                                    user.role === 'ADMIN' ? 'ADMINISTRATEUR' : 'UTILISATEUR'}
+                                    user.role === 'ADMIN' ? 'ADMINISTRATEUR' :
+                                        user.role === 'CHAUFFEUR' ? 'CHAUFFEUR' : 'UTILISATEUR'}
                             </span>.
                         </p>
                     </div>
@@ -52,16 +87,63 @@ export default function Dashboard() {
                             </Link>
                         )}
 
+                        {user.role === 'CHAUFFEUR' && pendingCount > 0 && (
+                            <div className="notification-alert-badge" style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                color: '#92400e',
+                                background: '#fef3c7',
+                                padding: '0.5rem 1rem',
+                                borderRadius: '2rem',
+                                fontWeight: '600',
+                                fontSize: '0.9rem',
+                                border: '1px solid #fde68a'
+                            }}>
+                                <span style={{ position: 'relative', display: 'flex' }}>
+                                    <span style={{
+                                        position: 'absolute',
+                                        top: '-4px',
+                                        right: '-4px',
+                                        width: '10px',
+                                        height: '10px',
+                                        background: '#dc2626',
+                                        borderRadius: '50%',
+                                        boxShadow: '0 0 0 2px white'
+                                    }}></span>
+                                    🔔
+                                </span>
+                                {pendingCount} transport{pendingCount > 1 ? 's' : ''} à valider
+                            </div>
+                        )}
                     </div>
                 </header>
 
-                {/* Calendar Section */}
-                <section className="card">
-                    <h2 className="dashboard-section-header">
-                        Planning des Transports
-                    </h2>
-                    {(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? <AdminCalendar /> : <Calendar userRole={user.role} />}
-                </section>
+                {user.role === 'CHAUFFEUR' ? (
+                    <>
+                        <div className="chauffeur-view-wrapper">
+                            {/* Debug helper for user */}
+                            <div style={{ background: '#fef3c7', padding: '0.5rem', borderRadius: '0.5rem', marginBottom: '1rem', fontSize: '0.8rem', color: '#92400e', textAlign: 'center' }}>
+                                ✓ Interface Chauffeur activée pour {user.email}
+                            </div>
+                            <ChauffeurDashboard />
+                        </div>
+
+                        <section className="card" style={{ marginTop: '2rem' }}>
+                            <h2 className="dashboard-section-header">
+                                Planning Global des Transports
+                            </h2>
+                            <Calendar userRole={user.role} />
+                        </section>
+                    </>
+                ) : (
+                    <section className="card">
+                        <h2 className="dashboard-section-header">
+                            Planning des Transports
+                        </h2>
+                        {(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? <AdminCalendar /> : <Calendar userRole={user.role} />}
+                    </section>
+                )}
             </div>
         </div>
     )
