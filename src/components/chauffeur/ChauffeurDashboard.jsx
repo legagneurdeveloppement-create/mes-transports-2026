@@ -130,7 +130,7 @@ export default function ChauffeurDashboard() {
         if (!error) {
             showToast('Horaires enregistrés avec succès')
         } else {
-            showToast('Erreur lors de l\\'enregistrement', 'error')
+            showToast('Erreur lors de l\'enregistrement', 'error')
         }
     }
 
