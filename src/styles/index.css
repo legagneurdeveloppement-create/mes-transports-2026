@@ -213,6 +213,43 @@ h6 {
   .print-compact-day {
     min-height: 80px !important;
   }
+
+  /* Chauffeur Dashboard Print Styles */
+  .dashboard-section-header {
+    display: block !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .tabs-container,
+  .chauffeur-card-actions,
+  .btn,
+  .toast,
+  .navbar,
+  .dashboard-header,
+  .notification-badge,
+  .notification-alert-badge {
+    display: none !important;
+  }
+
+  /* Hide monthly summary card when printing */
+  .chauffeur-dashboard>div:first-of-type {
+    display: none !important;
+  }
+
+  /* Show only transport cards content */
+  .transport-card {
+    page-break-inside: avoid;
+    margin-bottom: 0.5rem !important;
+    padding: 0.5rem !important;
+  }
+
+  .transport-card-inner {
+    display: block !important;
+  }
+
+  .transport-info {
+    margin-bottom: 0.5rem !important;
+  }
 }
 
 /* Responsive Utilities */
