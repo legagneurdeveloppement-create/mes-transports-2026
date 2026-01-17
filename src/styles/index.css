@@ -214,10 +214,11 @@ h6 {
     min-height: 80px !important;
   }
 
-  /* Chauffeur Dashboard Print Styles */
+  /* Chauffeur Dashboard Print Styles - Single Page */
   .dashboard-section-header {
     display: block !important;
-    margin-bottom: 1rem !important;
+    margin-bottom: 0.5rem !important;
+    font-size: 14pt !important;
   }
 
   .tabs-container,
@@ -236,11 +237,26 @@ h6 {
     display: none !important;
   }
 
-  /* Show only transport cards content */
+  /* Force single page layout */
+  .chauffeur-dashboard {
+    max-height: 100vh !important;
+    overflow: hidden !important;
+  }
+
+  .transports-list {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.3rem !important;
+    font-size: 8pt !important;
+  }
+
+  /* Compact transport cards */
   .transport-card {
     page-break-inside: avoid;
-    margin-bottom: 0.5rem !important;
-    padding: 0.5rem !important;
+    margin-bottom: 0 !important;
+    padding: 0.3rem !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: none !important;
   }
 
   .transport-card-inner {
@@ -248,7 +264,27 @@ h6 {
   }
 
   .transport-info {
-    margin-bottom: 0.5rem !important;
+    margin-bottom: 0 !important;
+  }
+
+  .transport-title {
+    font-size: 9pt !important;
+    margin-bottom: 0.2rem !important;
+  }
+
+  .transport-meta {
+    font-size: 7pt !important;
+    gap: 0.3rem !important;
+  }
+
+  .meta-item {
+    font-size: 7pt !important;
+  }
+
+  /* Hide icons in print */
+  .transport-title svg,
+  .meta-item svg {
+    display: none !important;
   }
 }
 
