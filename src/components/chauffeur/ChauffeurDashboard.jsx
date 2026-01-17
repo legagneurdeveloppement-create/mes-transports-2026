@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
-import { Check, X, Calendar as CalendarIcon, Clock, MapPin, History, Inbox, Ban } from 'lucide-react'
+import { Check, X, Calendar as CalendarIcon, Clock, MapPin, History, Inbox, Ban, Settings } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import ScheduleManagerModal from './ScheduleManagerModal'
 
 export default function ChauffeurDashboard() {
     const [events, setEvents] = useState({})
     const [filteredTransports, setFilteredTransports] = useState([])
     const [activeTab, setActiveTab] = useState('pending')
     const [toast, setToast] = useState(null)
+    const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false)
+    const [selectedTransport, setSelectedTransport] = useState(null)
 
     useEffect(() => {
         const fetchTransports = async () => {
@@ -91,6 +94,41 @@ export default function ChauffeurDashboard() {
             } else {
                 showToast('Erreur lors de la mise à jour', 'error')
             }
+        }
+    }
+
+    const handleOpenScheduleModal = (e, transport) => {
+        e.preventDefault()
+        e.stopPropagation()
+        setSelectedTransport(transport)
+        setIsScheduleModalOpen(true)
+    }
+
+    const handleSaveSchedule = async (scheduleData) => {
+        if (!selectedTransport) return
+
+        const updatedEvents = { ...events }
+        updatedEvents[selectedTransport.dateKey] = {
+            ...updatedEvents[selectedTransport.dateKey],
+            time_departure_school: scheduleData.time_departure_school,
+            time_arrival_school: scheduleData.time_arrival_school
+        }
+        setEvents(updatedEvents)
+        filterTransports(updatedEvents, activeTab)
+
+        // Save to Supabase
+        const { error } = await supabase
+            .from('transports')
+            .update({
+                time_departure_school: scheduleData.time_departure_school,
+                time_arrival_school: scheduleData.time_arrival_school
+            })
+            .eq('date_key', selectedTransport.dateKey)
+
+        if (!error) {
+            showToast('Horaires enregistrés avec succès')
+        } else {
+            showToast('Erreur lors de l\'enregistrement', 'error')
         }
     }
 
@@ -181,22 +219,33 @@ export default function ChauffeurDashboard() {
                                         </div>
                                     </div>
 
-                                    {activeTab === 'pending' && (
-                                        <div className="chauffeur-card-actions">
-                                            <button
-                                                onClick={(e) => handleStatusUpdate(e, transport.dateKey, 'rejected')}
-                                                className="btn btn-action btn-reject"
-                                            >
-                                                <X size={18} /> <span>Refuser</span>
-                                            </button>
-                                            <button
-                                                onClick={(e) => handleStatusUpdate(e, transport.dateKey, 'validated')}
-                                                className="btn btn-action btn-validate"
-                                            >
-                                                <Check size={18} /> <span>Valider</span>
-                                            </button>
-                                        </div>
-                                    )}
+                                    <div className="chauffeur-card-actions" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                        <button
+                                            onClick={(e) => handleOpenScheduleModal(e, transport)}
+                                            className="btn btn-outline"
+                                            style={{ flex: '1 1 auto', minWidth: '140px' }}
+                                        >
+                                            <Settings size={18} /> <span>Gérer horaires</span>
+                                        </button>
+                                        {activeTab === 'pending' && (
+                                            <>
+                                                <button
+                                                    onClick={(e) => handleStatusUpdate(e, transport.dateKey, 'rejected')}
+                                                    className="btn btn-action btn-reject"
+                                                    style={{ flex: '1 1 auto' }}
+                                                >
+                                                    <X size={18} /> <span>Refuser</span>
+                                                </button>
+                                                <button
+                                                    onClick={(e) => handleStatusUpdate(e, transport.dateKey, 'validated')}
+                                                    className="btn btn-action btn-validate"
+                                                    style={{ flex: '1 1 auto' }}
+                                                >
+                                                    <Check size={18} /> <span>Valider</span>
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
 
                                     {activeTab !== 'pending' && (
                                         <div style={{ alignSelf: 'center' }}>
@@ -215,6 +264,13 @@ export default function ChauffeurDashboard() {
                     </div>
                 )}
             </div>
+
+            <ScheduleManagerModal
+                isOpen={isScheduleModalOpen}
+                onClose={() => setIsScheduleModalOpen(false)}
+                transport={selectedTransport}
+                onSave={handleSaveSchedule}
+            />
         </div>
     )
 }

@@ -244,6 +244,78 @@ export default function Calendar({ userRole }) {
                                 </div>
                             </div>
 
+                            {/* Detailed Schedule Steps (if available) */}
+                            {(() => {
+                                let allerSteps = []
+                                let retourSteps = []
+                                try {
+                                    if (selectedEventDetails.time_departure_school) {
+                                        allerSteps = typeof selectedEventDetails.time_departure_school === 'string'
+                                            ? JSON.parse(selectedEventDetails.time_departure_school)
+                                            : selectedEventDetails.time_departure_school
+                                    }
+                                    if (selectedEventDetails.time_arrival_school) {
+                                        retourSteps = typeof selectedEventDetails.time_arrival_school === 'string'
+                                            ? JSON.parse(selectedEventDetails.time_arrival_school)
+                                            : selectedEventDetails.time_arrival_school
+                                    }
+                                } catch (e) {
+                                    console.error('Error parsing schedule:', e)
+                                }
+
+                                const hasDetailedSchedule = (Array.isArray(allerSteps) && allerSteps.length > 0) ||
+                                    (Array.isArray(retourSteps) && retourSteps.length > 0)
+
+                                if (!hasDetailedSchedule) return null
+
+                                return (
+                                    <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #e2e8f0' }}>
+                                        <h4 style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--primary)', marginBottom: '1rem' }}>
+                                            📋 Horaires détaillés (Chauffeur)
+                                        </h4>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                            {/* Aller */}
+                                            <div>
+                                                <div style={{ fontSize: '0.75rem', fontWeight: '600', color: '#0891b2', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
+                                                    → Aller
+                                                </div>
+                                                {Array.isArray(allerSteps) && allerSteps.length > 0 ? (
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                                        {allerSteps.map((step, idx) => (
+                                                            <div key={idx} style={{ fontSize: '0.85rem', padding: '0.4rem', background: '#f0f9ff', borderRadius: '0.25rem' }}>
+                                                                <div style={{ fontWeight: '600', color: '#0891b2' }}>{step.time || '--:--'}</div>
+                                                                <div style={{ color: '#64748b', fontSize: '0.8rem' }}>{step.location || 'Non spécifié'}</div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <div style={{ fontSize: '0.8rem', color: '#94a3b8', fontStyle: 'italic' }}>Aucune étape</div>
+                                                )}
+                                            </div>
+
+                                            {/* Retour */}
+                                            <div>
+                                                <div style={{ fontSize: '0.75rem', fontWeight: '600', color: '#f97316', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
+                                                    ← Retour
+                                                </div>
+                                                {Array.isArray(retourSteps) && retourSteps.length > 0 ? (
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                                        {retourSteps.map((step, idx) => (
+                                                            <div key={idx} style={{ fontSize: '0.85rem', padding: '0.4rem', background: '#fff7ed', borderRadius: '0.25rem' }}>
+                                                                <div style={{ fontWeight: '600', color: '#f97316' }}>{step.time || '--:--'}</div>
+                                                                <div style={{ color: '#64748b', fontSize: '0.8rem' }}>{step.location || 'Non spécifié'}</div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <div style={{ fontSize: '0.8rem', color: '#94a3b8', fontStyle: 'italic' }}>Aucune étape</div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )
+                            })()}
+
                             <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #f1f5f9' }}>
                                 <div style={{
                                     display: 'inline-flex',
