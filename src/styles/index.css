@@ -214,11 +214,9 @@ h6 {
     min-height: 80px !important;
   }
 
-  /* Chauffeur Dashboard Print Styles - Single Page */
+  /* Chauffeur Dashboard Print Styles - Single Page Ultra Compact */
   .dashboard-section-header {
-    display: block !important;
-    margin-bottom: 0.5rem !important;
-    font-size: 14pt !important;
+    display: none !important;
   }
 
   .tabs-container,
@@ -245,16 +243,16 @@ h6 {
 
   .transports-list {
     display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 0.3rem !important;
-    font-size: 8pt !important;
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 0.2rem !important;
+    font-size: 7pt !important;
   }
 
-  /* Compact transport cards */
+  /* Ultra compact transport cards */
   .transport-card {
     page-break-inside: avoid;
     margin-bottom: 0 !important;
-    padding: 0.3rem !important;
+    padding: 0.2rem !important;
     border: 1px solid #e2e8f0 !important;
     box-shadow: none !important;
   }
@@ -268,17 +266,18 @@ h6 {
   }
 
   .transport-title {
-    font-size: 9pt !important;
-    margin-bottom: 0.2rem !important;
+    font-size: 8pt !important;
+    margin-bottom: 0.1rem !important;
+    font-weight: 600 !important;
   }
 
   .transport-meta {
-    font-size: 7pt !important;
-    gap: 0.3rem !important;
+    font-size: 6pt !important;
+    gap: 0.2rem !important;
   }
 
   .meta-item {
-    font-size: 7pt !important;
+    font-size: 6pt !important;
   }
 
   /* Hide icons in print */
