@@ -159,8 +159,8 @@ h6 {
 /* Print Styles */
 @media print {
   @page {
-    margin: 0.5cm;
-    size: landscape;
+    margin: 0.3cm;
+    size: A4 portrait;
   }
 
   body {
@@ -168,6 +168,8 @@ h6 {
     print-color-adjust: exact;
     background-color: white;
     font-size: 10pt;
+    margin: 0;
+    padding: 0;
   }
 
   .container {
@@ -239,13 +241,22 @@ h6 {
   .chauffeur-dashboard {
     max-height: 100vh !important;
     overflow: hidden !important;
+    transform: scale(0.85) !important;
+    transform-origin: top left !important;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .tab-content {
+    page-break-inside: avoid !important;
   }
 
   .transports-list {
     display: grid !important;
     grid-template-columns: 1fr 1fr 1fr !important;
-    gap: 0.2rem !important;
-    font-size: 7pt !important;
+    gap: 0.15rem !important;
+    font-size: 6pt !important;
+    page-break-inside: avoid !important;
   }
 
   /* Ultra compact transport cards */
@@ -266,18 +277,20 @@ h6 {
   }
 
   .transport-title {
-    font-size: 8pt !important;
-    margin-bottom: 0.1rem !important;
+    font-size: 7pt !important;
+    margin-bottom: 0.05rem !important;
     font-weight: 600 !important;
+    line-height: 1.1 !important;
   }
 
   .transport-meta {
-    font-size: 6pt !important;
-    gap: 0.2rem !important;
+    font-size: 5pt !important;
+    gap: 0.15rem !important;
+    line-height: 1.1 !important;
   }
 
   .meta-item {
-    font-size: 6pt !important;
+    font-size: 5pt !important;
   }
 
   /* Hide icons in print */
