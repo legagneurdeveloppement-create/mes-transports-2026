@@ -95,7 +95,7 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
             <div className="modal-content">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                     <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>
-                        {eventData ? 'Modifier le transport' : 'Nouveau transport'} <small style={{ opacity: 0.5, fontSize: '0.6em' }}>v1.2</small>
+                        {eventData ? 'Modifier le transport' : 'Nouveau transport'}
                     </h3>
                     <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
                         <X size={24} />
