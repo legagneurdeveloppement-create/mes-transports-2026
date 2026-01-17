@@ -267,6 +267,73 @@ export default function ScheduleManagerModal({ isOpen, onClose, transport, onSav
                     </button>
                 </div>
 
+                {/* Work Hours Summary */}
+                {(() => {
+                    const calculateDuration = (steps) => {
+                        if (!Array.isArray(steps) || steps.length < 2) return null
+
+                        const validSteps = steps.filter(s => s.time && s.time.trim())
+                        if (validSteps.length < 2) return null
+
+                        const firstTime = validSteps[0].time
+                        const lastTime = validSteps[validSteps.length - 1].time
+
+                        const [h1, m1] = firstTime.split(':').map(Number)
+                        const [h2, m2] = lastTime.split(':').map(Number)
+
+                        const totalMinutes = (h2 * 60 + m2) - (h1 * 60 + m1)
+                        if (totalMinutes <= 0) return null
+
+                        const hours = Math.floor(totalMinutes / 60)
+                        const minutes = totalMinutes % 60
+
+                        return { hours, minutes, totalMinutes }
+                    }
+
+                    const allerDuration = calculateDuration(allerSteps)
+                    const retourDuration = calculateDuration(retourSteps)
+                    const totalMinutes = (allerDuration?.totalMinutes || 0) + (retourDuration?.totalMinutes || 0)
+
+                    if (totalMinutes === 0) return null
+
+                    const totalHours = Math.floor(totalMinutes / 60)
+                    const totalMins = totalMinutes % 60
+
+                    return (
+                        <div style={{
+                            marginBottom: '1.5rem',
+                            padding: '1rem',
+                            background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+                            borderRadius: '0.5rem',
+                            border: '1px solid #0891b2'
+                        }}>
+                            <h4 style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--primary)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                ⏱️ Temps de travail calculé
+                            </h4>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', fontSize: '0.875rem' }}>
+                                <div style={{ textAlign: 'center', padding: '0.5rem', background: 'white', borderRadius: '0.375rem' }}>
+                                    <div style={{ color: '#64748b', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Aller</div>
+                                    <div style={{ fontWeight: '700', color: '#0891b2', fontSize: '1rem' }}>
+                                        {allerDuration ? `${allerDuration.hours}h${allerDuration.minutes.toString().padStart(2, '0')}` : '--'}
+                                    </div>
+                                </div>
+                                <div style={{ textAlign: 'center', padding: '0.5rem', background: 'white', borderRadius: '0.375rem' }}>
+                                    <div style={{ color: '#64748b', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Retour</div>
+                                    <div style={{ fontWeight: '700', color: '#f97316', fontSize: '1rem' }}>
+                                        {retourDuration ? `${retourDuration.hours}h${retourDuration.minutes.toString().padStart(2, '0')}` : '--'}
+                                    </div>
+                                </div>
+                                <div style={{ textAlign: 'center', padding: '0.5rem', background: '#0891b2', borderRadius: '0.375rem' }}>
+                                    <div style={{ color: 'white', fontSize: '0.75rem', marginBottom: '0.25rem', opacity: 0.9 }}>Total</div>
+                                    <div style={{ fontWeight: '700', color: 'white', fontSize: '1.1rem' }}>
+                                        {totalHours}h{totalMins.toString().padStart(2, '0')}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                })()}
+
                 {/* Actions */}
                 <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: '1px solid #e2e8f0' }}>
                     <button
