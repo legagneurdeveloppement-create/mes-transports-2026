@@ -141,15 +141,131 @@ export default function ChauffeurDashboard() {
         })
     }
 
+    const calculateMonthlyHours = () => {
+        const currentMonth = new Date().getMonth()
+        const currentYear = new Date().getFullYear()
+
+        let totalAllerMinutes = 0
+        let totalRetourMinutes = 0
+        let transportCount = 0
+
+        Object.entries(events).forEach(([dateKey, transport]) => {
+            const [year, month] = dateKey.split('-').map(Number)
+            if (year === currentYear && month === currentMonth) {
+                // Calculate Aller duration
+                try {
+                    if (transport.time_departure_school) {
+                        const allerSteps = typeof transport.time_departure_school === 'string'
+                            ? JSON.parse(transport.time_departure_school)
+                            : transport.time_departure_school
+
+                        if (Array.isArray(allerSteps) && allerSteps.length >= 2) {
+                            const validSteps = allerSteps.filter(s => s.time && s.time.trim())
+                            if (validSteps.length >= 2) {
+                                const firstTime = validSteps[0].time
+                                const lastTime = validSteps[validSteps.length - 1].time
+                                const [h1, m1] = firstTime.split(':').map(Number)
+                                const [h2, m2] = lastTime.split(':').map(Number)
+                                const minutes = (h2 * 60 + m2) - (h1 * 60 + m1)
+                                if (minutes > 0) {
+                                    totalAllerMinutes += minutes
+                                    transportCount++
+                                }
+                            }
+                        }
+                    }
+
+                    // Calculate Retour duration
+                    if (transport.time_arrival_school) {
+                        const retourSteps = typeof transport.time_arrival_school === 'string'
+                            ? JSON.parse(transport.time_arrival_school)
+                            : transport.time_arrival_school
+
+                        if (Array.isArray(retourSteps) && retourSteps.length >= 2) {
+                            const validSteps = retourSteps.filter(s => s.time && s.time.trim())
+                            if (validSteps.length >= 2) {
+                                const firstTime = validSteps[0].time
+                                const lastTime = validSteps[validSteps.length - 1].time
+                                const [h1, m1] = firstTime.split(':').map(Number)
+                                const [h2, m2] = lastTime.split(':').map(Number)
+                                const minutes = (h2 * 60 + m2) - (h1 * 60 + m1)
+                                if (minutes > 0) totalRetourMinutes += minutes
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error calculating hours for transport:', dateKey, e)
+                }
+            }
+        })
+
+        const totalMinutes = totalAllerMinutes + totalRetourMinutes
+
+        return {
+            allerHours: Math.floor(totalAllerMinutes / 60),
+            allerMinutes: totalAllerMinutes % 60,
+            retourHours: Math.floor(totalRetourMinutes / 60),
+            retourMinutes: totalRetourMinutes % 60,
+            totalHours: Math.floor(totalMinutes / 60),
+            totalMinutes: totalMinutes % 60,
+            transportCount
+        }
+    }
+
     const tabs = [
         { id: 'pending', label: 'En attente', icon: Inbox, color: '#eab308', count: Object.values(events).filter(e => e.status === 'pending' || !e.status).length },
         { id: 'validated', label: 'Validés', icon: Check, color: '#16a34a', count: Object.values(events).filter(e => e.status === 'validated').length },
         { id: 'rejected', label: 'Refusés', icon: Ban, color: '#dc2626', count: Object.values(events).filter(e => e.status === 'rejected').length }
     ]
 
+    const monthlyStats = calculateMonthlyHours()
+    const currentMonthName = new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+
     return (
         <div className="chauffeur-dashboard">
             <h2 className="dashboard-section-header">Gestion des Transports</h2>
+
+            {/* Monthly Hours Summary */}
+            {monthlyStats.transportCount > 0 && (
+                <div style={{
+                    marginBottom: '1.5rem',
+                    padding: '1.25rem',
+                    background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+                    borderRadius: '0.75rem',
+                    border: '1px solid #0891b2',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                        <span style={{ fontSize: '1.5rem' }}>📊</span>
+                        <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--primary)', margin: 0 }}>
+                            Récapitulatif - {currentMonthName}
+                        </h3>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem' }}>
+                        <div style={{ textAlign: 'center', padding: '0.75rem', background: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                            <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem', fontWeight: '600' }}>Aller</div>
+                            <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#0891b2' }}>
+                                {monthlyStats.allerHours}h{monthlyStats.allerMinutes.toString().padStart(2, '0')}
+                            </div>
+                        </div>
+                        <div style={{ textAlign: 'center', padding: '0.75rem', background: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                            <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem', fontWeight: '600' }}>Retour</div>
+                            <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#f97316' }}>
+                                {monthlyStats.retourHours}h{monthlyStats.retourMinutes.toString().padStart(2, '0')}
+                            </div>
+                        </div>
+                        <div style={{ textAlign: 'center', padding: '0.75rem', background: '#0891b2', borderRadius: '0.5rem', boxShadow: '0 2px 4px rgba(0,0,0,0.15)' }}>
+                            <div style={{ fontSize: '0.75rem', color: 'white', marginBottom: '0.25rem', fontWeight: '600', opacity: 0.9 }}>Total</div>
+                            <div style={{ fontSize: '1.4rem', fontWeight: '700', color: 'white' }}>
+                                {monthlyStats.totalHours}h{monthlyStats.totalMinutes.toString().padStart(2, '0')}
+                            </div>
+                        </div>
+                    </div>
+                    <div style={{ marginTop: '0.75rem', textAlign: 'center', fontSize: '0.8rem', color: '#64748b' }}>
+                        {monthlyStats.transportCount} transport{monthlyStats.transportCount > 1 ? 's' : ''} comptabilisé{monthlyStats.transportCount > 1 ? 's' : ''}
+                    </div>
+                </div>
+            )}
 
             {/* Tabs */}
             <div className="tabs-container">
