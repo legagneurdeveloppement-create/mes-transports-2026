@@ -111,7 +111,8 @@ export default function ChauffeurDashboard() {
         updatedEvents[selectedTransport.dateKey] = {
             ...updatedEvents[selectedTransport.dateKey],
             time_departure_school: scheduleData.time_departure_school,
-            time_arrival_school: scheduleData.time_arrival_school
+            time_arrival_school: scheduleData.time_arrival_school,
+            stayed_on_site: scheduleData.stayed_on_site
         }
         setEvents(updatedEvents)
         filterTransports(updatedEvents, activeTab)
@@ -121,14 +122,15 @@ export default function ChauffeurDashboard() {
             .from('transports')
             .update({
                 time_departure_school: scheduleData.time_departure_school,
-                time_arrival_school: scheduleData.time_arrival_school
+                time_arrival_school: scheduleData.time_arrival_school,
+                stayed_on_site: scheduleData.stayed_on_site
             })
             .eq('date_key', selectedTransport.dateKey)
 
         if (!error) {
             showToast('Horaires enregistrés avec succès')
         } else {
-            showToast('Erreur lors de l\'enregistrement', 'error')
+            showToast('Erreur lors de l\\'enregistrement', 'error')
         }
     }
 

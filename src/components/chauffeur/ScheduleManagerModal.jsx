@@ -4,6 +4,7 @@ import { X, Plus, Trash2, ArrowRight, ArrowLeft } from 'lucide-react'
 export default function ScheduleManagerModal({ isOpen, onClose, transport, onSave }) {
     const [allerSteps, setAllerSteps] = useState([])
     const [retourSteps, setRetourSteps] = useState([])
+    const [stayedOnSite, setStayedOnSite] = useState(false)
 
     useEffect(() => {
         if (isOpen && transport) {
@@ -22,10 +23,12 @@ export default function ScheduleManagerModal({ isOpen, onClose, transport, onSav
 
                 setAllerSteps(Array.isArray(aller) ? aller : [])
                 setRetourSteps(Array.isArray(retour) ? retour : [])
+                setStayedOnSite(transport.stayed_on_site || false)
             } catch (e) {
                 console.error('Error parsing schedule data:', e)
                 setAllerSteps([])
                 setRetourSteps([])
+                setStayedOnSite(false)
             }
         }
     }, [isOpen, transport])
@@ -62,7 +65,8 @@ export default function ScheduleManagerModal({ isOpen, onClose, transport, onSav
     const handleSave = () => {
         onSave({
             time_departure_school: JSON.stringify(allerSteps),
-            time_arrival_school: JSON.stringify(retourSteps)
+            time_arrival_school: JSON.stringify(retourSteps),
+            stayed_on_site: stayedOnSite
         })
         onClose()
     }
@@ -103,10 +107,33 @@ export default function ScheduleManagerModal({ isOpen, onClose, transport, onSav
                 </div>
 
                 {transport && (
-                    <div style={{ marginBottom: '1.5rem', padding: '0.75rem', background: '#f8fafc', borderRadius: '0.5rem' }}>
-                        <div style={{ fontWeight: '600', color: 'var(--primary)' }}>{transport.title}</div>
-                        <div style={{ fontSize: '0.875rem', color: '#64748b' }}>{transport.schoolClass}</div>
-                    </div>
+                    <>
+                        <div style={{ marginBottom: '1rem', padding: '0.75rem', background: '#f8fafc', borderRadius: '0.5rem' }}>
+                            <div style={{ fontWeight: '600', color: 'var(--primary)' }}>{transport.title}</div>
+                            <div style={{ fontSize: '0.875rem', color: '#64748b' }}>{transport.schoolClass}</div>
+                        </div>
+
+                        {/* Stayed On-Site Checkbox */}
+                        <div style={{
+                            marginBottom: '1.5rem',
+                            padding: '0.75rem',
+                            background: '#fef3c7',
+                            borderRadius: '0.5rem',
+                            border: '1px solid #f59e0b'
+                        }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={stayedOnSite}
+                                    onChange={(e) => setStayedOnSite(e.target.checked)}
+                                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                />
+                                <span style={{ fontWeight: '600', color: '#92400e', fontSize: '0.9rem' }}>
+                                    📍 Resté sur place
+                                </span>
+                            </label>
+                        </div>
+                    </>
                 )}
 
                 {/* Section Aller */}
@@ -328,6 +355,52 @@ export default function ScheduleManagerModal({ isOpen, onClose, transport, onSav
                                     <div style={{ fontWeight: '700', color: 'white', fontSize: '1.1rem' }}>
                                         {totalHours}h{totalMins.toString().padStart(2, '0')}
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                })()}
+
+                {/* Total Time from First Departure to Last Return */}
+                {(() => {
+                    const getAllTimes = () => {
+                        const allerTimes = allerSteps.filter(s => s.time && s.time.trim()).map(s => s.time)
+                        const retourTimes = retourSteps.filter(s => s.time && s.time.trim()).map(s => s.time)
+                        return [...allerTimes, ...retourTimes]
+                    }
+
+                    const allTimes = getAllTimes()
+                    if (allTimes.length < 2) return null
+
+                    const firstTime = allTimes[0]
+                    const lastTime = allTimes[allTimes.length - 1]
+
+                    const [h1, m1] = firstTime.split(':').map(Number)
+                    const [h2, m2] = lastTime.split(':').map(Number)
+
+                    const totalMinutes = (h2 * 60 + m2) - (h1 * 60 + m1)
+                    if (totalMinutes <= 0) return null
+
+                    const hours = Math.floor(totalMinutes / 60)
+                    const minutes = totalMinutes % 60
+
+                    return (
+                        <div style={{
+                            marginBottom: '1.5rem',
+                            padding: '1rem',
+                            background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+                            borderRadius: '0.5rem',
+                            border: '2px solid #f59e0b'
+                        }}>
+                            <h4 style={{ fontSize: '0.9rem', fontWeight: '600', color: '#92400e', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                🕐 Temps total (Premier départ → Dernier retour)
+                            </h4>
+                            <div style={{ textAlign: 'center' }}>
+                                <div style={{ fontSize: '0.75rem', color: '#92400e', marginBottom: '0.25rem' }}>
+                                    {firstTime} → {lastTime}
+                                </div>
+                                <div style={{ fontSize: '1.8rem', fontWeight: '700', color: '#f59e0b' }}>
+                                    {hours}h{minutes.toString().padStart(2, '0')}
                                 </div>
                             </div>
                         </div>
