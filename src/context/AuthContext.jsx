@@ -56,6 +56,39 @@ export const AuthProvider = ({ children }) => {
         }
     }, [])
 
+    // Automatic Logout on Inactivity
+    useEffect(() => {
+        if (!user) return
+
+        const INACTIVITY_TIMEOUT = 30 * 60 * 1000 // 30 minutes
+        let timeoutId
+
+        const resetTimer = () => {
+            if (timeoutId) clearTimeout(timeoutId)
+            timeoutId = setTimeout(() => {
+                console.log('Déconnexion automatique pour inactivité')
+                logout()
+            }, INACTIVITY_TIMEOUT)
+        }
+
+        // Events that reset the timer
+        window.addEventListener('mousemove', resetTimer)
+        window.addEventListener('keypress', resetTimer)
+        window.addEventListener('click', resetTimer)
+        window.addEventListener('scroll', resetTimer)
+
+        // Init timer
+        resetTimer()
+
+        return () => {
+            if (timeoutId) clearTimeout(timeoutId)
+            window.removeEventListener('mousemove', resetTimer)
+            window.removeEventListener('keypress', resetTimer)
+            window.removeEventListener('click', resetTimer)
+            window.removeEventListener('scroll', resetTimer)
+        }
+    }, [user])
+
     const login = (email, password) => {
         const allUsers = JSON.parse(localStorage.getItem('all_users') || '[]')
         const foundUser = allUsers.find(u => u.email === email && u.password === password)
