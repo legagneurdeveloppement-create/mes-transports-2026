@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { X } from 'lucide-react'
+import { X, Calendar as CalendarIcon } from 'lucide-react'
+import { generateICS } from '../../lib/calendarService'
 
 export default function EventModal({ isOpen, onClose, onSave, eventData, selectedDate, destinations = [] }) {
     const [title, setTitle] = useState('')
@@ -356,7 +357,18 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
                     <div style={{ display: 'flex', gap: '1rem' }}>
                         <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Enregistrer</button>
                         {eventData && (
-                            <button type="button" onClick={handleDelete} className="btn" style={{ flex: 1, backgroundColor: '#fee2e2', color: '#dc2626' }}>Supprimer</button>
+                            <>
+                                <button
+                                    type="button"
+                                    onClick={() => generateICS(eventData)}
+                                    className="btn btn-outline"
+                                    style={{ flex: 1, borderColor: '#0891b2', color: '#0891b2' }}
+                                    title="Ajouter au calendrier (Rappel)"
+                                >
+                                    <CalendarIcon size={18} style={{ marginRight: '0.4rem' }} /> Rappel
+                                </button>
+                                <button type="button" onClick={handleDelete} className="btn" style={{ flex: 1, backgroundColor: '#fee2e2', color: '#dc2626' }}>Supprimer</button>
+                            </>
                         )}
                     </div>
                 </form>

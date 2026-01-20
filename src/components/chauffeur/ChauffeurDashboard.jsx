@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Check, X, Calendar as CalendarIcon, Clock, MapPin, History, Inbox, Ban, Settings, Printer } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Check, X, Calendar as CalendarIcon, Clock, MapPin, History, Inbox, Ban, Settings, Printer, CalendarPlus } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import ScheduleManagerModal from './ScheduleManagerModal'
 import { smsService } from '../../lib/smsService'
+import { generateICS } from '../../lib/calendarService'
 
 export default function ChauffeurDashboard() {
     const [events, setEvents] = useState({})
@@ -415,6 +417,14 @@ export default function ChauffeurDashboard() {
                                     </div>
 
                                     <div className="chauffeur-card-actions no-print" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                        <button
+                                            onClick={() => generateICS(transport)}
+                                            className="btn btn-outline"
+                                            title="Ajouter à mon calendrier (Rappels)"
+                                            style={{ flex: '1 1 auto' }}
+                                        >
+                                            <CalendarPlus size={18} /> <span>Rappel</span>
+                                        </button>
                                         <button
                                             onClick={(e) => handleOpenScheduleModal(e, transport)}
                                             className="btn btn-outline"
