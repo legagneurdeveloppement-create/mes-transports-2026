@@ -13,13 +13,8 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
     const [timeDeparture, setTimeDeparture] = useState('')
     const [timeReturn, setTimeReturn] = useState('')
 
-    // Fallback if no destinations provided
-    const availableDestinations = destinations.length > 0 ? destinations : [
-        { name: "Aéroport Charles de Gaulle", color: "#3b82f6" },
-        { name: "Aéroport d'Orly", color: "#3b82f6" },
-        { name: "Gare de Lyon", color: "#22c55e" },
-        { name: "Paris Centre", color: "#a855f7" }
-    ]
+    // Use destinations prop directly
+    const availableDestinations = destinations
 
     const schoolClasses = [
         "MAT / CP", "CE / CM",
