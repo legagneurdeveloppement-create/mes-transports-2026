@@ -62,7 +62,7 @@ export default function Help() {
                                 transition: 'all 0.2s'
                             }}
                         >
-                            <ShieldIcon /> Espace Admin
+                            <ShieldIcon /> Espace Admin / Super Admin
                         </button>
                     </div>
 
@@ -139,9 +139,12 @@ function AdminGuide() {
             </GuideSection>
 
             <GuideSection
-                title="2. Gestion des Utilisateurs"
-                icon={<User className="text-secondary" />}
+                title="2. Gestion des Utilisateurs (Super Admin)"
+                icon={<Shield className="text-danger" />}
             >
+                <div className="tip-box" style={{ marginTop: 0, marginBottom: '1rem', borderLeftColor: '#dc2626', background: '#fef2f2', color: '#991b1b' }}>
+                    🔒 <strong>Réservé au Super Administrateur</strong>
+                </div>
                 <p>Accédez à la page <strong>Gestion des utilisateurs</strong> via le bouton <Shield size={14} /> en haut à droite.</p>
                 <ul className="guide-list">
                     <li>Approuvez les nouveaux comptes en attente.</li>
