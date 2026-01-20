@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useState, useEffect } from 'react'
 import { Check, X, Calendar as CalendarIcon, Clock, MapPin, History, Inbox, Ban, Settings, Printer, CalendarPlus } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import ScheduleManagerModal from './ScheduleManagerModal'
