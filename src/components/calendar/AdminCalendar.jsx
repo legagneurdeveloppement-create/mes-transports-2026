@@ -177,17 +177,28 @@ export default function AdminCalendar() {
         setIsModalOpen(true)
     }
 
-    const handleSaveEvent = (eventData) => {
-        if (!eventData) {
-            const newEv = { ...events }
-            delete newEv[selectedDateKey]
-            saveEvents(newEv, selectedDateKey, null)
-        } else {
-            const updatedData = { ...eventData, type: 'available', status: eventData.status || 'pending' }
-            saveEvents({
-                ...events,
-                [selectedDateKey]: updatedData
-            }, selectedDateKey, updatedData)
+    const handleSaveEvent = async (eventData) => {
+        try {
+            if (!selectedDateKey) return
+
+            if (!eventData) {
+                // Deletion
+                const newEv = { ...events }
+                if (newEv[selectedDateKey]) {
+                    delete newEv[selectedDateKey]
+                    await saveEvents(newEv, selectedDateKey, null)
+                }
+            } else {
+                // Update / Create
+                const updatedData = { ...eventData, type: 'available', status: eventData.status || 'pending' }
+                saveEvents({
+                    ...events,
+                    [selectedDateKey]: updatedData
+                }, selectedDateKey, updatedData)
+            }
+        } catch (error) {
+            console.error("Erreur lors de la sauvegarde/suppression:", error)
+            alert("Une erreur est survenue lors de l'opération.")
         }
     }
 
