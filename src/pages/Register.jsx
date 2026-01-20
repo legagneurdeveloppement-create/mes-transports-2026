@@ -11,6 +11,7 @@ export default function Register() {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
+        phone: '',
         password: '',
         role: 'USER'
     })
@@ -98,6 +99,18 @@ export default function Register() {
                                 placeholder="Ex: admin@demo.com pour Admin"
                                 required
                                 value={formData.email}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Téléphone</label>
+                            <input
+                                type="tel"
+                                name="phone"
+                                className="input"
+                                placeholder="Ex: 06 12 34 56 78"
+                                value={formData.phone}
                                 onChange={handleChange}
                             />
                         </div>

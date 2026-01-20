@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Check, X, Calendar as CalendarIcon, Clock, MapPin, History, Inbox, Ban, Settings } from 'lucide-react'
+import { Check, X, Calendar as CalendarIcon, Clock, MapPin, History, Inbox, Ban, Settings, Printer } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import ScheduleManagerModal from './ScheduleManagerModal'
+import { smsService } from '../../lib/smsService'
 
 export default function ChauffeurDashboard() {
     const [events, setEvents] = useState({})
@@ -77,8 +78,10 @@ export default function ChauffeurDashboard() {
 
         const updatedEvents = { ...events }
         if (updatedEvents[dateKey]) {
+            const transport = updatedEvents[dateKey]
+
             // Optimistic update
-            updatedEvents[dateKey].status = newStatus
+            transport.status = newStatus
             setEvents(updatedEvents)
             filterTransports(updatedEvents, activeTab)
 
@@ -89,8 +92,35 @@ export default function ChauffeurDashboard() {
                 .eq('date_key', dateKey)
 
             if (!error) {
-                showToast(newStatus === 'validated' ? 'Transport validé avec succès' :
-                    newStatus === 'pending' ? 'Transport rétabli' : 'Transport refusé')
+                let message = newStatus === 'validated' ? 'Transport validé avec succès' :
+                    newStatus === 'pending' ? 'Transport rétabli' : 'Transport refusé'
+
+                // NOTIFICATION SMS AUX ADMINS
+                if (newStatus === 'validated' || newStatus === 'rejected') {
+                    try {
+                        const allUsers = JSON.parse(localStorage.getItem('all_users') || '[]')
+                        // Filter Admins and Super Admins
+                        const admins = allUsers.filter(u =>
+                            (u.role === 'ADMIN' || u.role === 'SUPER_ADMIN') &&
+                            u.phone &&
+                            u.phone.trim() !== ''
+                        )
+
+                        if (admins.length > 0) {
+                            const recipientPhones = admins.map(u => u.phone)
+                            const action = newStatus === 'validated' ? 'VALIDÉ ✅' : 'REFUSÉ ❌'
+                            const dateStr = formatDate(dateKey)
+                            const smsBody = `Info Transport:\nLe transport "${transport.title}" du ${dateStr} a été ${action} par le chauffeur.`
+
+                            await smsService.sendSMS(recipientPhones, smsBody)
+                            message += ' + Notif SMS envoyée'
+                        }
+                    } catch (smsError) {
+                        console.error('Erreur envoi SMS:', smsError)
+                    }
+                }
+
+                showToast(message)
             } else {
                 showToast('Erreur lors de la mise à jour', 'error')
             }
@@ -222,10 +252,57 @@ export default function ChauffeurDashboard() {
 
     const monthlyStats = calculateMonthlyHours()
     const currentMonthName = new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+    const { Printer } = require('lucide-react'); // Need to ensure Printer is imported or used from existing import if available. 
+    // Actually, I should add Printer to the import at the top, but I am editing the body here.
+    // I will do a multi_replace to handle imports and the body correctly.
 
+    // Wait, I should use multi_replace for this file since I need to touch imports and the body. 
+    // I will cancel this tool call and use multi_replace.
     return (
         <div className="chauffeur-dashboard">
-            <h2 className="dashboard-section-header">Gestion des Transports</h2>
+            {/* Print Styles */}
+            <style>{`
+                @media print {
+                    .no-print, .dashboard-actions, .navbar, .dashboard-header, .tabs-container, .chauffeur-card-actions, .toast {
+                        display: none !important;
+                    }
+                    .chauffeur-dashboard {
+                        padding: 0 !important;
+                        background: white !important;
+                    }
+                    .card {
+                        box-shadow: none !important;
+                        border: 1px solid #ddd !important;
+                        break-inside: avoid;
+                        margin-bottom: 1rem !important;
+                    }
+                    .transport-card {
+                        border-left-width: 8px !important;
+                        page-break-inside: avoid;
+                    }
+                    body {
+                        background: white !important;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+                    .dashboard-container {
+                        padding: 0 !important;
+                        max-width: none !important;
+                        margin: 0 !important;
+                    }
+                }
+            `}</style>
+
+            <div className="dashboard-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>Gestion des Transports</span>
+                <button
+                    onClick={() => window.print()}
+                    className="btn btn-outline no-print"
+                    style={{ fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                >
+                    <Printer size={18} /> Imprimer
+                </button>
+            </div>
 
             {/* Monthly Hours Summary */}
             {monthlyStats.transportCount > 0 && (
@@ -270,7 +347,7 @@ export default function ChauffeurDashboard() {
             )}
 
             {/* Tabs */}
-            <div className="tabs-container">
+            <div className="tabs-container no-print">
                 {tabs.map(tab => (
                     <button
                         key={tab.id}
@@ -299,7 +376,7 @@ export default function ChauffeurDashboard() {
 
             {/* Toast Notification */}
             {toast && (
-                <div className={`toast toast-${toast.type}`}>
+                <div className={`toast toast-${toast.type} no-print`}>
                     {toast.type === 'success' ? <Check size={18} /> : <X size={18} />}
                     {toast.message}
                 </div>
@@ -337,7 +414,7 @@ export default function ChauffeurDashboard() {
                                         </div>
                                     </div>
 
-                                    <div className="chauffeur-card-actions" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                    <div className="chauffeur-card-actions no-print" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                                         <button
                                             onClick={(e) => handleOpenScheduleModal(e, transport)}
                                             className="btn btn-outline"
@@ -366,7 +443,7 @@ export default function ChauffeurDashboard() {
                                     </div>
 
                                     {activeTab !== 'pending' && (
-                                        <div style={{ alignSelf: 'center' }}>
+                                        <div className="no-print" style={{ alignSelf: 'center' }}>
                                             <button
                                                 onClick={(e) => handleStatusUpdate(e, transport.dateKey, 'pending')}
                                                 className="btn btn-outline"

@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Check, X, Shield, User, Trash2, ArrowLeft } from 'lucide-react'
+import { Check, X, Shield, User, Trash2, ArrowLeft, Pencil } from 'lucide-react'
 
 export default function UserManagement() {
     const [users, setUsers] = useState([])
     const [showAddForm, setShowAddForm] = useState(false)
+    const [editingEmail, setEditingEmail] = useState(null)
     const [newUser, setNewUser] = useState({
         name: '',
         email: '',
+        phone: '',
         password: '',
         role: 'USER'
     })
@@ -40,25 +42,56 @@ export default function UserManagement() {
         saveUsers(updated)
     }
 
-    const handleAddUser = (e) => {
+    const handleEditUser = (user) => {
+        setNewUser({
+            name: user.name,
+            email: user.email,
+            phone: user.phone || '',
+            password: user.password,
+            role: user.role
+        })
+        setEditingEmail(user.email)
+        setShowAddForm(true)
+        setError('')
+    }
+
+    const resetForm = () => {
+        setNewUser({ name: '', email: '', phone: '', password: '', role: 'USER' })
+        setEditingEmail(null)
+        setShowAddForm(false)
+        setError('')
+    }
+
+    const handleSubmit = (e) => {
         e.preventDefault()
         setError('')
 
-        // Validation
-        if (users.find(u => u.email === newUser.email)) {
-            setError('Cet email est déjà utilisé')
-            return
-        }
+        if (editingEmail) {
+            // Mode Modification
+            if (newUser.email !== editingEmail && users.find(u => u.email === newUser.email)) {
+                setError('Cet email est déjà utilisé par un autre utilisateur')
+                return
+            }
 
-        const userToAdd = {
-            ...newUser,
-            approved: true // Auto-approve users created by Super Admin
-        }
+            const updated = users.map(u => u.email === editingEmail ? { ...newUser, approved: u.approved } : u)
+            saveUsers(updated)
+            resetForm()
+        } else {
+            // Mode Création
+            if (users.find(u => u.email === newUser.email)) {
+                setError('Cet email est déjà utilisé')
+                return
+            }
 
-        const updated = [...users, userToAdd]
-        saveUsers(updated)
-        setNewUser({ name: '', email: '', password: '', role: 'USER' })
-        setShowAddForm(false)
+            const userToAdd = {
+                ...newUser,
+                approved: true // Auto-approve users created by Super Admin
+            }
+
+            const updated = [...users, userToAdd]
+            saveUsers(updated)
+            resetForm()
+        }
     }
 
     return (
@@ -69,7 +102,7 @@ export default function UserManagement() {
                         <Link to="/dashboard" className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem' }}>
                             <ArrowLeft size={18} /> Retour au tableau de bord
                         </Link>
-                        <h1 className="admin-title">Gestion des Utilisateurs <small style={{ fontSize: '0.5em', opacity: 0.5 }}>v1.1</small></h1>
+                        <h1 className="admin-title">Gestion des Utilisateurs <small style={{ fontSize: '0.5em', opacity: 0.5 }}>v1.2</small></h1>
                     </div>
                     <button
                         onClick={() => setShowAddForm(!showAddForm)}
@@ -82,7 +115,15 @@ export default function UserManagement() {
 
                 {showAddForm && (
                     <div className="card" style={{ marginBottom: '2rem' }}>
-                        <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: '600' }}>Nouvel Utilisateur</h3>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <h3 style={{ fontSize: '1.25rem', fontWeight: '600' }}>
+                                {editingEmail ? "Modifier l'utilisateur" : "Nouvel Utilisateur"}
+                            </h3>
+                            <button onClick={resetForm} className="btn btn-outline" style={{ padding: '0.25rem 0.5rem' }}>
+                                <X size={18} />
+                            </button>
+                        </div>
+
                         {error && (
                             <div style={{
                                 padding: '0.75rem',
@@ -95,7 +136,7 @@ export default function UserManagement() {
                                 {error}
                             </div>
                         )}
-                        <form onSubmit={handleAddUser} className="admin-form">
+                        <form onSubmit={handleSubmit} className="admin-form">
                             <div>
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>Nom complet</label>
                                 <input
@@ -117,6 +158,16 @@ export default function UserManagement() {
                                 />
                             </div>
                             <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>Téléphone</label>
+                                <input
+                                    type="tel"
+                                    className="input"
+                                    value={newUser.phone}
+                                    onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
+                                    placeholder="Ex: 06 12 34 56 78"
+                                />
+                            </div>
+                            <div>
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>Mot de passe</label>
                                 <input
                                     type="password"
@@ -124,7 +175,9 @@ export default function UserManagement() {
                                     value={newUser.password}
                                     onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
                                     required
+                                    placeholder={editingEmail ? "Laisser vide pour ne pas changer" : ""}
                                 />
+                                {editingEmail && <small style={{ color: '#64748b' }}>Laisser vide pour conserver le mot de passe actuel</small>}
                             </div>
                             <div>
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>Rôle</label>
@@ -142,7 +195,7 @@ export default function UserManagement() {
                             </div>
                             <div className="admin-form-actions">
                                 <button type="submit" className="btn btn-primary">
-                                    Créer l'utilisateur
+                                    {editingEmail ? "Enregistrer les modifications" : "Créer l'utilisateur"}
                                 </button>
                             </div>
                         </form>
@@ -154,6 +207,7 @@ export default function UserManagement() {
                         <thead>
                             <tr>
                                 <th>Utilisateur</th>
+                                <th>Contact</th>
                                 <th>Rôle</th>
                                 <th>Statut</th>
                                 <th style={{ textAlign: 'right' }}>Actions</th>
@@ -164,7 +218,10 @@ export default function UserManagement() {
                                 <tr key={u.email}>
                                     <td data-label="Utilisateur">
                                         <div style={{ fontWeight: '600' }}>{u.name}</div>
+                                    </td>
+                                    <td data-label="Contact">
                                         <div style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>{u.email}</div>
+                                        {u.phone && <div style={{ fontSize: '0.8rem', color: '#0891b2' }}>{u.phone}</div>}
                                     </td>
                                     <td data-label="Rôle">
                                         <select
@@ -219,6 +276,19 @@ export default function UserManagement() {
                                     </td>
                                     <td data-label="Actions">
                                         <div className="table-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                                            <button
+                                                onClick={() => handleEditUser(u)}
+                                                className="btn btn-outline"
+                                                style={{
+                                                    padding: '0.4rem',
+                                                    color: '#0891b2',
+                                                    borderColor: '#cffafe',
+                                                    background: '#ecfeff'
+                                                }}
+                                                title="Modifier"
+                                            >
+                                                <Pencil size={18} />
+                                            </button>
                                             {!u.approved && (
                                                 <button
                                                     onClick={() => handleApprove(u.email)}

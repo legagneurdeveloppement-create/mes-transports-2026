@@ -259,6 +259,76 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
                                 />
                             </div>
                         </div>
+
+                        {/* Read-only Schedule from Chauffeur */}
+                        {(() => {
+                            let allerSteps = []
+                            let retourSteps = []
+                            let stayedOnSite = false
+                            try {
+                                if (eventData) {
+                                    if (eventData.time_departure_school) {
+                                        allerSteps = typeof eventData.time_departure_school === 'string'
+                                            ? JSON.parse(eventData.time_departure_school)
+                                            : eventData.time_departure_school
+                                    }
+                                    if (eventData.time_arrival_school) {
+                                        retourSteps = typeof eventData.time_arrival_school === 'string'
+                                            ? JSON.parse(eventData.time_arrival_school)
+                                            : eventData.time_arrival_school
+                                    }
+                                    stayedOnSite = eventData.stayed_on_site || false
+                                }
+                            } catch (e) {
+                                console.error('Error parsing schedule:', e)
+                            }
+
+                            const hasDetailedSchedule = (Array.isArray(allerSteps) && allerSteps.length > 0) ||
+                                (Array.isArray(retourSteps) && retourSteps.length > 0) || stayedOnSite
+
+                            if (!hasDetailedSchedule) return null
+
+                            return (
+                                <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px dashed #cbd5e1' }}>
+                                    <h4 style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#475569', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <span>📝 Infos Chauffeur</span>
+                                    </h4>
+
+                                    {stayedOnSite && (
+                                        <div style={{ marginBottom: '0.75rem', fontSize: '0.85rem', color: '#92400e', background: '#fef3c7', padding: '0.25rem 0.5rem', borderRadius: '0.25rem', display: 'inline-block', fontWeight: '600' }}>
+                                            📍 Resté sur place
+                                        </div>
+                                    )}
+
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                        <div>
+                                            <div style={{ fontSize: '0.75rem', fontWeight: '600', color: '#0891b2', marginBottom: '0.25rem' }}>→ Aller (Réel)</div>
+                                            {Array.isArray(allerSteps) && allerSteps.length > 0 ? (
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                                    {allerSteps.map((step, idx) => (
+                                                        <div key={idx} style={{ fontSize: '0.8rem', color: '#334155' }}>
+                                                            <strong>{step.time}</strong> <span style={{ color: '#64748b' }}>- {step.location}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>-</span>}
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: '0.75rem', fontWeight: '600', color: '#f97316', marginBottom: '0.25rem' }}>← Retour (Réel)</div>
+                                            {Array.isArray(retourSteps) && retourSteps.length > 0 ? (
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                                    {retourSteps.map((step, idx) => (
+                                                        <div key={idx} style={{ fontSize: '0.8rem', color: '#334155' }}>
+                                                            <strong>{step.time}</strong> <span style={{ color: '#64748b' }}>- {step.location}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>-</span>}
+                                        </div>
+                                    </div>
+                                </div>
+                            )
+                        })()}
                     </div>
 
                     <div style={{ marginBottom: '1.5rem' }}>

@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Settings, CloudUpload, RefreshCw } from 'luc
 import EventModal from './EventModal'
 import DestinationManagerModal from './DestinationManagerModal'
 import { supabase } from '../../lib/supabase'
+import { smsService } from '../../lib/smsService'
 
 export default function AdminCalendar() {
     const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
@@ -106,6 +107,37 @@ export default function AdminCalendar() {
     const saveEvents = async (newEvents, updatedKey, updatedData) => {
         setEvents(newEvents)
         localStorage.setItem('transport_events', JSON.stringify(newEvents))
+
+        // SMS Notification Logic
+        try {
+            const allUsers = JSON.parse(localStorage.getItem('all_users') || '[]')
+            const chauffeurs = allUsers.filter(u =>
+                (u.role === 'CHAUFFEUR' || u.role === 'chauffeur') &&
+                u.phone &&
+                u.phone.trim() !== ''
+            )
+
+            if (chauffeurs.length > 0 && updatedKey) {
+                const recipientPhones = chauffeurs.map(u => u.phone)
+                let message = ''
+
+                if (!updatedData) {
+                    // Deletion
+                    message = `Info Transport: Le transport du ${updatedKey} a été ANNULÉ par l'administrateur.`
+                } else {
+                    // Creation or Update
+                    const isNew = !events[updatedKey]
+                    const action = isNew ? 'NOUVEAU transport' : 'MODIFICATION transport'
+                    message = `Info Transport: ${action} le ${updatedKey}. ${updatedData.title} (${updatedData.schoolClass || 'N/A'})\nDépart: ${updatedData.time_departure_origin || '?'}`
+                }
+
+                if (message) {
+                    await smsService.sendSMS(recipientPhones, message)
+                }
+            }
+        } catch (error) {
+            console.error("Erreur lors de l'envoi du SMS aux chauffeurs:", error)
+        }
 
         if (updatedKey) {
             if (!updatedData) {
