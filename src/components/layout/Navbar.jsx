@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { Car, LogOut, User, ArrowRight } from 'lucide-react'
+import { Car, LogOut, User, ArrowRight, HelpCircle } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 
 export default function Navbar({ hideUserInfo = false }) {
@@ -38,6 +38,9 @@ export default function Navbar({ hideUserInfo = false }) {
                             </div>
                         ) : (
                             <>
+                                <Link to="/help" className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', border: 'none', color: '#64748b' }} title="Aide">
+                                    <HelpCircle size={20} /> <span className="mobile-hidden">Aide</span>
+                                </Link>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }} className="flex-col-mobile justify-center items-center">
                                     <span style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>{user.email}</span>
                                     <span className={`user-badge ${user.role === 'SUPER_ADMIN' ? 'badge-super-admin' :

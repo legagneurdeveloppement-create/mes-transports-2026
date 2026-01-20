@@ -5,6 +5,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import UserManagement from './pages/Admin/UserManagement'
+import Help from './pages/Help'
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/admin/users" element={<UserManagement />} />
+        <Route path="/help" element={<Help />} />
       </Routes>
     </div>
   )
