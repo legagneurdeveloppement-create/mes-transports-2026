@@ -88,7 +88,7 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
 
     return (
         <div className="modal-overlay">
-            <div className="modal-content">
+            <div className="modal-content" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                     <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>
                         {eventData ? 'Modifier le transport' : 'Nouveau transport'}

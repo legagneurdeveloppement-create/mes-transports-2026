@@ -50,7 +50,11 @@ export default function AdminCalendar() {
                 .select('*')
 
             if (!dError && destData && destData.length > 0) {
-                setDestinations(destData)
+                // Map DB snake_case to app camelCase
+                setDestinations(destData.map(d => ({
+                    ...d,
+                    defaultClass: d.default_class || d.defaultClass
+                })))
             } else {
                 const storedDestinations = localStorage.getItem('transport_destinations')
                 if (storedDestinations) {
@@ -162,7 +166,8 @@ export default function AdminCalendar() {
         await supabase.from('destinations').delete().neq('id', '00000000-0000-0000-0000-000000000000')
         await supabase.from('destinations').insert(newDestinations.map(d => ({
             name: d.name,
-            color: d.color
+            color: d.color,
+            default_class: d.defaultClass
         })))
     }
 
