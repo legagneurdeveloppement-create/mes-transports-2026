@@ -330,7 +330,28 @@ export default function DestinationManagerModal({ isOpen, onClose, destinations,
                                 }}
                                 title="Choisir une couleur personnalisée"
                             />
-                            <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontFamily: 'monospace' }}>{newColor}</span>
+                            <input
+                                type="text"
+                                value={newColor}
+                                onChange={(e) => {
+                                    const val = e.target.value
+                                    if (val.startsWith('#')) {
+                                        if (val.length <= 7) setNewColor(val)
+                                    } else {
+                                        if (val.length <= 6) setNewColor('#' + val)
+                                    }
+                                }}
+                                style={{
+                                    width: '5.5rem',
+                                    padding: '0.2rem 0.5rem',
+                                    border: '1px solid #cbd5e1',
+                                    borderRadius: '0.25rem',
+                                    fontSize: '0.8rem',
+                                    fontFamily: 'monospace',
+                                    backgroundColor: 'white'
+                                }}
+                                placeholder="#000000"
+                            />
                         </div>
                     </div>
                 </form>
