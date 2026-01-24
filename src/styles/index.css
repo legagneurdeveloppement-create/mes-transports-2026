@@ -56,6 +56,10 @@ body {
   flex-direction: column;
 }
 
+.mobile-only {
+  display: none;
+}
+
 .items-center {
   align-items: center;
 }
@@ -320,6 +324,14 @@ h6 {
 
   .gap-2-mobile {
     gap: 0.5rem !important;
+  }
+
+  .mobile-only {
+    display: block !important;
+  }
+
+  .mobile-hidden {
+    display: none !important;
   }
 
   .hidden-mobile {

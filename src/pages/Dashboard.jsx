@@ -193,44 +193,6 @@ export default function Dashboard() {
                         })()}
                     </section>
                 )}
-
-                {/* Floating Toggle & Diagnostic - Absolute fallback */}
-                {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && (
-                    <div style={{
-                        position: 'fixed',
-                        top: '5rem',
-                        right: '1rem',
-                        zIndex: 10000,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'flex-end',
-                        gap: '0.5rem'
-                    }} className="no-print">
-                        <div style={{ background: '#334155', color: 'white', padding: '0.3rem 0.6rem', borderRadius: '0.4rem', fontSize: '0.7rem', fontWeight: 'bold' }}>
-                            Role: {user.role} | Vue: {viewAsChauffeur ? 'Chauffeur' : 'Admin'}
-                        </div>
-                        <button
-                            onClick={() => setViewAsChauffeur(!viewAsChauffeur)}
-                            className="btn"
-                            style={{
-                                background: viewAsChauffeur ? '#f59e0b' : '#0891b2',
-                                color: 'white',
-                                borderRadius: '3rem',
-                                padding: '0.8rem 1.2rem',
-                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.5)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                border: '3px solid white',
-                                fontWeight: '900',
-                                fontSize: '0.9rem'
-                            }}
-                        >
-                            <Car size={20} />
-                            {viewAsChauffeur ? 'QUITTER VUE CHAUFFEUR' : 'ACTIVER VUE CHAUFFEUR'}
-                        </button>
-                    </div>
-                )}
             </div>
         </div>
     )
