@@ -112,40 +112,37 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
                         {!isCustomTitle ? (
                             <select
                                 value={(() => {
-                                    // Match only on title (name) so changing class doesn't reset this select
-                                    const match = availableDestinations.find(d => {
+                                    // Use name + schoolClass for matching since name is no longer unique
+                                    const matchedIndex = availableDestinations.findIndex(d => {
                                         const dName = typeof d === 'string' ? d : d.name
-                                        return dName === title
+                                        const dClass = typeof d === 'string' ? '' : (d.defaultClass || d.default_class || '')
+                                        return dName === title && dClass === schoolClass
                                     })
-                                    if (match) {
-                                        const dName = typeof match === 'string' ? match : match.name
-                                        return dName
-                                    }
-                                    return ""
+                                    return matchedIndex !== -1 ? matchedIndex.toString() : ""
                                 })()}
                                 onChange={(e) => {
-                                    const val = e.target.value
-                                    if (val === 'Autre') {
+                                    const idxStr = e.target.value
+                                    if (idxStr === 'Autre') {
                                         setIsCustomTitle(true)
                                         setTitle('')
-                                        // We don't necessarily reset schoolClass here, let the user decide
                                     } else {
                                         setIsCustomTitle(false)
-                                        setTitle(val)
+                                        const idx = parseInt(idxStr)
+                                        const destObj = availableDestinations[idx]
 
-                                        // Auto-set color and class IF the destination has presets
-                                        const destObj = availableDestinations.find(d => {
-                                            const dName = typeof d === 'string' ? d : d.name
-                                            return dName === val
-                                        })
+                                        if (destObj) {
+                                            const name = typeof destObj === 'string' ? destObj : destObj.name
+                                            setTitle(name)
 
-                                        if (destObj && typeof destObj !== 'string') {
-                                            if (destObj.color) {
-                                                setColor(destObj.color)
-                                            }
-                                            if (destObj.defaultClass) {
-                                                setSchoolClass(destObj.defaultClass)
-                                                setIsCustomClass(false)
+                                            // Auto-set color and class if provided
+                                            if (typeof destObj !== 'string') {
+                                                if (destObj.color) {
+                                                    setColor(destObj.color)
+                                                }
+                                                if (destObj.defaultClass || destObj.default_class) {
+                                                    setSchoolClass(destObj.defaultClass || destObj.default_class)
+                                                    setIsCustomClass(false)
+                                                }
                                             }
                                         }
                                     }
@@ -159,7 +156,7 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
                                     const name = typeof d === 'string' ? d : d.name
                                     const dClass = typeof d === 'string' ? null : (d.defaultClass || d.default_class)
                                     return (
-                                        <option key={index} value={name}>
+                                        <option key={index} value={index.toString()}>
                                             {name}{dClass ? ` (${dClass})` : ''}
                                         </option>
                                     )
