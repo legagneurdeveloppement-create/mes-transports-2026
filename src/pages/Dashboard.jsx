@@ -156,6 +156,9 @@ export default function Dashboard() {
                     </>
                 ) : (
                     <section className="card">
+                        <div style={{ background: '#334155', color: '#a855f7', fontSize: '0.6rem', padding: '2px', textAlign: 'center' }}>
+                            [OK] Dashboard section: Attempting to render AdminCalendar
+                        </div>
                         <h2 className="dashboard-section-header">
                             Planning des Transports
                         </h2>

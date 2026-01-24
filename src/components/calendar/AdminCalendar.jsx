@@ -240,15 +240,24 @@ export default function AdminCalendar() {
     }
 
     const getDaysInMonth = (year, month) => {
-        const days = new Date(year, month + 1, 0).getDate()
-        const firstDay = new Date(year, month, 1).getDay()
-        return { days, firstDay }
+        try {
+            const days = new Date(year, month + 1, 0).getDate()
+            const firstDay = new Date(year, month, 1).getDay()
+            return { days: days || 0, firstDay: firstDay ?? 0 }
+        } catch (e) {
+            console.error('Error calculating days in month:', e)
+            return { days: 0, firstDay: 0 }
+        }
     }
 
     const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"]
 
     return (
         <div>
+            {/* DEBUG MARKER for identifying crash point */}
+            <div style={{ background: '#334155', color: '#2dd4bf', fontSize: '0.6rem', padding: '2px', textAlign: 'center' }}>
+                [OK] Rendering AdminCalendar (Year: {currentYear})
+            </div>
             <div className="admin-header no-print">
                 <div className="flex gap-2">
                     <button onClick={() => changeYear(-1)} className="btn btn-outline" style={{ padding: '0.5rem', border: 'none' }}>
@@ -311,9 +320,9 @@ export default function AdminCalendar() {
             </div>
 
             <div className="calendar-semester-grid">
-                {monthNames.slice(0, 6).map((monthName, monthIndex) => {
+                {(monthNames || []).slice(0, 6).map((monthName, monthIndex) => {
                     const { days, firstDay } = getDaysInMonth(currentYear, monthIndex)
-                    const startOffset = firstDay === 0 ? 6 : firstDay - 1
+                    const startOffset = Math.max(0, firstDay === 0 ? 6 : firstDay - 1)
 
                     return (
                         <div key={monthName} className="print-compact-month" style={{ background: 'white', padding: '1rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
@@ -362,10 +371,10 @@ export default function AdminCalendar() {
             </div>
 
             <div className="calendar-semester-grid" style={{ marginTop: '1.5rem' }}>
-                {monthNames.slice(6, 12).map((monthName, i) => {
+                {(monthNames || []).slice(6, 12).map((monthName, i) => {
                     const monthIndex = i + 6
                     const { days, firstDay } = getDaysInMonth(currentYear, monthIndex)
-                    const startOffset = firstDay === 0 ? 6 : firstDay - 1
+                    const startOffset = Math.max(0, firstDay === 0 ? 6 : firstDay - 1)
                     return (
                         <div key={monthName} className="print-compact-month" style={{ background: 'white', padding: '1rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                             <h4 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '0.75rem', color: 'var(--primary)' }}>{monthName}</h4>
