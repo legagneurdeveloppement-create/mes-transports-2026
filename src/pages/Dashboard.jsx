@@ -12,6 +12,27 @@ export default function Dashboard() {
     const { user, viewAsChauffeur } = useAuth()
     const navigate = useNavigate()
     const [pendingCount, setPendingCount] = useState(0)
+    const [hasError, setHasError] = useState(false)
+
+    // Global protection against any render crashes
+    if (hasError) {
+        return (
+            <div className="container" style={{ padding: '2rem', textAlign: 'center' }}>
+                <h2 style={{ color: '#ef4444' }}>Oups ! Une erreur est survenue.</h2>
+                <p>Cela peut arriver après une mise à jour. Essayez de vider le cache de votre navigateur.</p>
+                <button
+                    onClick={() => {
+                        localStorage.clear();
+                        window.location.reload();
+                    }}
+                    className="btn btn-primary"
+                    style={{ marginTop: '1rem' }}
+                >
+                    Réinitialiser et Recharger
+                </button>
+            </div>
+        )
+    }
 
     useEffect(() => {
         if (!user) {
@@ -159,7 +180,17 @@ export default function Dashboard() {
                         <h2 className="dashboard-section-header">
                             Planning des Transports
                         </h2>
-                        {(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? <AdminCalendar /> : <Calendar userRole={user.role} />}
+                        {(() => {
+                            try {
+                                return (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN')
+                                    ? <AdminCalendar />
+                                    : <Calendar userRole={user.role} />
+                            } catch (e) {
+                                console.error("Render crash in Calendar section:", e)
+                                setHasError(true)
+                                return null
+                            }
+                        })()}
                     </section>
                 )}
 
