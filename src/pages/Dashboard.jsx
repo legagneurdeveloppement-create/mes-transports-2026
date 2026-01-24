@@ -20,23 +20,39 @@ export default function Dashboard() {
         }
 
         const fetchPending = async () => {
-            if (user.role === 'SUPER_ADMIN') {
-                const allUsers = JSON.parse(localStorage.getItem('all_users') || '[]')
-                const pending = allUsers.filter(u => !u.approved).length
-                setPendingCount(pending)
-            } else if (user.role === 'CHAUFFEUR') {
-                const { data, error } = await supabase
-                    .from('transports')
-                    .select('status')
-                    .eq('status', 'pending')
-
-                if (!error && data) {
-                    setPendingCount(data.length)
-                } else {
-                    const storedEvents = JSON.parse(localStorage.getItem('transport_events') || '{}')
-                    const pending = Object.values(storedEvents).filter(e => (e.status === 'pending' || !e.status)).length
+            try {
+                if (user?.role === 'SUPER_ADMIN') {
+                    const allUsersStr = localStorage.getItem('all_users') || '[]'
+                    let allUsers = []
+                    try {
+                        allUsers = JSON.parse(allUsersStr)
+                    } catch (e) {
+                        console.error('Error parsing all_users in Dashboard:', e)
+                    }
+                    const pending = (Array.isArray(allUsers) ? allUsers : []).filter(u => u && !u.approved).length
                     setPendingCount(pending)
+                } else if (user?.role === 'CHAUFFEUR') {
+                    const { data, error } = await supabase
+                        .from('transports')
+                        .select('status')
+                        .eq('status', 'pending')
+
+                    if (!error && data) {
+                        setPendingCount(data.length)
+                    } else {
+                        const storedEventsStr = localStorage.getItem('transport_events') || '{}'
+                        let storedEvents = {}
+                        try {
+                            storedEvents = JSON.parse(storedEventsStr)
+                        } catch (e) {
+                            console.error('Error parsing transport_events in Dashboard:', e)
+                        }
+                        const pending = Object.values(storedEvents || {}).filter(e => e && (e.status === 'pending' || !e.status)).length
+                        setPendingCount(pending)
+                    }
                 }
+            } catch (err) {
+                console.error('Error in fetchPending:', err)
             }
         }
 

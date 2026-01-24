@@ -37,12 +37,22 @@ export default function AdminCalendar() {
             if (!tError && transportData) {
                 const eventMap = {}
                 transportData.forEach(item => {
-                    eventMap[item.date_key] = item
+                    if (item && item.date_key) {
+                        eventMap[item.date_key] = item
+                    }
                 })
                 setEvents(eventMap)
             } else {
-                const storedEvents = localStorage.getItem('transport_events')
-                if (storedEvents) setEvents(JSON.parse(storedEvents))
+                try {
+                    const storedEvents = localStorage.getItem('transport_events')
+                    if (storedEvents) {
+                        const parsed = JSON.parse(storedEvents)
+                        setEvents(parsed && typeof parsed === 'object' ? parsed : {})
+                    }
+                } catch (e) {
+                    console.error('Error loading events from local storage:', e)
+                    setEvents({})
+                }
             }
 
             const { data: destData, error: dError } = await supabase
@@ -53,17 +63,23 @@ export default function AdminCalendar() {
                 // Map DB snake_case to app camelCase
                 setDestinations(destData.map(d => ({
                     ...d,
-                    defaultClass: d.default_class || d.defaultClass
-                })))
+                    defaultClass: d ? (d.default_class || d.defaultClass) : ''
+                })).filter(Boolean))
             } else {
-                const storedDestinations = localStorage.getItem('transport_destinations')
-                if (storedDestinations) {
-                    const parsed = JSON.parse(storedDestinations)
-                    if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === 'string') {
-                        setDestinations(parsed.map(d => ({ name: d, color: '#3b82f6' })))
-                    } else {
-                        setDestinations(parsed)
+                try {
+                    const storedDestinations = localStorage.getItem('transport_destinations')
+                    if (storedDestinations) {
+                        const parsed = JSON.parse(storedDestinations)
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            if (typeof parsed[0] === 'string') {
+                                setDestinations(parsed.map(d => ({ name: d, color: '#3b82f6' })))
+                            } else {
+                                setDestinations(parsed.filter(Boolean))
+                            }
+                        }
                     }
+                } catch (e) {
+                    console.error('Error loading destinations from local storage:', e)
                 }
             }
         }
@@ -114,9 +130,16 @@ export default function AdminCalendar() {
 
         // SMS Notification Logic
         try {
-            const allUsers = JSON.parse(localStorage.getItem('all_users') || '[]')
-            const chauffeurs = allUsers.filter(u =>
-                (u.role === 'CHAUFFEUR' || u.role === 'chauffeur') &&
+            const allUsersStr = localStorage.getItem('all_users') || '[]'
+            let allUsers = []
+            try {
+                allUsers = JSON.parse(allUsersStr)
+            } catch (e) {
+                console.error('Error parsing all_users in saveEvents:', e)
+            }
+
+            const chauffeurs = (Array.isArray(allUsers) ? allUsers : []).filter(u =>
+                u && (u.role === 'CHAUFFEUR' || u.role === 'chauffeur') &&
                 u.phone &&
                 u.phone.trim() !== ''
             )
@@ -269,16 +292,16 @@ export default function AdminCalendar() {
                 borderRadius: '0.5rem',
                 border: '1px solid #e2e8f0'
             }}>
-                {destinations.length === 0 && <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Aucun lieu défini.</span>}
-                {destinations
+                {(destinations || []).length === 0 && <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Aucun lieu défini.</span>}
+                {(destinations || [])
                     .filter((dest, index, self) =>
-                        index === self.findIndex((t) => (
-                            t.name === dest.name && (t.defaultClass || t.default_class) === (dest.defaultClass || dest.default_class)
+                        dest && index === self.findIndex((t) => (
+                            t && t.name === dest.name && (t.defaultClass || t.default_class) === (dest.defaultClass || dest.default_class)
                         ))
                     )
                     .map((dest, idx) => (
                         <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
-                            <div style={{ width: '1rem', height: '1rem', borderRadius: '50%', backgroundColor: dest.color, boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}></div>
+                            <div style={{ width: '1rem', height: '1rem', borderRadius: '50%', backgroundColor: dest.color || '#3b82f6', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}></div>
                             <span style={{ fontWeight: '500', color: '#334155' }}>
                                 {dest.name}
                                 {dest.defaultClass && <span style={{ color: '#64748b', fontWeight: 'normal', marginLeft: '4px' }}>({dest.defaultClass})</span>}
