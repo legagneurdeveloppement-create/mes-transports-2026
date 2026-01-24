@@ -23,41 +23,26 @@ export default function Navbar({ hideUserInfo = false }) {
                 </Link>
 
                 <div className="navbar-actions">
-                    {/* ULTRA VISIBLE SWITCHER FOR PC/MOBILE */}
+                    {/* Simple View Switcher for Admins */}
                     {isAdmin && (
                         <button
                             onClick={() => setViewAsChauffeur(!viewAsChauffeur)}
-                            className="btn"
+                            className="btn btn-outline"
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '0.5rem',
-                                background: viewAsChauffeur ? '#d97706' : '#2dd4bf',
-                                color: 'white',
-                                padding: '0.75rem 1.25rem',
-                                fontSize: '0.9rem',
-                                border: '3px solid white',
-                                fontWeight: '900',
-                                boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-                                animation: !viewAsChauffeur ? 'pulse-btn 2s infinite' : 'none',
-                                whiteSpace: 'nowrap'
+                                gap: '0.4rem',
+                                background: viewAsChauffeur ? '#f59e0b' : 'transparent',
+                                color: viewAsChauffeur ? 'white' : '#64748b',
+                                padding: '0.5rem 0.75rem',
+                                fontSize: '0.8rem',
+                                fontWeight: 'bold'
                             }}
                         >
-                            <Car size={20} />
-                            <span className="mobile-hidden">{viewAsChauffeur ? 'RETOUR ADMIN' : 'VUE CHAUFFEUR ICI'}</span>
-                            <span className="mobile-only">{viewAsChauffeur ? 'ADMIN' : 'CHAUFFEUR'}</span>
+                            <Car size={18} />
+                            {viewAsChauffeur ? 'ADMIN' : 'CHAUFFEUR'}
                         </button>
                     )}
-
-                    <style>{`
-                        @keyframes pulse-btn {
-                            0% { box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.7); }
-                            70% { box-shadow: 0 0 0 10px rgba(45, 212, 191, 0); }
-                            100% { box-shadow: 0 0 0 0 rgba(45, 212, 191, 0); }
-                        }
-                        @media (min-width: 769px) { .mobile-only { display: none; } }
-                        @media (max-width: 768px) { .mobile-hidden { display: none; } }
-                    `}</style>
                     {user ? (
                         hideUserInfo ? (
                             <div className="flex gap-4 items-center">
