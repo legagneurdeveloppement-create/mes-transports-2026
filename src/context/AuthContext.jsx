@@ -6,53 +6,69 @@ const AuthContext = createContext(null)
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null)
     const navigate = useNavigate()
+    const [viewAsChauffeur, setViewAsChauffeur] = useState(false)
 
     useEffect(() => {
-        // Init users list if empty
-        const storedAllUsers = localStorage.getItem('all_users')
-        if (!storedAllUsers) {
-            const initialUsers = [
-                {
-                    name: 'Admin General',
-                    email: 'admin@demo.com',
-                    password: 'admin',
-                    role: 'SUPER_ADMIN',
-                    approved: true
-                },
-                {
+        try {
+            // Init users list if empty
+            const storedAllUsers = localStorage.getItem('all_users')
+            if (!storedAllUsers) {
+                const initialUsers = [
+                    {
+                        name: 'Admin General',
+                        email: 'admin@demo.com',
+                        password: 'admin',
+                        role: 'SUPER_ADMIN',
+                        approved: true
+                    },
+                    {
+                        name: 'Chauffeur Demo',
+                        email: 'chauffeur@demo.com',
+                        password: 'demo',
+                        role: 'CHAUFFEUR',
+                        approved: true
+                    }
+                ]
+                localStorage.setItem('all_users', JSON.stringify(initialUsers))
+            }
+
+            // Check active session
+            const stored = localStorage.getItem('user')
+            if (stored && stored !== 'undefined') {
+                try {
+                    setUser(JSON.parse(stored))
+                } catch (pe) {
+                    console.error('Error parsing stored user:', pe)
+                }
+            }
+
+            // Migration: Ensure Chauffeur Demo exists for testing and has the correct role
+            const allUsersStr = localStorage.getItem('all_users') || '[]'
+            let allUsers = []
+            try {
+                allUsers = JSON.parse(allUsersStr)
+            } catch (pe) {
+                console.error('Error parsing all_users:', pe)
+                allUsers = []
+            }
+
+            const chauffeurUser = allUsers.find(u => u.email === 'chauffeur@demo.com')
+
+            if (!chauffeurUser) {
+                allUsers.push({
                     name: 'Chauffeur Demo',
                     email: 'chauffeur@demo.com',
                     password: 'demo',
                     role: 'CHAUFFEUR',
                     approved: true
-                }
-            ]
-            localStorage.setItem('all_users', JSON.stringify(initialUsers))
-        }
-
-        // Check active session
-        const stored = localStorage.getItem('user')
-        if (stored) {
-            setUser(JSON.parse(stored))
-        }
-
-        // Migration: Ensure Chauffeur Demo exists for testing and has the correct role
-        const allUsers = JSON.parse(localStorage.getItem('all_users') || '[]')
-        const chauffeurUser = allUsers.find(u => u.email === 'chauffeur@demo.com')
-
-        if (!chauffeurUser) {
-            allUsers.push({
-                name: 'Chauffeur Demo',
-                email: 'chauffeur@demo.com',
-                password: 'demo',
-                role: 'CHAUFFEUR',
-                approved: true
-            })
-            localStorage.setItem('all_users', JSON.stringify(allUsers))
-        } else if (chauffeurUser.role !== 'CHAUFFEUR') {
-            // Force the role to CHAUFFEUR if it was changed or incorrectly set
-            chauffeurUser.role = 'CHAUFFEUR'
-            localStorage.setItem('all_users', JSON.stringify(allUsers))
+                })
+                localStorage.setItem('all_users', JSON.stringify(allUsers))
+            } else if (chauffeurUser.role !== 'CHAUFFEUR') {
+                chauffeurUser.role = 'CHAUFFEUR'
+                localStorage.setItem('all_users', JSON.stringify(allUsers))
+            }
+        } catch (err) {
+            console.error('Fatal crash in AuthProvider useEffect:', err)
         }
     }, [])
 
@@ -66,70 +82,59 @@ export const AuthProvider = ({ children }) => {
         const resetTimer = () => {
             if (timeoutId) clearTimeout(timeoutId)
             timeoutId = setTimeout(() => {
-                console.log('Déconnexion automatique pour inactivité')
                 logout()
             }, INACTIVITY_TIMEOUT)
         }
 
-        // Events that reset the timer
-        window.addEventListener('mousemove', resetTimer)
-        window.addEventListener('keypress', resetTimer)
-        window.addEventListener('click', resetTimer)
-        window.addEventListener('scroll', resetTimer)
-
-        // Init timer
+        const events = ['mousemove', 'keypress', 'click', 'scroll']
+        events.forEach(e => window.addEventListener(e, resetTimer))
         resetTimer()
 
         return () => {
             if (timeoutId) clearTimeout(timeoutId)
-            window.removeEventListener('mousemove', resetTimer)
-            window.removeEventListener('keypress', resetTimer)
-            window.removeEventListener('click', resetTimer)
-            window.removeEventListener('scroll', resetTimer)
+            events.forEach(e => window.removeEventListener(e, resetTimer))
         }
     }, [user])
 
     const login = (email, password) => {
-        const allUsers = JSON.parse(localStorage.getItem('all_users') || '[]')
-        const foundUser = allUsers.find(u => u.email === email && u.password === password)
+        try {
+            const allUsers = JSON.parse(localStorage.getItem('all_users') || '[]')
+            const foundUser = allUsers.find(u => u.email === email && u.password === password)
 
-        if (!foundUser) {
-            throw new Error('Identifiants incorrects')
+            if (!foundUser) throw new Error('Identifiants incorrects')
+            if (!foundUser.approved) throw new Error('Compte en attente d\'approbation')
+
+            setUser(foundUser)
+            localStorage.setItem('user', JSON.stringify(foundUser))
+            navigate('/dashboard')
+            return foundUser
+        } catch (e) {
+            throw e
         }
-
-        if (!foundUser.approved) {
-            throw new Error('Votre compte est en attente d\'approbation par un administrateur')
-        }
-
-        setUser(foundUser)
-        localStorage.setItem('user', JSON.stringify(foundUser))
-        navigate('/dashboard')
-        return foundUser
     }
 
     const register = (userData) => {
-        const allUsers = JSON.parse(localStorage.getItem('all_users') || '[]')
+        try {
+            const allUsers = JSON.parse(localStorage.getItem('all_users') || '[]')
+            if (allUsers.find(u => u.email === userData.email)) throw new Error('Email déjà utilisé')
 
-        if (allUsers.find(u => u.email === userData.email)) {
-            throw new Error('Cet email est déjà utilisé')
+            const newUser = {
+                ...userData,
+                role: userData.role || (userData.email.toLowerCase().includes('admin') ? 'ADMIN' : 'USER'),
+                approved: false
+            }
+
+            const updatedUsers = [...allUsers, newUser]
+            localStorage.setItem('all_users', JSON.stringify(updatedUsers))
+            return newUser
+        } catch (e) {
+            throw e
         }
-
-        const newUser = {
-            ...userData,
-            role: userData.role || (userData.email.toLowerCase().includes('admin') ? 'ADMIN' : 'USER'),
-            approved: false // All new users need approval
-        }
-
-        const updatedUsers = [...allUsers, newUser]
-        localStorage.setItem('all_users', JSON.stringify(updatedUsers))
-        return newUser
     }
-
-    const [viewAsChauffeur, setViewAsChauffeur] = useState(false)
 
     const logout = () => {
         setUser(null)
-        setViewAsChauffeur(false) // Reset on logout
+        setViewAsChauffeur(false)
         localStorage.removeItem('user')
         navigate('/login')
     }
@@ -141,4 +146,4 @@ export const AuthProvider = ({ children }) => {
     )
 }
 
-export const useAuth = () => useContext(AuthContext)
+export const useAuth = () => useContext(AuthContext) || {}
