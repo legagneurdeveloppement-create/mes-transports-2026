@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/layout/Navbar'
-import { Shield } from 'lucide-react'
+import { Shield, Car } from 'lucide-react'
 import Calendar from '../components/calendar/Calendar'
 import AdminCalendar from '../components/calendar/AdminCalendar'
 import ChauffeurDashboard from '../components/chauffeur/ChauffeurDashboard'
@@ -156,9 +156,6 @@ export default function Dashboard() {
                     </>
                 ) : (
                     <section className="card">
-                        <div style={{ background: '#334155', color: '#a855f7', fontSize: '0.6rem', padding: '2px', textAlign: 'center' }}>
-                            [OK] Dashboard section: Attempting to render AdminCalendar
-                        </div>
                         <h2 className="dashboard-section-header">
                             Planning des Transports
                         </h2>

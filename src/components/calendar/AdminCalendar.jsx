@@ -254,10 +254,6 @@ export default function AdminCalendar() {
 
     return (
         <div>
-            {/* DEBUG MARKER for identifying crash point */}
-            <div style={{ background: '#334155', color: '#2dd4bf', fontSize: '0.6rem', padding: '2px', textAlign: 'center' }}>
-                [OK] Rendering AdminCalendar (Year: {currentYear})
-            </div>
             <div className="admin-header no-print">
                 <div className="flex gap-2">
                     <button onClick={() => changeYear(-1)} className="btn btn-outline" style={{ padding: '0.5rem', border: 'none' }}>
