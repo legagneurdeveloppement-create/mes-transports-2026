@@ -43,6 +43,12 @@ export default function Calendar({ userRole }) {
         return { days, firstDay }
     }
 
+    const getEventColor = (event) => {
+        if (!event) return 'transparent'
+        const match = destinations.find(d => (d.name || d) === event.title)
+        return match?.color || event.color || 'var(--primary)'
+    }
+
     const { days, firstDay } = getDaysInMonth(currentDate)
     // Adjust for Monday start (0 = Sun, 1 = Mon)
     const startOffset = firstDay === 0 ? 6 : firstDay - 1
@@ -181,7 +187,7 @@ export default function Calendar({ userRole }) {
 
                             {hasEvent && (
                                 <div className="calendar-event" style={{
-                                    background: hasEvent.color || 'var(--primary)',
+                                    background: getEventColor(hasEvent),
                                     border: hasEvent.status === 'validated' ? '2px solid #16a34a' :
                                         hasEvent.status === 'rejected' ? '2px solid #dc2626' :
                                             hasEvent.status === 'pending' ? '2px dotted #eab308' : 'none',
@@ -208,7 +214,7 @@ export default function Calendar({ userRole }) {
                     <div className="modal-content" style={{ maxWidth: '400px', width: '90%' }} onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <div style={{ width: '1rem', height: '1rem', borderRadius: '50%', backgroundColor: selectedEventDetails.color }}></div>
+                                <div style={{ width: '1rem', height: '1rem', borderRadius: '50%', backgroundColor: getEventColor(selectedEventDetails) }}></div>
                                 Détails du Transport
                             </h3>
                             <button className="btn-close" onClick={() => setSelectedEventDetails(null)}>×</button>

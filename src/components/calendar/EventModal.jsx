@@ -337,7 +337,13 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
 
                     <div style={{ marginBottom: '1.5rem' }}>
                         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Couleur</label>
-                        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        <div style={{
+                            display: 'flex',
+                            gap: '0.5rem',
+                            flexWrap: 'wrap',
+                            opacity: !isCustomTitle && availableDestinations.some(d => (d.name || d) === title) ? 0.5 : 1,
+                            pointerEvents: !isCustomTitle && availableDestinations.some(d => (d.name || d) === title) ? 'none' : 'auto'
+                        }}>
                             {colors.map((c) => (
                                 <button
                                     key={c.value}
@@ -355,6 +361,11 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
                                 />
                             ))}
                         </div>
+                        {!isCustomTitle && availableDestinations.some(d => (d.name || d) === title) && (
+                            <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.5rem' }}>
+                                💡 La couleur est liée au lieu sélectionné.
+                            </p>
+                        )}
                     </div>
 
                     <div style={{

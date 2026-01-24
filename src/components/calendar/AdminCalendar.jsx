@@ -250,6 +250,12 @@ export default function AdminCalendar() {
         }
     }
 
+    const getEventColor = (event) => {
+        if (!event) return 'transparent'
+        const match = destinations.find(d => (d.name || d) === event.title)
+        return match?.color || event.color || 'var(--primary)'
+    }
+
     const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"]
 
     return (
@@ -347,7 +353,7 @@ export default function AdminCalendar() {
                                                 fontSize: '0.9rem',
                                                 fontWeight: '600',
                                                 borderRadius: '0.25rem',
-                                                backgroundColor: hasEvent ? hasEvent.color || 'var(--primary)' : 'transparent',
+                                                backgroundColor: hasEvent ? getEventColor(hasEvent) : 'transparent',
                                                 color: hasEvent ? 'white' : 'inherit',
                                                 border: hasEvent?.status === 'validated' ? '3px solid #16a34a' :
                                                     hasEvent?.status === 'rejected' ? '3px solid #dc2626' : '1px solid #f1f5f9',
@@ -398,7 +404,7 @@ export default function AdminCalendar() {
                                                 fontSize: '0.9rem',
                                                 fontWeight: '600',
                                                 borderRadius: '0.25rem',
-                                                backgroundColor: hasEvent ? hasEvent.color || 'var(--primary)' : 'transparent',
+                                                backgroundColor: hasEvent ? getEventColor(hasEvent) : 'transparent',
                                                 color: hasEvent ? 'white' : 'inherit',
                                                 border: hasEvent?.status === 'validated' ? '3px solid #16a34a' :
                                                     hasEvent?.status === 'rejected' ? '3px solid #dc2626' : '1px solid #f1f5f9',
