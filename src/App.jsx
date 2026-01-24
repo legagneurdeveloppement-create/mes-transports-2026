@@ -14,6 +14,11 @@ function App() {
 
   return (
     <div className="app">
+      {/* TEMP DEBUG BANNER - REMOVE AFTER VERIFICATION */}
+      <div style={{ background: '#334155', color: 'white', fontSize: '0.7rem', padding: '0.2rem', textAlign: 'center' }}>
+        DEBUG: Deploy 24/01 23:20 | Role: {user?.role || 'Guest'} | ViewChauffeur: {viewAsChauffeur ? 'ON' : 'OFF'}
+      </div>
+
       {viewAsChauffeur && (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && (
         <div style={{
           background: '#f59e0b',
