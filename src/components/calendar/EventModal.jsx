@@ -27,7 +27,8 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
     useEffect(() => {
         if (eventData) {
             setTitle(eventData.title || '')
-            setSchoolClass(eventData.schoolClass || '')
+            // Normalize schoolClass
+            setSchoolClass(eventData.schoolClass || eventData.school_class || '')
             setColor(eventData.color || '#3b82f6')
 
             // Check if title exists in destinations
@@ -108,7 +109,18 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
 
                 <form onSubmit={handleSubmit}>
                     <div style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Destination</label>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                            <label style={{ margin: 0, fontWeight: '500' }}>Destination</label>
+                            {/* Visual indicator of the active color */}
+                            <div style={{
+                                width: '1rem',
+                                height: '1rem',
+                                borderRadius: '50%',
+                                backgroundColor: color,
+                                border: '1px solid #e2e8f0',
+                                boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                            }}></div>
+                        </div>
                         {!isCustomTitle ? (
                             <select
                                 value={(() => {

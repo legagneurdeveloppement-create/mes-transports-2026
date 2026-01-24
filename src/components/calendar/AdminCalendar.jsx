@@ -38,7 +38,11 @@ export default function AdminCalendar() {
                 const eventMap = {}
                 transportData.forEach(item => {
                     if (item && item.date_key) {
-                        eventMap[item.date_key] = item
+                        // Normalize school_class to schoolClass for frontend consistency
+                        eventMap[item.date_key] = {
+                            ...item,
+                            schoolClass: item.schoolClass || item.school_class
+                        }
                     }
                 })
                 setEvents(eventMap)
@@ -252,7 +256,11 @@ export default function AdminCalendar() {
 
     const getEventColor = (event) => {
         if (!event) return 'transparent'
-        const match = destinations.find(d => (d.name || d) === event.title)
+        const eClass = event.schoolClass || event.school_class || ''
+        const match = (destinations || []).find(d =>
+            (d.name || d) === event.title &&
+            (d.defaultClass || d.default_class || '') === eClass
+        )
         return match?.color || event.color || 'var(--primary)'
     }
 

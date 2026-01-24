@@ -13,7 +13,15 @@ export default function Calendar({ userRole }) {
             const { data: tData } = await supabase.from('transports').select('*')
             if (tData) {
                 const map = {}
-                tData.forEach(e => map[e.date_key] = e)
+                tData.forEach(e => {
+                    const dateKey = e.date_key
+                    if (dateKey) {
+                        map[dateKey] = {
+                            ...e,
+                            schoolClass: e.schoolClass || e.school_class
+                        }
+                    }
+                })
                 setEvents(map)
             }
 
@@ -45,7 +53,11 @@ export default function Calendar({ userRole }) {
 
     const getEventColor = (event) => {
         if (!event) return 'transparent'
-        const match = destinations.find(d => (d.name || d) === event.title)
+        const eClass = event.schoolClass || event.school_class || ''
+        const match = (destinations || []).find(d =>
+            (d.name || d) === event.title &&
+            (d.defaultClass || d.default_class || '') === eClass
+        )
         return match?.color || event.color || 'var(--primary)'
     }
 
