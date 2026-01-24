@@ -3,13 +3,15 @@ import { Car, LogOut, User, ArrowRight, HelpCircle } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 
 export default function Navbar({ hideUserInfo = false }) {
-    const { user, logout } = useAuth() || {}
+    const { user, logout, viewAsChauffeur, setViewAsChauffeur } = useAuth() || {}
     const navigate = useNavigate()
+
+    const isAdmin = user && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN')
 
     return (
         <nav className="navbar">
             <div className="container navbar-container">
-                <Link to="/" className="navbar-logo">
+                <Link to="/" className="navbar-logo" onClick={() => viewAsChauffeur && setViewAsChauffeur(false)}>
                     <img
                         src="/logo.jpg"
                         alt="Logo Mes Transports"
@@ -21,6 +23,41 @@ export default function Navbar({ hideUserInfo = false }) {
                 </Link>
 
                 <div className="navbar-actions">
+                    {/* ULTRA VISIBLE SWITCHER FOR PC/MOBILE */}
+                    {isAdmin && (
+                        <button
+                            onClick={() => setViewAsChauffeur(!viewAsChauffeur)}
+                            className="btn"
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                background: viewAsChauffeur ? '#d97706' : '#2dd4bf',
+                                color: 'white',
+                                padding: '0.75rem 1.25rem',
+                                fontSize: '0.9rem',
+                                border: '3px solid white',
+                                fontWeight: '900',
+                                boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+                                animation: !viewAsChauffeur ? 'pulse-btn 2s infinite' : 'none',
+                                whiteSpace: 'nowrap'
+                            }}
+                        >
+                            <Car size={20} />
+                            <span className="mobile-hidden">{viewAsChauffeur ? 'RETOUR ADMIN' : 'VUE CHAUFFEUR ICI'}</span>
+                            <span className="mobile-only">{viewAsChauffeur ? 'ADMIN' : 'CHAUFFEUR'}</span>
+                        </button>
+                    )}
+
+                    <style>{`
+                        @keyframes pulse-btn {
+                            0% { box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.7); }
+                            70% { box-shadow: 0 0 0 10px rgba(45, 212, 191, 0); }
+                            100% { box-shadow: 0 0 0 0 rgba(45, 212, 191, 0); }
+                        }
+                        @media (min-width: 769px) { .mobile-only { display: none; } }
+                        @media (max-width: 768px) { .mobile-hidden { display: none; } }
+                    `}</style>
                     {user ? (
                         hideUserInfo ? (
                             <div className="flex gap-4 items-center">

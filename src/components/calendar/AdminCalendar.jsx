@@ -154,7 +154,10 @@ export default function AdminCalendar() {
                     color: updatedData.color,
                     status: updatedData.status || 'pending',
                     time_departure_origin: updatedData.time_departure_origin,
-                    time_departure_destination: updatedData.time_departure_destination
+                    time_departure_destination: updatedData.time_departure_destination,
+                    time_departure_school: updatedData.time_departure_school,
+                    time_arrival_school: updatedData.time_arrival_school,
+                    stayed_on_site: updatedData.stayed_on_site
                 })
             }
         }
@@ -195,7 +198,13 @@ export default function AdminCalendar() {
                 }
             } else {
                 // Update / Create
-                const updatedData = { ...eventData, type: 'available', status: eventData.status || 'pending' }
+                const existing = events[selectedDateKey] || {}
+                const updatedData = {
+                    ...existing,
+                    ...eventData,
+                    type: 'available',
+                    status: eventData.status || existing.status || 'pending'
+                }
                 saveEvents({
                     ...events,
                     [selectedDateKey]: updatedData
@@ -263,7 +272,9 @@ export default function AdminCalendar() {
                 {destinations.length === 0 && <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Aucun lieu défini.</span>}
                 {destinations
                     .filter((dest, index, self) =>
-                        index === self.findIndex((t) => (t.name === dest.name))
+                        index === self.findIndex((t) => (
+                            t.name === dest.name && (t.defaultClass || t.default_class) === (dest.defaultClass || dest.default_class)
+                        ))
                     )
                     .map((dest, idx) => (
                         <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>

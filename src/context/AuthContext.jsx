@@ -125,14 +125,17 @@ export const AuthProvider = ({ children }) => {
         return newUser
     }
 
+    const [viewAsChauffeur, setViewAsChauffeur] = useState(false)
+
     const logout = () => {
         setUser(null)
+        setViewAsChauffeur(false) // Reset on logout
         localStorage.removeItem('user')
         navigate('/login')
     }
 
     return (
-        <AuthContext.Provider value={{ user, login, register, logout }}>
+        <AuthContext.Provider value={{ user, login, register, logout, viewAsChauffeur, setViewAsChauffeur }}>
             {children}
         </AuthContext.Provider>
     )

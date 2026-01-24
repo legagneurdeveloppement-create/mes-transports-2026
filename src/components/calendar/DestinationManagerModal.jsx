@@ -122,18 +122,23 @@ export default function DestinationManagerModal({ isOpen, onClose, destinations,
                         <p style={{ color: '#64748b', marginBottom: '1.5rem' }}>
                             Voulez-vous vraiment supprimer "<strong>{typeof confirmingDelete === 'string' ? confirmingDelete : confirmingDelete.name}</strong>" ?
                         </p>
-                        <div style={{ display: 'flex', gap: '1rem', width: '100%' }}>
+                        <div style={{
+                            display: 'flex',
+                            gap: '0.75rem',
+                            width: '100%',
+                            flexDirection: window.innerWidth < 400 ? 'column' : 'row'
+                        }}>
                             <button
                                 onClick={() => setConfirmingDelete(null)}
                                 className="btn"
-                                style={{ flex: 1, backgroundColor: '#f1f5f9' }}
+                                style={{ flex: 1, backgroundColor: '#f1f5f9', minHeight: '3rem' }}
                             >
                                 Annuler
                             </button>
                             <button
                                 onClick={() => handleDelete(confirmingDelete)}
                                 className="btn"
-                                style={{ flex: 1, backgroundColor: '#ef4444', color: 'white' }}
+                                style={{ flex: 1, backgroundColor: '#ef4444', color: 'white', minHeight: '3rem' }}
                             >
                                 Supprimer
                             </button>

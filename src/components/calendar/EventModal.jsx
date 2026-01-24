@@ -155,9 +155,10 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
                                 <option value="" disabled>Sélectionner une destination</option>
                                 {availableDestinations.map((d, index) => {
                                     const name = typeof d === 'string' ? d : d.name
+                                    const dClass = typeof d === 'string' ? null : (d.defaultClass || d.default_class)
                                     return (
                                         <option key={index} value={name}>
-                                            {name}
+                                            {name}{dClass ? ` (${dClass})` : ''}
                                         </option>
                                     )
                                 })}
@@ -264,16 +265,23 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
                             try {
                                 if (eventData) {
                                     if (eventData.time_departure_school) {
-                                        allerSteps = typeof eventData.time_departure_school === 'string'
+                                        const rawAller = typeof eventData.time_departure_school === 'string'
                                             ? JSON.parse(eventData.time_departure_school)
                                             : eventData.time_departure_school
+
+                                        if (Array.isArray(rawAller)) {
+                                            allerSteps = rawAller
+                                        } else if (rawAller && typeof rawAller === 'object') {
+                                            allerSteps = rawAller.steps || []
+                                            stayedOnSite = rawAller.stayedOnSite || false
+                                        }
                                     }
                                     if (eventData.time_arrival_school) {
                                         retourSteps = typeof eventData.time_arrival_school === 'string'
                                             ? JSON.parse(eventData.time_arrival_school)
                                             : eventData.time_arrival_school
                                     }
-                                    stayedOnSite = eventData.stayed_on_site || false
+                                    stayedOnSite = stayedOnSite || eventData.stayed_on_site || false
                                 }
                             } catch (e) {
                                 console.error('Error parsing schedule:', e)
@@ -349,20 +357,43 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '1rem' }}>
-                        <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Enregistrer</button>
+                    <div style={{
+                        display: 'flex',
+                        gap: '0.75rem',
+                        flexWrap: 'wrap',
+                        marginTop: '1rem',
+                        paddingBottom: '1rem' // Added space at the bottom
+                    }}>
+                        <button type="submit" className="btn btn-primary" style={{ flex: '1 1 150px', minHeight: '3rem' }}>Enregistrer</button>
                         {eventData && (
                             <>
                                 <button
                                     type="button"
                                     onClick={() => generateICS(eventData)}
                                     className="btn btn-outline"
-                                    style={{ flex: 1, borderColor: '#0891b2', color: '#0891b2' }}
+                                    style={{
+                                        flex: '1 1 120px',
+                                        borderColor: '#0891b2',
+                                        color: '#0891b2',
+                                        minHeight: '3rem'
+                                    }}
                                     title="Ajouter au calendrier (Rappel)"
                                 >
                                     <CalendarIcon size={18} style={{ marginRight: '0.4rem' }} /> Rappel
                                 </button>
-                                <button type="button" onClick={handleDelete} className="btn" style={{ flex: 1, backgroundColor: '#fee2e2', color: '#dc2626' }}>Supprimer</button>
+                                <button
+                                    type="button"
+                                    onClick={handleDelete}
+                                    className="btn"
+                                    style={{
+                                        flex: '1 1 120px',
+                                        backgroundColor: '#fee2e2',
+                                        color: '#dc2626',
+                                        minHeight: '3rem'
+                                    }}
+                                >
+                                    Supprimer
+                                </button>
                             </>
                         )}
                     </div>

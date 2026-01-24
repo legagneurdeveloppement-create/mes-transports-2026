@@ -9,7 +9,7 @@ import ChauffeurDashboard from '../components/chauffeur/ChauffeurDashboard'
 import { supabase } from '../lib/supabase'
 
 export default function Dashboard() {
-    const { user } = useAuth()
+    const { user, viewAsChauffeur } = useAuth()
     const navigate = useNavigate()
     const [pendingCount, setPendingCount] = useState(0)
 
@@ -76,6 +76,8 @@ export default function Dashboard() {
                         </p>
                     </div>
                     <div className="dashboard-actions">
+
+
                         {user.role === 'SUPER_ADMIN' && (
                             <Link to="/admin/users" className="btn btn-outline dashboard-actions-link">
                                 <Shield size={18} /> Gestion des utilisateurs
@@ -119,12 +121,12 @@ export default function Dashboard() {
                     </div>
                 </header>
 
-                {user.role === 'CHAUFFEUR' ? (
+                {(user?.role === 'CHAUFFEUR' || (viewAsChauffeur && (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'))) ? (
                     <>
                         <div className="chauffeur-view-wrapper">
                             {/* Debug helper for user */}
-                            <div style={{ background: '#fef3c7', padding: '0.5rem', borderRadius: '0.5rem', marginBottom: '1rem', fontSize: '0.8rem', color: '#92400e', textAlign: 'center' }}>
-                                ✓ Interface Chauffeur activée pour {user.email}
+                            <div style={{ background: '#fef3c7', padding: '0.8rem', borderRadius: '0.5rem', marginBottom: '1.5rem', fontSize: '0.9rem', color: '#92400e', textAlign: 'center', border: '1px solid #f59e0b', fontWeight: '600' }}>
+                                💡 Mode Simulation : Vous visualisez l'interface telle qu'un Chauffeur la voit.
                             </div>
                             <ChauffeurDashboard />
                         </div>
@@ -143,6 +145,44 @@ export default function Dashboard() {
                         </h2>
                         {(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? <AdminCalendar /> : <Calendar userRole={user.role} />}
                     </section>
+                )}
+
+                {/* Floating Toggle & Diagnostic - Absolute fallback */}
+                {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && (
+                    <div style={{
+                        position: 'fixed',
+                        top: '5rem',
+                        right: '1rem',
+                        zIndex: 10000,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-end',
+                        gap: '0.5rem'
+                    }} className="no-print">
+                        <div style={{ background: '#334155', color: 'white', padding: '0.3rem 0.6rem', borderRadius: '0.4rem', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                            Role: {user.role} | Vue: {viewAsChauffeur ? 'Chauffeur' : 'Admin'}
+                        </div>
+                        <button
+                            onClick={() => setViewAsChauffeur(!viewAsChauffeur)}
+                            className="btn"
+                            style={{
+                                background: viewAsChauffeur ? '#f59e0b' : '#0891b2',
+                                color: 'white',
+                                borderRadius: '3rem',
+                                padding: '0.8rem 1.2rem',
+                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.5)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                border: '3px solid white',
+                                fontWeight: '900',
+                                fontSize: '0.9rem'
+                            }}
+                        >
+                            <Car size={20} />
+                            {viewAsChauffeur ? 'QUITTER VUE CHAUFFEUR' : 'ACTIVER VUE CHAUFFEUR'}
+                        </button>
+                    </div>
                 )}
             </div>
         </div>

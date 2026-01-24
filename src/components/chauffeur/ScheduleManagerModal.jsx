@@ -10,11 +10,22 @@ export default function ScheduleManagerModal({ isOpen, onClose, transport, onSav
         if (isOpen && transport) {
             // Parse existing data from JSON columns
             try {
-                const aller = transport.time_departure_school
+                const rawAller = transport.time_departure_school
                     ? (typeof transport.time_departure_school === 'string'
                         ? JSON.parse(transport.time_departure_school)
                         : transport.time_departure_school)
                     : []
+
+                let aller = []
+                let stayed = transport.stayed_on_site || false
+
+                if (Array.isArray(rawAller)) {
+                    aller = rawAller
+                } else if (rawAller && typeof rawAller === 'object') {
+                    aller = rawAller.steps || []
+                    stayed = rawAller.stayedOnSite || false
+                }
+
                 const retour = transport.time_arrival_school
                     ? (typeof transport.time_arrival_school === 'string'
                         ? JSON.parse(transport.time_arrival_school)
@@ -23,7 +34,7 @@ export default function ScheduleManagerModal({ isOpen, onClose, transport, onSav
 
                 setAllerSteps(Array.isArray(aller) ? aller : [])
                 setRetourSteps(Array.isArray(retour) ? retour : [])
-                setStayedOnSite(transport.stayed_on_site || false)
+                setStayedOnSite(stayed)
             } catch (e) {
                 console.error('Error parsing schedule data:', e)
                 setAllerSteps([])
@@ -64,9 +75,9 @@ export default function ScheduleManagerModal({ isOpen, onClose, transport, onSav
 
     const handleSave = () => {
         onSave({
-            time_departure_school: JSON.stringify(allerSteps),
+            time_departure_school: JSON.stringify({ steps: allerSteps, stayedOnSite: stayedOnSite }),
             time_arrival_school: JSON.stringify(retourSteps),
-            stayed_on_site: stayedOnSite
+            stayed_on_site: stayedOnSite // Keep for backward compatibility if column is added
         })
         onClose()
     }
@@ -338,21 +349,21 @@ export default function ScheduleManagerModal({ isOpen, onClose, transport, onSav
                                 ⏱️ Temps de travail calculé
                             </h4>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', fontSize: '0.875rem' }}>
-                                <div style={{ textAlign: 'center', padding: '0.5rem', background: 'white', borderRadius: '0.375rem' }}>
-                                    <div style={{ color: '#64748b', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Aller</div>
+                                <div style={{ textAlign: 'center', padding: '0.5rem', background: 'white', borderRadius: '0.375rem', border: '1px solid #0891b2' }}>
+                                    <div style={{ color: '#0891b2', fontSize: '0.75rem', marginBottom: '0.25rem', fontWeight: '600' }}>Aller</div>
                                     <div style={{ fontWeight: '700', color: '#0891b2', fontSize: '1rem' }}>
                                         {allerDuration ? `${allerDuration.hours}h${allerDuration.minutes.toString().padStart(2, '0')}` : '--'}
                                     </div>
                                 </div>
-                                <div style={{ textAlign: 'center', padding: '0.5rem', background: 'white', borderRadius: '0.375rem' }}>
-                                    <div style={{ color: '#64748b', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Retour</div>
+                                <div style={{ textAlign: 'center', padding: '0.5rem', background: 'white', borderRadius: '0.375rem', border: '1px solid #f97316' }}>
+                                    <div style={{ color: '#f97316', fontSize: '0.75rem', marginBottom: '0.25rem', fontWeight: '600' }}>Retour</div>
                                     <div style={{ fontWeight: '700', color: '#f97316', fontSize: '1rem' }}>
                                         {retourDuration ? `${retourDuration.hours}h${retourDuration.minutes.toString().padStart(2, '0')}` : '--'}
                                     </div>
                                 </div>
-                                <div style={{ textAlign: 'center', padding: '0.5rem', background: '#0891b2', borderRadius: '0.375rem' }}>
-                                    <div style={{ color: 'white', fontSize: '0.75rem', marginBottom: '0.25rem', opacity: 0.9 }}>Total</div>
-                                    <div style={{ fontWeight: '700', color: 'white', fontSize: '1.1rem' }}>
+                                <div style={{ textAlign: 'center', padding: '0.5rem', background: '#0891b2', borderRadius: '0.375rem', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+                                    <div style={{ color: 'white', fontSize: '0.75rem', marginBottom: '0.25rem', fontWeight: '600' }}>TOTAL TRV.</div>
+                                    <div style={{ fontWeight: '800', color: 'white', fontSize: '1.2rem' }}>
                                         {totalHours}h{totalMins.toString().padStart(2, '0')}
                                     </div>
                                 </div>
@@ -396,10 +407,10 @@ export default function ScheduleManagerModal({ isOpen, onClose, transport, onSav
                                 🕐 Temps total (Premier départ → Dernier retour)
                             </h4>
                             <div style={{ textAlign: 'center' }}>
-                                <div style={{ fontSize: '0.75rem', color: '#92400e', marginBottom: '0.25rem' }}>
-                                    {firstTime} → {lastTime}
+                                <div style={{ fontSize: '0.8rem', color: '#92400e', marginBottom: '0.25rem', fontWeight: '600' }}>
+                                    Amplitude : {firstTime} → {lastTime}
                                 </div>
-                                <div style={{ fontSize: '1.8rem', fontWeight: '700', color: '#f59e0b' }}>
+                                <div style={{ fontSize: '2rem', fontWeight: '800', color: '#f59e0b', textShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
                                     {hours}h{minutes.toString().padStart(2, '0')}
                                 </div>
                             </div>

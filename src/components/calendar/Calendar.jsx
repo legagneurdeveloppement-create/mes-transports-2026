@@ -118,9 +118,13 @@ export default function Calendar({ userRole }) {
                 {destinations.length === 0 && <span style={{ color: '#64748b', fontSize: '0.8rem' }}>Aucun lieu défini.</span>}
                 {destinations
                     .filter((dest, index, self) =>
-                        index === self.findIndex((t) => (
-                            (typeof t === 'string' ? t : t.name) === (typeof dest === 'string' ? dest : dest.name)
-                        ))
+                        index === self.findIndex((t) => {
+                            const tName = typeof t === 'string' ? t : t.name
+                            const dName = typeof dest === 'string' ? dest : dest.name
+                            const tClass = typeof t === 'string' ? '' : (t.default_class || t.defaultClass || '')
+                            const dClass = typeof dest === 'string' ? '' : (dest.default_class || dest.defaultClass || '')
+                            return tName === dName && tClass === dClass
+                        })
                     )
                     .map((dest, idx) => {
                         const name = typeof dest === 'string' ? dest : dest.name
@@ -248,23 +252,33 @@ export default function Calendar({ userRole }) {
                             {(() => {
                                 let allerSteps = []
                                 let retourSteps = []
+                                let stayedOnSite = false
                                 try {
                                     if (selectedEventDetails.time_departure_school) {
-                                        allerSteps = typeof selectedEventDetails.time_departure_school === 'string'
+                                        const rawAller = typeof selectedEventDetails.time_departure_school === 'string'
                                             ? JSON.parse(selectedEventDetails.time_departure_school)
                                             : selectedEventDetails.time_departure_school
+
+                                        if (Array.isArray(rawAller)) {
+                                            allerSteps = rawAller
+                                        } else if (rawAller && typeof rawAller === 'object') {
+                                            allerSteps = rawAller.steps || []
+                                            stayedOnSite = rawAller.stayedOnSite || false
+                                        }
                                     }
                                     if (selectedEventDetails.time_arrival_school) {
-                                        retourSteps = typeof selectedEventDetails.time_arrival_school === 'string'
+                                        const rawRetour = typeof selectedEventDetails.time_arrival_school === 'string'
                                             ? JSON.parse(selectedEventDetails.time_arrival_school)
                                             : selectedEventDetails.time_arrival_school
+                                        retourSteps = Array.isArray(rawRetour) ? rawRetour : (rawRetour?.steps || [])
                                     }
+                                    stayedOnSite = stayedOnSite || selectedEventDetails.stayed_on_site || false
                                 } catch (e) {
                                     console.error('Error parsing schedule:', e)
                                 }
 
                                 const hasDetailedSchedule = (Array.isArray(allerSteps) && allerSteps.length > 0) ||
-                                    (Array.isArray(retourSteps) && retourSteps.length > 0)
+                                    (Array.isArray(retourSteps) && retourSteps.length > 0) || stayedOnSite
 
                                 if (!hasDetailedSchedule) return null
 
@@ -273,6 +287,12 @@ export default function Calendar({ userRole }) {
                                         <h4 style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--primary)', marginBottom: '1rem' }}>
                                             📋 Horaires détaillés (Chauffeur)
                                         </h4>
+
+                                        {stayedOnSite && (
+                                            <div style={{ marginBottom: '1rem', fontSize: '0.85rem', color: '#92400e', background: '#fef3c7', padding: '0.4rem 0.75rem', borderRadius: '0.375rem', fontWeight: '600', border: '1px solid #f59e0b', display: 'inline-block' }}>
+                                                📍 Chauffeur resté sur place
+                                            </div>
+                                        )}
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                             {/* Aller */}
                                             <div>
