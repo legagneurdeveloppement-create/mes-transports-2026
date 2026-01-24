@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { X, Plus, Trash2 } from 'lucide-react'
+import { X, Plus, Trash2, Edit2, Check, RotateCcw } from 'lucide-react'
 
 export default function DestinationManagerModal({ isOpen, onClose, destinations, onUpdate }) {
     const [newDestination, setNewDestination] = useState('')
@@ -7,6 +7,7 @@ export default function DestinationManagerModal({ isOpen, onClose, destinations,
     const [newColor, setNewColor] = useState('#3b82f6') // Default blue
     const [isCustomDestination, setIsCustomDestination] = useState(false)
     const [confirmingDelete, setConfirmingDelete] = useState(null)
+    const [editingIndex, setEditingIndex] = useState(null)
     const [error, setError] = useState('')
 
     // Extract unique names from destinations list
@@ -34,12 +35,13 @@ export default function DestinationManagerModal({ isOpen, onClose, destinations,
 
     if (!isOpen) return null
 
-    const handleAdd = (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault()
         const trimmedName = newDestination.trim()
         if (trimmedName) {
-            // Check for duplicates: a duplicate only if BOTH name and class match
-            const exists = destinations.some(d => {
+            // Check for duplicates (excluding the one we are editing)
+            const exists = (destinations || []).some((d, idx) => {
+                if (editingIndex !== null && idx === editingIndex) return false
                 const dName = typeof d === 'string' ? d : d.name
                 const dClass = typeof d === 'string' ? '' : (d.defaultClass || '')
                 return dName.toLowerCase() === trimmedName.toLowerCase() && dClass === newDefaultClass
@@ -50,13 +52,47 @@ export default function DestinationManagerModal({ isOpen, onClose, destinations,
                 return
             }
 
-            // Always add as object now
-            onUpdate([...destinations, { name: trimmedName, color: newColor, defaultClass: newDefaultClass }])
+            if (editingIndex !== null) {
+                // Update existing
+                const updatedDestinations = [...destinations]
+                updatedDestinations[editingIndex] = {
+                    ... (typeof destinations[editingIndex] === 'object' ? destinations[editingIndex] : {}),
+                    name: trimmedName,
+                    color: newColor,
+                    defaultClass: newDefaultClass
+                }
+                onUpdate(updatedDestinations)
+                setEditingIndex(null)
+            } else {
+                // Add new
+                onUpdate([...destinations, { name: trimmedName, color: newColor, defaultClass: newDefaultClass }])
+            }
+
             setNewDestination('')
             setNewDefaultClass('')
-            setNewColor('#3b82f6') // Reset to default
+            setNewColor('#3b82f6')
+            setIsCustomDestination(false)
             setError('')
         }
+    }
+
+    const startEditing = (index) => {
+        const dest = destinations[index]
+        setEditingIndex(index)
+        setNewDestination(typeof dest === 'string' ? dest : dest.name)
+        setNewDefaultClass(typeof dest === 'string' ? '' : (dest.defaultClass || ''))
+        setNewColor(typeof dest === 'string' ? '#3b82f6' : (dest.color || '#3b82f6'))
+        setIsCustomDestination(true) // Always use input when editing
+        setError('')
+    }
+
+    const cancelEditing = () => {
+        setEditingIndex(null)
+        setNewDestination('')
+        setNewDefaultClass('')
+        setNewColor('#3b82f6')
+        setIsCustomDestination(false)
+        setError('')
     }
 
     const handleDelete = (destToRemove) => {
@@ -146,11 +182,11 @@ export default function DestinationManagerModal({ isOpen, onClose, destinations,
                     </div>
                 )}
 
-                <form onSubmit={handleAdd} style={{ marginBottom: '1.5rem' }}>
+                <form onSubmit={handleSubmit} style={{ marginBottom: '1.5rem' }}>
                     <div style={{ marginBottom: '1rem' }}>
                         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
                             {/* Logic to choose between Select (existing) and Input (new) */}
-                            {(!isCustomDestination && uniqueExistingNames.length > 0) ? (
+                            {(!isCustomDestination && uniqueExistingNames.length > 0 && editingIndex === null) ? (
                                 <div style={{ flex: 1, display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                                     <select
                                         value={uniqueExistingNames.includes(newDestination) ? newDestination : ''}
@@ -192,7 +228,7 @@ export default function DestinationManagerModal({ isOpen, onClose, destinations,
                                         style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.375rem' }}
                                         autoFocus={isCustomDestination}
                                     />
-                                    {uniqueExistingNames.length > 0 && (
+                                    {uniqueExistingNames.length > 0 && editingIndex === null && (
                                         <button
                                             type="button"
                                             onClick={() => { setIsCustomDestination(false); setNewDestination('') }}
@@ -227,9 +263,32 @@ export default function DestinationManagerModal({ isOpen, onClose, destinations,
                                     <option key={c} value={c}>{c}</option>
                                 ))}
                             </select>
-                            <button type="submit" className="btn btn-primary" disabled={!newDestination.trim()} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                                <Plus size={18} /> Ajouter
-                            </button>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                {editingIndex !== null ? (
+                                    <>
+                                        <button
+                                            type="submit"
+                                            className="btn"
+                                            style={{ backgroundColor: '#22c55e', color: 'white', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                                        >
+                                            <Check size={18} /> Enregistrer
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={cancelEditing}
+                                            className="btn"
+                                            style={{ backgroundColor: '#64748b', color: 'white' }}
+                                            title="Annuler"
+                                        >
+                                            <RotateCcw size={18} />
+                                        </button>
+                                    </>
+                                ) : (
+                                    <button type="submit" className="btn btn-primary" disabled={!newDestination.trim()} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                        <Plus size={18} /> Ajouter
+                                    </button>
+                                )}
+                            </div>
                         </div>
                         {error && (
                             <div style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.5rem', fontWeight: '500' }}>
@@ -301,13 +360,22 @@ export default function DestinationManagerModal({ isOpen, onClose, destinations,
                                                 {dest.defaultClass && <span style={{ fontSize: '0.8em', color: '#64748b', marginLeft: '0.5rem' }}>({dest.defaultClass})</span>}
                                             </span>
                                         </div>
-                                        <button
-                                            onClick={() => setConfirmingDelete(dest)}
-                                            style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }}
-                                            title="Supprimer"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
+                                        <div style={{ display: 'flex', gap: '0.25rem' }}>
+                                            <button
+                                                onClick={() => startEditing(index)}
+                                                style={{ color: '#0891b2', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }}
+                                                title="Modifier"
+                                            >
+                                                <Edit2 size={18} />
+                                            </button>
+                                            <button
+                                                onClick={() => setConfirmingDelete(dest)}
+                                                style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }}
+                                                title="Supprimer"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
                                     </li>
                                 )
                             })}
