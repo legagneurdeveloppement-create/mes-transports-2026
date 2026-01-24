@@ -140,7 +140,9 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
                                         })
 
                                         if (destObj && typeof destObj !== 'string') {
-                                            if (destObj.color) setColor(destObj.color)
+                                            if (destObj.color) {
+                                                setColor(destObj.color)
+                                            }
                                             if (destObj.defaultClass) {
                                                 setSchoolClass(destObj.defaultClass)
                                                 setIsCustomClass(false)
