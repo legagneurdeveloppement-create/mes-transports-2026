@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { X, Plus, Trash2, Edit2, Check, RotateCcw } from 'lucide-react'
+import { X, Plus, Trash2, Edit2, Check, RotateCcw, Lock } from 'lucide-react'
 
 export default function DestinationManagerModal({ isOpen, onClose, destinations, onUpdate }) {
     const [newDestination, setNewDestination] = useState('')
@@ -389,13 +389,23 @@ export default function DestinationManagerModal({ isOpen, onClose, destinations,
                                             >
                                                 <Edit2 size={18} />
                                             </button>
-                                            <button
-                                                onClick={() => setConfirmingDelete(dest)}
-                                                style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }}
-                                                title="Supprimer"
-                                            >
-                                                <Trash2 size={18} />
-                                            </button>
+
+                                            {dest.isLinkedToTransport ? (
+                                                <div
+                                                    style={{ color: '#94a3b8', padding: '0.25rem', cursor: 'help' }}
+                                                    title="Ce lieu est utilisé dans un transport actif et ne peut pas être supprimé."
+                                                >
+                                                    <Lock size={18} opacity={0.6} />
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    onClick={() => setConfirmingDelete(dest)}
+                                                    style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }}
+                                                    title="Supprimer"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            )}
                                         </div>
                                     </li>
                                 )
@@ -404,7 +414,10 @@ export default function DestinationManagerModal({ isOpen, onClose, destinations,
                     )}
                 </div>
 
-                <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e2e8f0', textAlign: 'right' }}>
+                <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: '0.75rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <Lock size={12} /> = Utilisé dans le calendrier (non supprimable)
+                    </div>
                     <button onClick={onClose} className="btn" style={{ background: '#f1f5f9' }}>Fermer</button>
                 </div>
             </div>

@@ -143,7 +143,8 @@ export default function AdminCalendar() {
                     list.push({
                         name: e.title,
                         color: e.color || '#3b82f6',
-                        defaultClass: e.schoolClass || e.school_class || ''
+                        defaultClass: e.schoolClass || e.school_class || '',
+                        isLinkedToTransport: true
                     });
                 }
             });
