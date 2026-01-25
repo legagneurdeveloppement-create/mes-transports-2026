@@ -189,7 +189,7 @@ export default function Dashboard() {
                             <h2 className="dashboard-section-header">
                                 Planning Global des Transports
                             </h2>
-                            <Calendar userRole={user.role} />
+                            <Calendar userRole="CHAUFFEUR" />
                         </section>
                     </>
                 ) : (
