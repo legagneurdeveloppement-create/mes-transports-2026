@@ -14,35 +14,6 @@ export default function Dashboard() {
     const [pendingCount, setPendingCount] = useState(0)
     const [hasError, setHasError] = useState(false)
 
-    if (loading) return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'white', color: '#64748b' }}>
-            <div style={{ textAlign: 'center' }}>
-                <p style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Chargement de votre session...</p>
-                <p style={{ fontSize: '0.9rem' }}>Veuillez patienter un instant.</p>
-            </div>
-        </div>
-    )
-
-    // Global protection against any render crashes
-    if (hasError) {
-        return (
-            <div className="container" style={{ padding: '2rem', textAlign: 'center' }}>
-                <h2 style={{ color: '#ef4444' }}>Oups ! Une erreur est survenue.</h2>
-                <p>Cela peut arriver après une mise à jour. Essayez de vider le cache de votre navigateur.</p>
-                <button
-                    onClick={() => {
-                        localStorage.clear();
-                        window.location.reload();
-                    }}
-                    className="btn btn-primary"
-                    style={{ marginTop: '1rem' }}
-                >
-                    Réinitialiser et Recharger
-                </button>
-            </div>
-        )
-    }
-
     useEffect(() => {
         if (loading) return
         if (!user) {
@@ -104,6 +75,35 @@ export default function Dashboard() {
             if (channel) supabase.removeChannel(channel)
         }
     }, [user, navigate, loading])
+
+    if (loading) return (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'white', color: '#64748b' }}>
+            <div style={{ textAlign: 'center' }}>
+                <p style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Chargement de votre session...</p>
+                <p style={{ fontSize: '0.9rem' }}>Veuillez patienter un instant.</p>
+            </div>
+        </div>
+    )
+
+    // Global protection against any render crashes
+    if (hasError) {
+        return (
+            <div className="container" style={{ padding: '2rem', textAlign: 'center' }}>
+                <h2 style={{ color: '#ef4444' }}>Oups ! Une erreur est survenue.</h2>
+                <p>Cela peut arriver après une mise à jour. Essayez de vider le cache de votre navigateur.</p>
+                <button
+                    onClick={() => {
+                        localStorage.clear();
+                        window.location.reload();
+                    }}
+                    className="btn btn-primary"
+                    style={{ marginTop: '1rem' }}
+                >
+                    Réinitialiser et Recharger
+                </button>
+            </div>
+        )
+    }
 
     if (!user) return null
 
