@@ -103,23 +103,7 @@ export default function Calendar({ userRole }) {
         const currentEvent = events[dateKey]
 
         if (userRole === 'ADMIN') {
-            if (currentEvent) {
-                if (!window.confirm("Un transport est déjà prévu ce jour-là. Voulez-vous le modifier/supprimer ?")) return
-            }
-
-            const title = prompt(
-                "Titre du transport (laesser vide pour supprimer) :",
-                currentEvent?.title || ""
-            )
-
-            if (title) {
-                saveEvents({ ...events, [dateKey]: { title, type: 'available' } })
-            } else if (title === "") {
-                if (currentEvent && !window.confirm("Confirmer la suppression ?")) return
-                const newEv = { ...events }
-                delete newEv[dateKey]
-                saveEvents(newEv)
-            }
+            alert("Veuillez utiliser le tableau de bord Admin pour toute modification.")
         } else {
             // Chauffeur or User: show details
             if (currentEvent) {
@@ -181,22 +165,24 @@ export default function Calendar({ userRole }) {
                         </button>
                     </div>
                 )}
-                {destinations
+                {(destinations || [])
                     .filter((dest, index, self) =>
-                        index === self.findIndex((t) => {
-                            const tName = typeof t === 'string' ? t : t.name
-                            const dName = typeof dest === 'string' ? dest : dest.name
+                        dest && index === self.findIndex((t) => {
+                            if (!t) return false
+                            const tName = typeof t === 'string' ? t : (t.name || '')
+                            const dName = typeof dest === 'string' ? dest : (dest.name || '')
                             const tClass = typeof t === 'string' ? '' : (t.default_class || t.defaultClass || '')
                             const dClass = typeof dest === 'string' ? '' : (dest.default_class || dest.defaultClass || '')
                             return tName === dName && tClass === dClass
                         })
                     )
                     .map((dest, idx) => {
+                        if (!dest) return null
                         const name = typeof dest === 'string' ? dest : dest.name
                         const color = typeof dest === 'string' ? '#3b82f6' : dest.color
                         return (
                             <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
-                                <div style={{ width: '0.85rem', height: '0.85rem', borderRadius: '50%', backgroundColor: color, boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}></div>
+                                <div style={{ width: '0.85rem', height: '0.85rem', borderRadius: '50%', backgroundColor: color || '#3b82f6', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}></div>
                                 <span style={{ fontWeight: '500', color: '#334155' }}>{name}</span>
                             </div>
                         )

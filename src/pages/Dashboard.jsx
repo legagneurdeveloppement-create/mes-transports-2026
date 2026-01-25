@@ -14,7 +14,14 @@ export default function Dashboard() {
     const [pendingCount, setPendingCount] = useState(0)
     const [hasError, setHasError] = useState(false)
 
-    if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', flexDirection: 'column', gap: '1rem' }}><div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #e2e8f0', borderTopColor: '#3b82f6', borderRadius: '50%' }}></div><p>Chargement...</p></div>
+    if (loading) return (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'white', color: '#64748b' }}>
+            <div style={{ textAlign: 'center' }}>
+                <p style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Chargement de votre session...</p>
+                <p style={{ fontSize: '0.9rem' }}>Veuillez patienter un instant.</p>
+            </div>
+        </div>
+    )
 
     // Global protection against any render crashes
     if (hasError) {
