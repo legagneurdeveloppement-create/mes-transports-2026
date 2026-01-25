@@ -35,13 +35,16 @@ export default function Calendar({ userRole }) {
             const { data: dData, error: dError } = await supabase.from('destinations').select('*')
             if (dError) {
                 console.error('Error fetching destinations:', dError)
-                setFetchError('Erreur de chargement des lieux')
+                setFetchError('Erreur de chargement des lieux (Perm.?)')
             }
             if (dData) {
+                console.log('Fetched destinations count:', dData.length)
                 setDestinations(dData.map(d => ({
                     ...d,
                     defaultClass: d.default_class || d.defaultClass || ''
                 })))
+            } else {
+                console.warn('Destinations returned null/undefined')
             }
         }
 

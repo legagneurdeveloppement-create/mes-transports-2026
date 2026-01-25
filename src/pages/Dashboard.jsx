@@ -9,10 +9,12 @@ import ChauffeurDashboard from '../components/chauffeur/ChauffeurDashboard'
 import { supabase } from '../lib/supabase'
 
 export default function Dashboard() {
-    const { user, viewAsChauffeur } = useAuth()
+    const { user, loading, viewAsChauffeur } = useAuth()
     const navigate = useNavigate()
     const [pendingCount, setPendingCount] = useState(0)
     const [hasError, setHasError] = useState(false)
+
+    if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', flexDirection: 'column', gap: '1rem' }}><div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #e2e8f0', borderTopColor: '#3b82f6', borderRadius: '50%' }}></div><p>Chargement...</p></div>
 
     // Global protection against any render crashes
     if (hasError) {
@@ -35,6 +37,7 @@ export default function Dashboard() {
     }
 
     useEffect(() => {
+        if (loading) return
         if (!user) {
             navigate('/login')
             return
@@ -93,7 +96,7 @@ export default function Dashboard() {
         return () => {
             if (channel) supabase.removeChannel(channel)
         }
-    }, [user, navigate])
+    }, [user, navigate, loading])
 
     if (!user) return null
 
