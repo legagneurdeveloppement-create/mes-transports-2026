@@ -348,6 +348,7 @@ export default function AdminCalendar() {
                                     const day = i + 1
                                     const dateKey = `${currentYear}-${monthIndex}-${day}`
                                     const hasEvent = events[dateKey]
+                                    const isToday = new Date().toDateString() === new Date(currentYear, monthIndex, day).toDateString()
                                     return (
                                         <div
                                             key={day}
@@ -363,8 +364,10 @@ export default function AdminCalendar() {
                                                 borderRadius: '0.25rem',
                                                 backgroundColor: hasEvent ? getEventColor(hasEvent) : 'transparent',
                                                 color: hasEvent ? 'white' : 'inherit',
-                                                border: hasEvent?.status === 'validated' ? '3px solid #16a34a' :
-                                                    hasEvent?.status === 'rejected' ? '3px solid #dc2626' : '1px solid #f1f5f9',
+                                                border: isToday ? '3px solid #ef4444' : (
+                                                    hasEvent?.status === 'validated' ? '3px solid #16a34a' :
+                                                        hasEvent?.status === 'rejected' ? '3px solid #dc2626' : 'none'
+                                                ),
                                                 position: 'relative',
                                                 boxShadow: hasEvent?.status === 'pending' ? '0 0 0 2px #eab308' : 'none'
                                             }}
@@ -399,6 +402,7 @@ export default function AdminCalendar() {
                                     const day = i + 1
                                     const dateKey = `${currentYear}-${monthIndex}-${day}`
                                     const hasEvent = events[dateKey]
+                                    const isToday = new Date().toDateString() === new Date(currentYear, monthIndex, day).toDateString()
                                     return (
                                         <div
                                             key={day}
@@ -414,8 +418,10 @@ export default function AdminCalendar() {
                                                 borderRadius: '0.25rem',
                                                 backgroundColor: hasEvent ? getEventColor(hasEvent) : 'transparent',
                                                 color: hasEvent ? 'white' : 'inherit',
-                                                border: hasEvent?.status === 'validated' ? '3px solid #16a34a' :
-                                                    hasEvent?.status === 'rejected' ? '3px solid #dc2626' : '1px solid #f1f5f9',
+                                                border: isToday ? '3px solid #ef4444' : (
+                                                    hasEvent?.status === 'validated' ? '3px solid #16a34a' :
+                                                        hasEvent?.status === 'rejected' ? '3px solid #dc2626' : 'none'
+                                                ),
                                                 position: 'relative',
                                                 boxShadow: hasEvent?.status === 'pending' ? '0 0 0 2px #eab308' : 'none'
                                             }}
