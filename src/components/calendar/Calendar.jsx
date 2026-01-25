@@ -85,9 +85,10 @@ export default function Calendar({ userRole }) {
         const eTitle = (event.title || '').trim().toLowerCase()
 
         const match = (destinations || []).find(d => {
-            const dName = (d.name || d || '').trim().toLowerCase()
-            const dClass = (d.defaultClass || d.default_class || '').trim().toLowerCase()
-            return dName === eTitle && dClass === eClass
+            if (!d) return false
+            const dName = (typeof d === 'string' ? d : (d.name || '')).trim().toLowerCase()
+            const dClass = (typeof d === 'string' ? '' : (d.defaultClass || d.default_class || '')).trim().toLowerCase()
+            return dName === eTitle && (dClass === eClass || dClass === '')
         })
         return match?.color || event.color || 'var(--primary)'
     }
@@ -246,11 +247,11 @@ export default function Calendar({ userRole }) {
                                     border: hasEvent.status === 'validated' ? '2px solid #16a34a' :
                                         hasEvent.status === 'rejected' ? '2px solid #dc2626' :
                                             hasEvent.status === 'pending' ? '2px dotted #eab308' : 'none',
-                                    height: userRole === 'CHAUFFEUR' ? '12px' : 'auto',
-                                    borderRadius: userRole === 'CHAUFFEUR' ? '10px' : '4px',
-                                    padding: userRole === 'CHAUFFEUR' ? '0' : '2px 4px'
+                                    height: (userRole === 'CHAUFFEUR' || window.innerWidth < 768) ? '12px' : 'auto',
+                                    borderRadius: (userRole === 'CHAUFFEUR' || window.innerWidth < 768) ? '10px' : '4px',
+                                    padding: (userRole === 'CHAUFFEUR' || window.innerWidth < 768) ? '0' : '2px 4px'
                                 }}>
-                                    {userRole !== 'CHAUFFEUR' && (
+                                    {(userRole !== 'CHAUFFEUR' && window.innerWidth >= 768) && (
                                         <>
                                             {hasEvent.title}
                                             {hasEvent.schoolClass && <span style={{ marginLeft: '4px', opacity: 0.8, fontSize: '0.7em' }}>({hasEvent.schoolClass})</span>}

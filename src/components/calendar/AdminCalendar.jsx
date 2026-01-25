@@ -120,14 +120,20 @@ export default function AdminCalendar() {
             const entries = Object.entries(storedEvents)
 
             for (const [dateKey, data] of entries) {
+                // Determine the "True" current color from destinations
+                const calculatedColor = getEventColor(data)
+
                 await supabase.from('transports').upsert({
                     date_key: dateKey,
                     title: data.title,
-                    school_class: data.schoolClass,
-                    color: data.color,
+                    school_class: data.schoolClass || data.school_class,
+                    color: calculatedColor,
                     status: data.status || 'pending',
                     time_departure_origin: data.time_departure_origin,
-                    time_departure_destination: data.time_departure_destination
+                    time_departure_destination: data.time_departure_destination,
+                    time_departure_school: data.time_departure_school,
+                    time_arrival_school: data.time_arrival_school,
+                    stayed_on_site: data.stayed_on_site
                 })
             }
 
@@ -311,9 +317,10 @@ export default function AdminCalendar() {
         const eTitle = (event.title || '').trim().toLowerCase()
 
         const match = (destinations || []).find(d => {
-            const dName = (d.name || d || '').trim().toLowerCase()
-            const dClass = (d.defaultClass || d.default_class || '').trim().toLowerCase()
-            return dName === eTitle && dClass === eClass
+            if (!d) return false
+            const dName = (typeof d === 'string' ? d : (d.name || '')).trim().toLowerCase()
+            const dClass = (typeof d === 'string' ? '' : (d.defaultClass || d.default_class || '')).trim().toLowerCase()
+            return dName === eTitle && (dClass === eClass || dClass === '')
         })
         return match?.color || event.color || 'var(--primary)'
     }
