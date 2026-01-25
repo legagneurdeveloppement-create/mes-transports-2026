@@ -89,6 +89,26 @@ export default function AdminCalendar() {
         }
 
         fetchData()
+
+        // Realtime Subscriptions
+        const transportChannel = supabase
+            .channel('admin-transports')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'transports' }, () => {
+                fetchData()
+            })
+            .subscribe()
+
+        const destinationChannel = supabase
+            .channel('admin-destinations')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'destinations' }, () => {
+                fetchData()
+            })
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(transportChannel)
+            supabase.removeChannel(destinationChannel)
+        }
     }, [])
 
     const syncLocalToCloud = async () => {

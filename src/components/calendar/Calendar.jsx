@@ -32,14 +32,24 @@ export default function Calendar({ userRole }) {
 
         fetchData()
 
-        const channel = supabase
-            .channel('public-events')
+        const transportChannel = supabase
+            .channel('public-transports')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'transports' }, () => {
                 fetchData()
             })
             .subscribe()
 
-        return () => { supabase.removeChannel(channel) }
+        const destinationChannel = supabase
+            .channel('public-destinations')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'destinations' }, () => {
+                fetchData()
+            })
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(transportChannel)
+            supabase.removeChannel(destinationChannel)
+        }
     }, [])
 
 

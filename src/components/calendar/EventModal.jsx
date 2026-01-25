@@ -28,19 +28,30 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
         if (eventData) {
             setTitle(eventData.title || '')
             // Normalize schoolClass
-            setSchoolClass(eventData.schoolClass || eventData.school_class || '')
-            setColor(eventData.color || '#3b82f6')
+            const currentClass = eventData.schoolClass || eventData.school_class || ''
+            setSchoolClass(currentClass)
 
-            // Check if title exists in destinations
-            const exists = availableDestinations.some(d => {
+            // Initial color from event
+            let finalColor = eventData.color || '#3b82f6'
+
+            // Check if title exists in destinations and OVERRIDE color if match found
+            // This prevents "stale" colors from being kept in the event record
+            const match = availableDestinations.find(d => {
                 const dName = typeof d === 'string' ? d : d.name
-                return dName === eventData.title
+                const dClass = typeof d === 'string' ? '' : (d.defaultClass || d.default_class || '')
+                return dName === eventData.title && dClass === currentClass
             })
-            setIsCustomTitle(!exists)
+
+            if (match && typeof match !== 'string' && match.color) {
+                finalColor = match.color
+            }
+
+            setColor(finalColor)
+            setIsCustomTitle(!match)
 
             // Check if class exists in list
-            const classExists = schoolClasses.includes(eventData.schoolClass)
-            setIsCustomClass(!!eventData.schoolClass && !classExists)
+            const classExists = schoolClasses.includes(currentClass)
+            setIsCustomClass(!!currentClass && !classExists)
 
             // Times
             setTimeDeparture(eventData.time_departure_origin || '')
