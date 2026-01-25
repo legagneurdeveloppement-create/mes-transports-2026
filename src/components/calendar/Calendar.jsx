@@ -152,50 +152,52 @@ export default function Calendar({ userRole }) {
                 </div>
             )}
 
-            {/* Legend Logic: Fallback to events if destinations table is empty */}
-            {(() => {
-                const effectiveDestinations = destinations.length > 0 ? destinations : (() => {
-                    const list = [];
-                    const seen = new Set();
-                    Object.values(events || {}).forEach(e => {
-                        if (!e || !e.title) return;
-                        const dClass = e.schoolClass || e.school_class || '';
-                        const key = `${e.title.trim().toLowerCase()}|${dClass.trim().toLowerCase()}`;
-                        if (!seen.has(key)) {
-                            seen.add(key);
-                            list.push({
-                                name: e.title,
-                                color: e.color || '#3b82f6',
-                                defaultClass: dClass
-                            });
-                        }
-                    });
-                    return list;
-                })();
+            {/* Legend Section: Auto-populates from events if destinations table is empty */}
+            <div className="calendar-legend">
+                {(() => {
+                    const effectiveDestinations = destinations.length > 0 ? destinations : (() => {
+                        const list = [];
+                        const seen = new Set();
+                        Object.values(events || {}).forEach(e => {
+                            if (!e || !e.title) return;
+                            const dClass = e.schoolClass || e.school_class || '';
+                            const key = `${e.title.trim().toLowerCase()}|${dClass.trim().toLowerCase()}`;
+                            if (!seen.has(key)) {
+                                seen.add(key);
+                                list.push({
+                                    name: e.title,
+                                    color: e.color || '#3b82f6',
+                                    defaultClass: dClass
+                                });
+                            }
+                        });
+                        return list;
+                    })();
 
-                return effectiveDestinations
-                    .filter((dest, index, self) =>
-                        dest && index === self.findIndex((t) => {
-                            if (!t) return false
-                            const tName = typeof t === 'string' ? t : (t.name || '')
-                            const dName = typeof dest === 'string' ? dest : (dest.name || '')
-                            const tClass = typeof t === 'string' ? '' : (t.default_class || t.defaultClass || '')
-                            const dClass = typeof dest === 'string' ? '' : (dest.default_class || dest.defaultClass || '')
-                            return tName === dName && tClass === dClass
-                        })
-                    )
-                    .map((dest, idx) => {
-                        if (!dest) return null
-                        const name = typeof dest === 'string' ? dest : dest.name
-                        const color = typeof dest === 'string' ? '#3b82f6' : dest.color
-                        return (
-                            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
-                                <div style={{ width: '0.85rem', height: '0.85rem', borderRadius: '50%', backgroundColor: color || '#3b82f6', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}></div>
-                                <span style={{ fontWeight: '500', color: '#334155' }}>{name}</span>
-                            </div>
+                    return effectiveDestinations
+                        .filter((dest, index, self) =>
+                            dest && index === self.findIndex((t) => {
+                                if (!t) return false
+                                const tName = typeof t === 'string' ? t : (t.name || '')
+                                const dName = typeof dest === 'string' ? dest : (dest.name || '')
+                                const tClass = typeof t === 'string' ? '' : (t.default_class || t.defaultClass || '')
+                                const dClass = typeof dest === 'string' ? '' : (dest.default_class || dest.defaultClass || '')
+                                return tName === dName && tClass === dClass
+                            })
                         )
-                    })
-            })()}
+                        .map((dest, idx) => {
+                            if (!dest) return null
+                            const name = typeof dest === 'string' ? dest : dest.name
+                            const color = typeof dest === 'string' ? '#3b82f6' : dest.color
+                            return (
+                                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
+                                    <div style={{ width: '0.85rem', height: '0.85rem', borderRadius: '50%', backgroundColor: color || '#3b82f6', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}></div>
+                                    <span style={{ fontWeight: '500', color: '#334155' }}>{name}</span>
+                                </div>
+                            )
+                        })
+                })()}
+            </div>
 
             <div className="calendar-weekdays">
                 {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map(d => (
@@ -244,12 +246,16 @@ export default function Calendar({ userRole }) {
                                     border: hasEvent.status === 'validated' ? '2px solid #16a34a' :
                                         hasEvent.status === 'rejected' ? '2px solid #dc2626' :
                                             hasEvent.status === 'pending' ? '2px dotted #eab308' : 'none',
-                                    height: 'auto',
-                                    borderRadius: '4px',
-                                    padding: '2px 4px'
+                                    height: userRole === 'CHAUFFEUR' ? '12px' : 'auto',
+                                    borderRadius: userRole === 'CHAUFFEUR' ? '10px' : '4px',
+                                    padding: userRole === 'CHAUFFEUR' ? '0' : '2px 4px'
                                 }}>
-                                    {hasEvent.title}
-                                    {hasEvent.schoolClass && <span style={{ marginLeft: '4px', opacity: 0.8, fontSize: '0.7em' }}>({hasEvent.schoolClass})</span>}
+                                    {userRole !== 'CHAUFFEUR' && (
+                                        <>
+                                            {hasEvent.title}
+                                            {hasEvent.schoolClass && <span style={{ marginLeft: '4px', opacity: 0.8, fontSize: '0.7em' }}>({hasEvent.schoolClass})</span>}
+                                        </>
+                                    )}
                                 </div>
                             )}
                         </div>
