@@ -5,22 +5,18 @@ import { supabase } from '../../lib/supabase'
 export default function Calendar({ userRole }) {
     const [currentDate, setCurrentDate] = useState(new Date())
     const [events, setEvents] = useState({})
-    const [destinations, setDestinations] = useState([
-        { name: "Aéroport Charles de Gaulle", color: "#3b82f6" },
-        { name: "Aéroport d'Orly", color: "#3b82f6" },
-        { name: "Gare de Lyon", color: "#22c55e" },
-        { name: "Gare du Nord", color: "#22c55e" },
-        { name: "Gare Montparnasse", color: "#22c55e" },
-        { name: "Paris Centre", color: "#a855f7" },
-        { name: "Disneyland Paris", color: "#ec4899" },
-        { name: "La Défense", color: "#64748b" },
-        { name: "Versailles", color: "#f97316" }
-    ])
+    const [destinations, setDestinations] = useState([])
+    const [fetchError, setFetchError] = useState(null)
 
     useEffect(() => {
         const fetchData = async () => {
+            setFetchError(null)
             // Fetch Transports
-            const { data: tData } = await supabase.from('transports').select('*')
+            const { data: tData, error: tError } = await supabase.from('transports').select('*')
+            if (tError) {
+                console.error('Error fetching transports:', tError)
+                setFetchError('Erreur de chargement des transports')
+            }
             if (tData) {
                 const map = {}
                 tData.forEach(e => {
@@ -36,8 +32,12 @@ export default function Calendar({ userRole }) {
             }
 
             // Fetch Destinations
-            const { data: dData } = await supabase.from('destinations').select('*')
-            if (dData && dData.length > 0) {
+            const { data: dData, error: dError } = await supabase.from('destinations').select('*')
+            if (dError) {
+                console.error('Error fetching destinations:', dError)
+                setFetchError('Erreur de chargement des lieux')
+            }
+            if (dData) {
                 setDestinations(dData.map(d => ({
                     ...d,
                     defaultClass: d.default_class || d.defaultClass || ''
@@ -158,6 +158,12 @@ export default function Calendar({ userRole }) {
                     </button>
                 </div>
             </div>
+
+            {fetchError && (
+                <div style={{ background: '#fee2e2', color: '#b91c1c', padding: '0.5rem 1rem', borderRadius: '0.5rem', marginBottom: '1rem', fontSize: '0.85rem', textAlign: 'center' }}>
+                    ⚠️ {fetchError}
+                </div>
+            )}
 
             {/* Legend */}
             <div className="calendar-legend">
