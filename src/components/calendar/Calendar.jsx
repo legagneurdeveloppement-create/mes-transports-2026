@@ -152,20 +152,28 @@ export default function Calendar({ userRole }) {
                 </div>
             )}
 
-            {/* Legend */}
-            <div className="calendar-legend">
-                {destinations.length === 0 && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', width: '100%', justifyContent: 'center' }}>
-                        <span style={{ color: '#64748b', fontSize: '0.8rem' }}>Aucun lieu synchronisé sur ce téléphone.</span>
-                        <button
-                            onClick={() => window.location.reload()}
-                            style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', background: '#e2e8f0', border: 'none', borderRadius: '0.25rem', cursor: 'pointer' }}
-                        >
-                            Actualiser
-                        </button>
-                    </div>
-                )}
-                {(destinations || [])
+            {/* Legend Logic: Fallback to events if destinations table is empty */}
+            {(() => {
+                const effectiveDestinations = destinations.length > 0 ? destinations : (() => {
+                    const list = [];
+                    const seen = new Set();
+                    Object.values(events || {}).forEach(e => {
+                        if (!e || !e.title) return;
+                        const dClass = e.schoolClass || e.school_class || '';
+                        const key = `${e.title.trim().toLowerCase()}|${dClass.trim().toLowerCase()}`;
+                        if (!seen.has(key)) {
+                            seen.add(key);
+                            list.push({
+                                name: e.title,
+                                color: e.color || '#3b82f6',
+                                defaultClass: dClass
+                            });
+                        }
+                    });
+                    return list;
+                })();
+
+                return effectiveDestinations
                     .filter((dest, index, self) =>
                         dest && index === self.findIndex((t) => {
                             if (!t) return false
@@ -186,8 +194,8 @@ export default function Calendar({ userRole }) {
                                 <span style={{ fontWeight: '500', color: '#334155' }}>{name}</span>
                             </div>
                         )
-                    })}
-            </div>
+                    })
+            })()}
 
             <div className="calendar-weekdays">
                 {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map(d => (
