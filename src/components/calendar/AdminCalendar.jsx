@@ -299,6 +299,56 @@ export default function AdminCalendar() {
         })))
     }
 
+    const handleDeleteDestination = async (destToDelete) => {
+        const nameToDelete = typeof destToDelete === 'string' ? destToDelete : destToDelete.name
+        const classToDelete = (typeof destToDelete === 'string' ? '' : (destToDelete.defaultClass || destToDelete.default_class || '')).trim().toLowerCase()
+
+        // 1. Update Destinations List
+        const updatedDests = effectiveDestinations.filter(d => {
+            const dName = (typeof d === 'string' ? d : d.name).trim().toLowerCase()
+            const dClass = (typeof d === 'string' ? '' : (d.defaultClass || d.default_class || '')).trim().toLowerCase()
+            return !(dName === nameToDelete.trim().toLowerCase() && dClass === classToDelete)
+        })
+
+        // 2. Clear associated events in local state
+        const newEvents = { ...events }
+        let deletedEventsCount = 0
+        Object.keys(newEvents).forEach(key => {
+            const ev = newEvents[key]
+            const evName = (ev.title || '').trim().toLowerCase()
+            const evClass = (ev.schoolClass || ev.school_class || '').trim().toLowerCase()
+            if (evName === nameToDelete.trim().toLowerCase() && (evClass === classToDelete || classToDelete === '')) {
+                delete newEvents[key]
+                deletedEventsCount++
+            }
+        })
+
+        // 3. Update local storage
+        setEvents(newEvents)
+        setDestinations(updatedDests)
+        localStorage.setItem('transport_events', JSON.stringify(newEvents))
+        localStorage.setItem('transport_destinations', JSON.stringify(updatedDests))
+
+        // 4. Sync with Cloud (Cascade Delete)
+        try {
+            // Delete destination from DB
+            await supabase.from('destinations').delete().eq('name', nameToDelete)
+
+            // Delete associated transports from DB
+            if (deletedEventsCount > 0) {
+                await supabase.from('transports')
+                    .delete()
+                    .eq('title', nameToDelete)
+                // We don't filter by class here to be thorough, but we could if needed
+            }
+
+            alert(`Lieu "${nameToDelete}" supprimé avec succès${deletedEventsCount > 0 ? ` (+ ${deletedEventsCount} transports)` : ''}.`)
+        } catch (error) {
+            console.error('Error during cascade delete:', error)
+            alert("Erreur lors de la suppression sur le serveur.")
+        }
+    }
+
     const changeYear = (delta) => {
         setCurrentYear(currentYear + delta)
     }
@@ -563,6 +613,7 @@ export default function AdminCalendar() {
                 onClose={() => setIsDestManagerOpen(false)}
                 destinations={effectiveDestinations}
                 onUpdate={saveDestinations}
+                onDelete={handleDeleteDestination}
             />
         </div>
     )
