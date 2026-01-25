@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { ChevronLeft, ChevronRight, Settings, CloudUpload, RefreshCw } from 'lucide-react'
 import EventModal from './EventModal'
 import DestinationManagerModal from './DestinationManagerModal'
@@ -110,6 +110,46 @@ export default function AdminCalendar() {
             supabase.removeChannel(destinationChannel)
         }
     }, [])
+
+    // Standardized Source of Truth for Destinations (Cloud + Local + Auto-Detect)
+    const effectiveDestinations = useMemo(() => {
+        const list = [];
+        const seen = new Set();
+
+        // 1. Add explicitly defined destinations from Cloud or local state
+        if (Array.isArray(destinations)) {
+            destinations.forEach(d => {
+                if (!d) return;
+                const dName = (typeof d === 'string' ? d : (d.name || '')).trim().toLowerCase();
+                const dClass = (typeof d === 'string' ? '' : (d.defaultClass || d.default_class || '')).trim().toLowerCase();
+                const key = `${dName}|${dClass}`;
+                if (dName && !seen.has(key)) {
+                    seen.add(key);
+                    list.push(typeof d === 'string' ? { name: d, color: '#3b82f6', defaultClass: '' } : d);
+                }
+            });
+        }
+
+        // 2. FORCE Auto-detect from ALL visible events (Fallback for mobile/no-sync cases)
+        if (events && typeof events === 'object') {
+            Object.values(events).forEach(e => {
+                if (!e || !e.title) return;
+                const eName = e.title.trim().toLowerCase();
+                const eClass = (e.schoolClass || e.school_class || '').trim().toLowerCase();
+                const key = `${eName}|${eClass}`;
+
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    list.push({
+                        name: e.title,
+                        color: e.color || '#3b82f6',
+                        defaultClass: e.schoolClass || e.school_class || ''
+                    });
+                }
+            });
+        }
+        return list;
+    }, [destinations, events]);
 
     const syncLocalToCloud = async () => {
         if (!window.confirm("Voulez-vous envoyer vos transports locaux vers le Cloud ? Cela les rendra visibles sur votre téléphone.")) return
@@ -316,7 +356,7 @@ export default function AdminCalendar() {
         const eClass = (event.schoolClass || event.school_class || '').trim().toLowerCase()
         const eTitle = (event.title || '').trim().toLowerCase()
 
-        const match = (destinations || []).find(d => {
+        const match = effectiveDestinations.find(d => {
             if (!d) return false
             const dName = (typeof d === 'string' ? d : (d.name || '')).trim().toLowerCase()
             const dClass = (typeof d === 'string' ? '' : (d.defaultClass || d.default_class || '')).trim().toLowerCase()
@@ -378,8 +418,12 @@ export default function AdminCalendar() {
                 borderRadius: '0.5rem',
                 border: '1px solid #e2e8f0'
             }}>
-                {(destinations || []).length === 0 && <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Aucun lieu défini.</span>}
-                {(destinations || [])
+                {effectiveDestinations.length === 0 && (
+                    <span style={{ color: '#64748b', fontSize: '0.9rem', width: '100%', textAlign: 'center' }}>
+                        Aucun lieu défini (Détection automatique en cours...)
+                    </span>
+                )}
+                {effectiveDestinations
                     .filter((dest, index, self) =>
                         dest && index === self.findIndex((t) => (
                             t && t.name === dest.name && (t.defaultClass || t.default_class) === (dest.defaultClass || dest.default_class)
