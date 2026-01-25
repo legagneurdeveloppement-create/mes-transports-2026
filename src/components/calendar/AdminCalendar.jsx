@@ -131,16 +131,27 @@ export default function AdminCalendar() {
                 })
             }
 
-            // 2. Destinations Sync
-            const storedDests = JSON.parse(localStorage.getItem('transport_destinations') || '[]')
-            if (storedDests.length > 0) {
-                // Clear and re-populate destinations table
-                await supabase.from('destinations').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-                await supabase.from('destinations').insert(storedDests.map(d => ({
-                    name: typeof d === 'string' ? d : d.name,
-                    color: typeof d === 'string' ? '#3b82f6' : d.color,
-                    default_class: typeof d === 'string' ? '' : (d.defaultClass || d.default_class || '')
-                })))
+            // 2. Destinations Sync (Enhanced Safety)
+            const currentDests = destinations && destinations.length > 0 ? destinations : JSON.parse(localStorage.getItem('transport_destinations') || '[]')
+
+            if (currentDests.length > 0) {
+                // Use a more structured mapping to avoid bad data
+                const destsToInsert = currentDests.map(d => {
+                    const name = typeof d === 'string' ? d : (d.name || '')
+                    const color = typeof d === 'string' ? '#3b82f6' : (d.color || '#3b82f6')
+                    const defClass = typeof d === 'string' ? '' : (d.defaultClass || d.default_class || '')
+                    return { name, color, default_class: defClass }
+                }).filter(innerD => innerD.name.trim() !== '')
+
+                if (destsToInsert.length > 0) {
+                    console.log("Syncing destinations...", destsToInsert.length)
+                    // Clear existing (except the placeholder ID if any)
+                    const { error: delError } = await supabase.from('destinations').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+                    if (delError) throw new Error("Erreur lors du nettoyage des lieux : " + delError.message)
+
+                    const { error: insError } = await supabase.from('destinations').insert(destsToInsert)
+                    if (insError) throw new Error("Erreur lors de l'insertion des lieux : " + insError.message)
+                }
             }
 
             // Refresh local state after sync
@@ -161,8 +172,8 @@ export default function AdminCalendar() {
 
             alert("Synchronisation terminée ! Vos données sont maintenant sur le Cloud.")
         } catch (error) {
-            console.error(error)
-            alert("Erreur lors de la synchronisation.")
+            console.error('Fatal sync error:', error)
+            alert("Erreur lors de la synchronisation : " + (error.message || error))
         } finally {
             setIsSyncing(false)
         }
