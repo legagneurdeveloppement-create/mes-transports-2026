@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/layout/Navbar'
 import {
     Calendar, CheckCircle, XCircle, Clock, MapPin,
@@ -9,13 +10,30 @@ import { useAuth } from '../context/AuthContext'
 
 export default function Help() {
     const { user } = useAuth()
+    const navigate = useNavigate()
     const [activeTab, setActiveTab] = useState(user?.role === 'CHAUFFEUR' ? 'chauffeur' : 'admin')
 
     return (
         <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
             <Navbar />
             <div className="container" style={{ padding: '2rem' }}>
-                <header style={{ marginBottom: '2rem', textAlign: 'center' }}>
+                <header style={{ marginBottom: '2rem', textAlign: 'center', position: 'relative' }}>
+                    <button
+                        onClick={() => navigate('/dashboard')}
+                        style={{
+                            position: 'absolute',
+                            right: 0,
+                            top: 0,
+                            padding: '0.5rem 1rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            fontSize: '0.9rem'
+                        }}
+                        className="btn btn-outline"
+                    >
+                        <ArrowRight size={18} style={{ transform: 'rotate(180deg)' }} /> Fermer / Retour
+                    </button>
                     <h1 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', color: 'var(--primary)', marginBottom: '1rem' }}>
                         <HelpCircle size={32} /> Centre d'Aide
                     </h1>
