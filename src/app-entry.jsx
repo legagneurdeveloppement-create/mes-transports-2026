@@ -18,7 +18,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 // Global Error Interceptor for Mobile Debugging
 window.onerror = function (msg, url, lineNo, columnNo, error) {
   const info = `Error: ${msg}\nLine: ${lineNo}\nFile: ${url}`;
-  alert(info);
   console.error(info, error);
   return false;
 };
