@@ -1,10 +1,24 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { Car, LogOut, User, ArrowRight, HelpCircle } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import { useState, useEffect } from 'react'
+import { supabase } from '../../lib/supabase'
 
 export default function Navbar({ hideUserInfo = false }) {
     const { user, logout, viewAsChauffeur, setViewAsChauffeur } = useAuth() || {}
     const navigate = useNavigate()
+    const [dbStatus, setDbStatus] = useState('connecting')
+
+    useEffect(() => {
+        const channel = supabase.channel('status-check')
+            .on('system', { event: '*' }, (payload) => {
+                console.log('Realtime System:', payload)
+            })
+            .subscribe((status) => {
+                setDbStatus(status)
+            })
+        return () => { supabase.removeChannel(channel) }
+    }, [])
 
     const isAdmin = user && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN')
 
@@ -20,6 +34,18 @@ export default function Navbar({ hideUserInfo = false }) {
                     <span className="navbar-logo-text">
                         Mes Transports
                     </span>
+                    <div
+                        title={`Statut Synchro: ${dbStatus}`}
+                        style={{
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            backgroundColor: dbStatus === 'SUBSCRIBED' ? '#22c55e' : dbStatus === 'connecting' ? '#eab308' : '#ef4444',
+                            marginLeft: '-0.25rem',
+                            marginTop: '-0.5rem',
+                            border: '1px solid white'
+                        }}
+                    ></div>
                 </Link>
 
                 <div className="navbar-actions">

@@ -1,5 +1,5 @@
-// Service Worker v2 - Forced update to fix blank page issues
-const CACHE_NAME = 'mes-transports-v2';
+// Service Worker v3 - Critical sync update
+const CACHE_NAME = 'mes-transports-v3';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
