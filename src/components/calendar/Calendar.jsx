@@ -167,7 +167,17 @@ export default function Calendar({ userRole }) {
 
             {/* Legend */}
             <div className="calendar-legend">
-                {destinations.length === 0 && <span style={{ color: '#64748b', fontSize: '0.8rem' }}>Aucun lieu défini.</span>}
+                {destinations.length === 0 && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', width: '100%', justifyContent: 'center' }}>
+                        <span style={{ color: '#64748b', fontSize: '0.8rem' }}>Aucun lieu synchronisé sur ce téléphone.</span>
+                        <button
+                            onClick={() => window.location.reload()}
+                            style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', background: '#e2e8f0', border: 'none', borderRadius: '0.25rem', cursor: 'pointer' }}
+                        >
+                            Actualiser
+                        </button>
+                    </div>
+                )}
                 {destinations
                     .filter((dest, index, self) =>
                         index === self.findIndex((t) => {
@@ -237,16 +247,12 @@ export default function Calendar({ userRole }) {
                                     border: hasEvent.status === 'validated' ? '2px solid #16a34a' :
                                         hasEvent.status === 'rejected' ? '2px solid #dc2626' :
                                             hasEvent.status === 'pending' ? '2px dotted #eab308' : 'none',
-                                    height: userRole === 'CHAUFFEUR' ? '12px' : 'auto',
-                                    borderRadius: userRole === 'CHAUFFEUR' ? '10px' : '4px',
-                                    padding: userRole === 'CHAUFFEUR' ? '0' : '2px 4px'
+                                    height: 'auto',
+                                    borderRadius: '4px',
+                                    padding: '2px 4px'
                                 }}>
-                                    {userRole !== 'CHAUFFEUR' && (
-                                        <>
-                                            {hasEvent.title}
-                                            {hasEvent.schoolClass && <span style={{ marginLeft: '4px', opacity: 0.8, fontSize: '0.7em' }}>({hasEvent.schoolClass})</span>}
-                                        </>
-                                    )}
+                                    {hasEvent.title}
+                                    {hasEvent.schoolClass && <span style={{ marginLeft: '4px', opacity: 0.8, fontSize: '0.7em' }}>({hasEvent.schoolClass})</span>}
                                 </div>
                             )}
                         </div>
