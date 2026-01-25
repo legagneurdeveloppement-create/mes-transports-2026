@@ -111,9 +111,27 @@ export default function Dashboard() {
         <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
             <Navbar />
             <div className="container dashboard-container">
-                <header className="dashboard-header">
+                <header className="dashboard-header no-print">
                     <div>
-                        <h1 className="dashboard-title">Tableau de Bord</h1>
+                        <h1 className="dashboard-title">Tableau de bord</h1>
+                        <p className="dashboard-subtitle">Bienvenue, {user?.email}</p>
+                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', fontSize: '0.7rem', color: '#94a3b8' }}>
+                            <span>v2.1.0-parity</span>
+                            <button
+                                onClick={() => {
+                                    if (window.confirm("Forcer la mise à jour ? L'application va redémarrer.")) {
+                                        if ('serviceWorker' in navigator) {
+                                            navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+                                        }
+                                        localStorage.removeItem('transport_destinations');
+                                        window.location.reload(true);
+                                    }
+                                }}
+                                style={{ background: 'none', border: 'none', color: '#0ea5e9', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+                            >
+                                Recharger tout (Correction bug)
+                            </button>
+                        </div>
                         <p className="dashboard-welcome">
                             Bienvenue, {user.email}. Vous êtes connecté en tant que <span className="dashboard-role">
                                 {user.role === 'SUPER_ADMIN' ? 'ADMINISTRATEUR GÉNÉRAL' :

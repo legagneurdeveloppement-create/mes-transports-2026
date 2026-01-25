@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 
@@ -79,12 +79,43 @@ export default function Calendar({ userRole }) {
         return { days, firstDay }
     }
 
+    // Standardized Source of Truth for Destinations (Cloud + Auto-Detect)
+    const effectiveDestinations = useMemo(() => {
+        const list = [...(destinations || [])];
+        const seen = new Set();
+
+        // Add existing from cloud to 'seen'
+        list.forEach(d => {
+            const dName = (typeof d === 'string' ? d : (d.name || '')).trim().toLowerCase();
+            const dClass = (typeof d === 'string' ? '' : (d.defaultClass || d.default_class || '')).trim().toLowerCase();
+            seen.add(`${dName}|${dClass}`);
+        });
+
+        // Auto-detect from visible events
+        Object.values(events || {}).forEach(e => {
+            if (!e || !e.title) return;
+            const eName = e.title.trim().toLowerCase();
+            const eClass = (e.schoolClass || e.school_class || '').trim().toLowerCase();
+            const key = `${eName}|${eClass}`;
+
+            if (!seen.has(key)) {
+                seen.add(key);
+                list.push({
+                    name: e.title,
+                    color: e.color || '#3b82f6',
+                    defaultClass: e.schoolClass || e.school_class || ''
+                });
+            }
+        });
+        return list;
+    }, [destinations, events]);
+
     const getEventColor = (event) => {
         if (!event) return 'transparent'
         const eClass = (event.schoolClass || event.school_class || '').trim().toLowerCase()
         const eTitle = (event.title || '').trim().toLowerCase()
 
-        const match = (destinations || []).find(d => {
+        const match = effectiveDestinations.find(d => {
             if (!d) return false
             const dName = (typeof d === 'string' ? d : (d.name || '')).trim().toLowerCase()
             const dClass = (typeof d === 'string' ? '' : (d.defaultClass || d.default_class || '')).trim().toLowerCase()
@@ -153,51 +184,31 @@ export default function Calendar({ userRole }) {
                 </div>
             )}
 
-            {/* Legend Section: Auto-populates from events if destinations table is empty */}
+            {/* Legend Section: Auto-populates from effective sources */}
             <div className="calendar-legend">
-                {(() => {
-                    const effectiveDestinations = destinations.length > 0 ? destinations : (() => {
-                        const list = [];
-                        const seen = new Set();
-                        Object.values(events || {}).forEach(e => {
-                            if (!e || !e.title) return;
-                            const dClass = e.schoolClass || e.school_class || '';
-                            const key = `${e.title.trim().toLowerCase()}|${dClass.trim().toLowerCase()}`;
-                            if (!seen.has(key)) {
-                                seen.add(key);
-                                list.push({
-                                    name: e.title,
-                                    color: e.color || '#3b82f6',
-                                    defaultClass: dClass
-                                });
-                            }
-                        });
-                        return list;
-                    })();
-
-                    return effectiveDestinations
-                        .filter((dest, index, self) =>
-                            dest && index === self.findIndex((t) => {
-                                if (!t) return false
-                                const tName = typeof t === 'string' ? t : (t.name || '')
-                                const dName = typeof dest === 'string' ? dest : (dest.name || '')
-                                const tClass = typeof t === 'string' ? '' : (t.default_class || t.defaultClass || '')
-                                const dClass = typeof dest === 'string' ? '' : (dest.default_class || dest.defaultClass || '')
-                                return tName === dName && tClass === dClass
-                            })
-                        )
-                        .map((dest, idx) => {
-                            if (!dest) return null
-                            const name = typeof dest === 'string' ? dest : dest.name
-                            const color = typeof dest === 'string' ? '#3b82f6' : dest.color
-                            return (
-                                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
-                                    <div style={{ width: '0.85rem', height: '0.85rem', borderRadius: '50%', backgroundColor: color || '#3b82f6', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}></div>
-                                    <span style={{ fontWeight: '500', color: '#334155' }}>{name}</span>
-                                </div>
-                            )
+                {effectiveDestinations
+                    .filter((dest, index, self) =>
+                        dest && index === self.findIndex((t) => {
+                            if (!t) return false
+                            const tName = typeof t === 'string' ? t : (t.name || '')
+                            const dName = typeof dest === 'string' ? dest : (dest.name || '')
+                            const tClass = typeof t === 'string' ? '' : (t.default_class || t.defaultClass || '')
+                            const dClass = typeof dest === 'string' ? '' : (dest.default_class || dest.defaultClass || '')
+                            return tName === dName && tClass === dClass
                         })
-                })()}
+                    )
+                    .map((dest, idx) => {
+                        if (!dest) return null
+                        const name = typeof dest === 'string' ? dest : dest.name
+                        const color = typeof dest === 'string' ? '#3b82f6' : dest.color
+                        return (
+                            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
+                                <div style={{ width: '0.85rem', height: '0.85rem', borderRadius: '50%', backgroundColor: color || '#3b82f6', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}></div>
+                                <span style={{ fontWeight: '500', color: '#334155' }}>{name}</span>
+                            </div>
+                        )
+                    })
+                }
             </div>
 
             <div className="calendar-weekdays">
@@ -246,17 +257,12 @@ export default function Calendar({ userRole }) {
                                     background: getEventColor(hasEvent),
                                     border: hasEvent.status === 'validated' ? '2px solid #16a34a' :
                                         hasEvent.status === 'rejected' ? '2px solid #dc2626' :
-                                            hasEvent.status === 'pending' ? '2px dotted #eab308' : 'none',
-                                    height: (userRole === 'CHAUFFEUR' || window.innerWidth < 768) ? '12px' : 'auto',
-                                    borderRadius: (userRole === 'CHAUFFEUR' || window.innerWidth < 768) ? '10px' : '4px',
-                                    padding: (userRole === 'CHAUFFEUR' || window.innerWidth < 768) ? '0' : '2px 4px'
+                                            hasEvent.status === 'pending' ? '2px dotted #eab308' : 'none'
                                 }}>
-                                    {(userRole !== 'CHAUFFEUR' && window.innerWidth >= 768) && (
-                                        <>
-                                            {hasEvent.title}
-                                            {hasEvent.schoolClass && <span style={{ marginLeft: '4px', opacity: 0.8, fontSize: '0.7em' }}>({hasEvent.schoolClass})</span>}
-                                        </>
-                                    )}
+                                    <span className="event-label">
+                                        {hasEvent.title}
+                                        {hasEvent.schoolClass && <span style={{ marginLeft: '4px', opacity: 0.8, fontSize: '0.7em' }}>({hasEvent.schoolClass})</span>}
+                                    </span>
                                 </div>
                             )}
                         </div>

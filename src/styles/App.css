@@ -48,3 +48,18 @@
         margin-bottom: 2rem;
     }
 }
+
+/* Mobile responsiveness for calendar events */
+@media (max-width: 768px) {
+    .event-label {
+        display: none !important;
+    }
+
+    .calendar-event {
+        height: 12px !important;
+        border-radius: 10px !important;
+        padding: 0 !important;
+        margin: 2px 0 !important;
+        min-height: 12px !important;
+    }
+}
