@@ -199,9 +199,15 @@ export default function ChauffeurDashboard() {
                 // Calculate Aller duration
                 try {
                     if (transport.time_departure_school) {
-                        const rawAller = typeof transport.time_departure_school === 'string'
-                            ? JSON.parse(transport.time_departure_school)
-                            : transport.time_departure_school
+                        let rawAller = []
+                        try {
+                            rawAller = typeof transport.time_departure_school === 'string'
+                                ? JSON.parse(transport.time_departure_school || '[]')
+                                : transport.time_departure_school
+                        } catch (pe) {
+                            console.error('Error parsing aller schedule:', pe)
+                            rawAller = []
+                        }
 
                         let allerSteps = []
                         if (Array.isArray(rawAller)) {
@@ -228,11 +234,18 @@ export default function ChauffeurDashboard() {
 
                     // Calculate Retour duration
                     if (transport.time_arrival_school) {
-                        const retourSteps = typeof transport.time_arrival_school === 'string'
-                            ? JSON.parse(transport.time_arrival_school)
-                            : transport.time_arrival_school
+                        let retourSteps = []
+                        try {
+                            const parsed = typeof transport.time_arrival_school === 'string'
+                                ? JSON.parse(transport.time_arrival_school || '[]')
+                                : transport.time_arrival_school
+                            retourSteps = Array.isArray(parsed) ? parsed : (parsed?.steps || [])
+                        } catch (pe) {
+                            console.error('Error parsing retour schedule:', pe)
+                            retourSteps = []
+                        }
 
-                        if (Array.isArray(retourSteps) && retourSteps.length >= 2) {
+                        if (retourSteps.length >= 2) {
                             const validSteps = retourSteps.filter(s => s.time && s.time.trim())
                             if (validSteps.length >= 2) {
                                 const firstTime = validSteps[0].time

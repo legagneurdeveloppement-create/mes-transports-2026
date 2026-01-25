@@ -175,7 +175,14 @@ export default function Dashboard() {
                             <div style={{ background: '#fef3c7', padding: '0.8rem', borderRadius: '0.5rem', marginBottom: '1.5rem', fontSize: '0.9rem', color: '#92400e', textAlign: 'center', border: '1px solid #f59e0b', fontWeight: '600' }}>
                                 💡 Mode Simulation : Vous visualisez l'interface telle qu'un Chauffeur la voit.
                             </div>
-                            <ChauffeurDashboard />
+                            {(() => {
+                                try {
+                                    return <ChauffeurDashboard />
+                                } catch (e) {
+                                    console.error("Crash in ChauffeurDashboard:", e)
+                                    return <div style={{ padding: '1rem', color: '#ef4444' }}>⚠️ Erreur d'affichage du tableau de bord chauffeur.</div>
+                                }
+                            })()}
                         </div>
 
                         <section className="card" style={{ marginTop: '2rem' }}>

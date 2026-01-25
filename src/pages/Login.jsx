@@ -84,6 +84,13 @@ export default function Login() {
 
                     <div className="auth-footer">
                         Pas encore de compte ? <Link to="/register" className="auth-footer-link">S'inscrire</Link>
+                        <hr style={{ margin: '1.5rem 0', opacity: 0.1 }} />
+                        <button
+                            onClick={() => { if (window.confirm("Voulez-vous vider le cache ? Vous devrez vous reconnecter.")) { localStorage.clear(); window.location.reload(); } }}
+                            style={{ fontSize: '0.75rem', color: '#64748b', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                        >
+                            ⚠️ Problème d'affichage ? Vider le cache
+                        </button>
                     </div>
                 </div>
             </div>
