@@ -5,7 +5,17 @@ import { supabase } from '../../lib/supabase'
 export default function Calendar({ userRole }) {
     const [currentDate, setCurrentDate] = useState(new Date())
     const [events, setEvents] = useState({})
-    const [destinations, setDestinations] = useState([])
+    const [destinations, setDestinations] = useState([
+        { name: "Aéroport Charles de Gaulle", color: "#3b82f6" },
+        { name: "Aéroport d'Orly", color: "#3b82f6" },
+        { name: "Gare de Lyon", color: "#22c55e" },
+        { name: "Gare du Nord", color: "#22c55e" },
+        { name: "Gare Montparnasse", color: "#22c55e" },
+        { name: "Paris Centre", color: "#a855f7" },
+        { name: "Disneyland Paris", color: "#ec4899" },
+        { name: "La Défense", color: "#64748b" },
+        { name: "Versailles", color: "#f97316" }
+    ])
 
     useEffect(() => {
         const fetchData = async () => {
@@ -27,7 +37,12 @@ export default function Calendar({ userRole }) {
 
             // Fetch Destinations
             const { data: dData } = await supabase.from('destinations').select('*')
-            if (dData) setDestinations(dData)
+            if (dData && dData.length > 0) {
+                setDestinations(dData.map(d => ({
+                    ...d,
+                    defaultClass: d.default_class || d.defaultClass || ''
+                })))
+            }
         }
 
         fetchData()
@@ -63,11 +78,14 @@ export default function Calendar({ userRole }) {
 
     const getEventColor = (event) => {
         if (!event) return 'transparent'
-        const eClass = event.schoolClass || event.school_class || ''
-        const match = (destinations || []).find(d =>
-            (d.name || d) === event.title &&
-            (d.defaultClass || d.default_class || '') === eClass
-        )
+        const eClass = (event.schoolClass || event.school_class || '').trim().toLowerCase()
+        const eTitle = (event.title || '').trim().toLowerCase()
+
+        const match = (destinations || []).find(d => {
+            const dName = (d.name || d || '').trim().toLowerCase()
+            const dClass = (d.defaultClass || d.default_class || '').trim().toLowerCase()
+            return dName === eTitle && dClass === eClass
+        })
         return match?.color || event.color || 'var(--primary)'
     }
 

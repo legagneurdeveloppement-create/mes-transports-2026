@@ -276,11 +276,14 @@ export default function AdminCalendar() {
 
     const getEventColor = (event) => {
         if (!event) return 'transparent'
-        const eClass = event.schoolClass || event.school_class || ''
-        const match = (destinations || []).find(d =>
-            (d.name || d) === event.title &&
-            (d.defaultClass || d.default_class || '') === eClass
-        )
+        const eClass = (event.schoolClass || event.school_class || '').trim().toLowerCase()
+        const eTitle = (event.title || '').trim().toLowerCase()
+
+        const match = (destinations || []).find(d => {
+            const dName = (d.name || d || '').trim().toLowerCase()
+            const dClass = (d.defaultClass || d.default_class || '').trim().toLowerCase()
+            return dName === eTitle && dClass === eClass
+        })
         return match?.color || event.color || 'var(--primary)'
     }
 
