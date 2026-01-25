@@ -131,12 +131,32 @@ export default function AdminCalendar() {
                 })
             }
 
+            // 2. Destinations Sync
+            const storedDests = JSON.parse(localStorage.getItem('transport_destinations') || '[]')
+            if (storedDests.length > 0) {
+                // Clear and re-populate destinations table
+                await supabase.from('destinations').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+                await supabase.from('destinations').insert(storedDests.map(d => ({
+                    name: typeof d === 'string' ? d : d.name,
+                    color: typeof d === 'string' ? '#3b82f6' : d.color,
+                    default_class: typeof d === 'string' ? '' : (d.defaultClass || d.default_class || '')
+                })))
+            }
+
             // Refresh local state after sync
-            const { data } = await supabase.from('transports').select('*')
-            if (data) {
+            const { data: newData } = await supabase.from('transports').select('*')
+            if (newData) {
                 const map = {}
-                data.forEach(e => map[e.date_key] = e)
+                newData.forEach(e => map[e.date_key] = e)
                 setEvents(map)
+            }
+
+            const { data: newDests } = await supabase.from('destinations').select('*')
+            if (newDests) {
+                setDestinations(newDests.map(d => ({
+                    ...d,
+                    defaultClass: d.default_class || d.defaultClass || ''
+                })))
             }
 
             alert("Synchronisation terminée ! Vos données sont maintenant sur le Cloud.")
