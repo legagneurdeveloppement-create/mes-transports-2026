@@ -560,7 +560,7 @@ export default function AdminCalendar() {
             <DestinationManagerModal
                 isOpen={isDestManagerOpen}
                 onClose={() => setIsDestManagerOpen(false)}
-                destinations={destinations}
+                destinations={effectiveDestinations}
                 onUpdate={saveDestinations}
             />
         </div>
