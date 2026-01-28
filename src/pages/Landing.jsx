@@ -74,15 +74,7 @@ export default function Landing() {
                 </div>
             </section>
 
-            <footer style={{ padding: '3rem 0', background: 'var(--bg)', borderTop: '1px solid #e2e8f0', marginTop: 'auto' }}>
-                <div className="container flex justify-between items-center">
-                    <span style={{ fontWeight: '600', color: 'var(--primary)' }}>© 2026 Mes Transports</span>
-                    <div className="flex gap-4" style={{ color: 'var(--text-light)' }}>
-                        <span>Mentions légales</span>
-                        <span>Contact</span>
-                    </div>
-                </div>
-            </footer>
+
         </div>
     )
 }
