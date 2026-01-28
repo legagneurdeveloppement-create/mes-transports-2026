@@ -16,6 +16,8 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
     // Use destinations prop directly
     const availableDestinations = destinations
 
+    console.log('🎯 EventModal - Received destinations:', availableDestinations?.length || 0, availableDestinations)
+
     const schoolClasses = [
         "MAT / CP", "CE / CM",
         "Petite Section", "Moyenne Section", "Grande Section",

@@ -64,11 +64,8 @@ export default function AdminCalendar() {
                 setFetchError(prev => prev ? prev + ' & lieux' : 'Erreur chargement lieux')
             }
             if (destData && destData.length > 0) {
-                // Map DB snake_case to app camelCase
-                setDestinations(destData.map(d => ({
-                    ...d,
-                    defaultClass: d ? (d.default_class || d.defaultClass) : ''
-                })).filter(Boolean))
+                // Just use the data as-is, don't try to map default_class
+                setDestinations(destData.filter(Boolean))
             } else {
                 try {
                     const storedDestinations = localStorage.getItem('transport_destinations')
@@ -149,6 +146,9 @@ export default function AdminCalendar() {
                 }
             });
         }
+
+        console.log('🔍 DEBUG effectiveDestinations:', list.length, 'destinations found');
+        console.log('📋 Destinations list:', list);
         return list;
     }, [destinations, events]);
 
@@ -186,8 +186,8 @@ export default function AdminCalendar() {
                 const destsToInsert = currentDests.map(d => {
                     const name = typeof d === 'string' ? d : (d.name || '')
                     const color = typeof d === 'string' ? '#3b82f6' : (d.color || '#3b82f6')
-                    const defClass = typeof d === 'string' ? '' : (d.defaultClass || d.default_class || '')
-                    return { name, color, default_class: defClass }
+                    // Don't include default_class if it doesn't exist in DB schema
+                    return { name, color }
                 }).filter(innerD => innerD.name.trim() !== '')
 
                 if (destsToInsert.length > 0) {
@@ -211,10 +211,7 @@ export default function AdminCalendar() {
 
             const { data: newDests } = await supabase.from('destinations').select('*')
             if (newDests) {
-                setDestinations(newDests.map(d => ({
-                    ...d,
-                    defaultClass: d.default_class || d.defaultClass || ''
-                })))
+                setDestinations(newDests.filter(Boolean))
             }
 
             alert("Synchronisation terminée ! Vos données sont maintenant sur le Cloud.")
@@ -294,8 +291,8 @@ export default function AdminCalendar() {
         await supabase.from('destinations').delete().neq('id', '00000000-0000-0000-0000-000000000000')
         await supabase.from('destinations').insert(newDestinations.map(d => ({
             name: d.name,
-            color: d.color,
-            default_class: d.defaultClass
+            color: d.color
+            // Removed default_class as it doesn't exist in DB schema
         })))
     }
 
@@ -526,7 +523,7 @@ export default function AdminCalendar() {
                                                 borderRadius: '0.25rem',
                                                 backgroundColor: hasEvent ? getEventColor(hasEvent) : 'transparent',
                                                 color: hasEvent ? 'white' : 'inherit',
-                                                border: isToday ? '3px solid #ef4444' : (
+                                                border: isToday ? '3px solid #3b82f6' : (
                                                     hasEvent?.status === 'validated' ? '3px solid #16a34a' :
                                                         hasEvent?.status === 'rejected' ? '3px solid #dc2626' : 'none'
                                                 ),
@@ -580,7 +577,7 @@ export default function AdminCalendar() {
                                                 borderRadius: '0.25rem',
                                                 backgroundColor: hasEvent ? getEventColor(hasEvent) : 'transparent',
                                                 color: hasEvent ? 'white' : 'inherit',
-                                                border: isToday ? '3px solid #ef4444' : (
+                                                border: isToday ? '3px solid #3b82f6' : (
                                                     hasEvent?.status === 'validated' ? '3px solid #16a34a' :
                                                         hasEvent?.status === 'rejected' ? '3px solid #dc2626' : 'none'
                                                 ),
@@ -605,7 +602,7 @@ export default function AdminCalendar() {
                 onSave={handleSaveEvent}
                 eventData={selectedEventData}
                 selectedDate={selectedDateKey}
-                destinations={destinations}
+                destinations={effectiveDestinations}
             />
 
             <DestinationManagerModal

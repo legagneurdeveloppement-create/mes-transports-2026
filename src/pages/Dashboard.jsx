@@ -116,20 +116,23 @@ export default function Dashboard() {
                         <h1 className="dashboard-title">Tableau de bord</h1>
                         <p className="dashboard-subtitle">Bienvenue, {user?.email}</p>
                         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', fontSize: '0.7rem', color: '#94a3b8' }}>
-                            <span>v2.1.0-parity</span>
+                            <span>v2.2.0-fix</span>
                             <button
-                                onClick={() => {
+                                onClick={async () => {
                                     if (window.confirm("Forcer la mise à jour ? L'application va redémarrer.")) {
                                         if ('serviceWorker' in navigator) {
-                                            navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+                                            const regs = await navigator.serviceWorker.getRegistrations();
+                                            for (const reg of regs) {
+                                                await reg.unregister();
+                                            }
                                         }
                                         localStorage.removeItem('transport_destinations');
-                                        window.location.reload(true);
+                                        window.location.reload();
                                     }
                                 }}
                                 style={{ background: 'none', border: 'none', color: '#0ea5e9', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
                             >
-                                Recharger tout (Correction bug)
+                                Recharger (Cache vidé)
                             </button>
                         </div>
                         <p className="dashboard-welcome">

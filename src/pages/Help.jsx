@@ -15,11 +15,13 @@ export default function Help() {
 
     return (
         <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+            <style>{styles}</style>
             <Navbar />
             <div className="container" style={{ padding: '2rem' }}>
-                <header style={{ marginBottom: '2rem', textAlign: 'center', position: 'relative' }}>
+                <header className="help-header" style={{ marginBottom: '2rem', textAlign: 'center', position: 'relative' }}>
                     <button
                         onClick={() => navigate('/dashboard')}
+                        className="btn btn-outline help-close-btn"
                         style={{
                             position: 'absolute',
                             right: 0,
@@ -30,14 +32,13 @@ export default function Help() {
                             gap: '0.5rem',
                             fontSize: '0.9rem'
                         }}
-                        className="btn btn-outline"
                     >
-                        <ArrowRight size={18} style={{ transform: 'rotate(180deg)' }} /> Fermer / Retour
+                        <ArrowRight size={18} style={{ transform: 'rotate(180deg)' }} /> <span className="mobile-hidden">Fermer / Retour</span><span className="mobile-only">Retour</span>
                     </button>
-                    <h1 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', color: 'var(--primary)', marginBottom: '1rem' }}>
-                        <HelpCircle size={32} /> Centre d'Aide
+                    <h1 className="help-page-title mobile-hidden" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', color: 'var(--primary)', marginBottom: '1rem' }}>
+                        <HelpCircle size={32} className="help-icon" /> <span>Centre d'Aide</span>
                     </h1>
-                    <p style={{ color: 'var(--text-light)', maxWidth: '600px', margin: '0 auto' }}>
+                    <p className="help-subtitle mobile-hidden" style={{ color: 'var(--text-light)', maxWidth: '600px', margin: '0 auto' }}>
                         Retrouvez ici tous les guides pour utiliser efficacement l'application Mes Transports.
                     </p>
                 </header>
@@ -267,4 +268,16 @@ const styles = `
 .text-primary { color: #0ea5e9; }
 .text-secondary { color: #64748b; }
 .text-dark { color: #1e293b; }
+
+@media (max-width: 768px) {
+    .help-header {
+        margin-bottom: 1rem !important;
+        padding-top: 3rem !important;
+    }
+    
+    .help-close-btn {
+        padding: 0.4rem 0.8rem !important;
+        font-size: 0.85rem !important;
+    }
+}
 `

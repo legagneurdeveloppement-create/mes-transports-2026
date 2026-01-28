@@ -225,6 +225,7 @@ export default function Calendar({ userRole }) {
                             className={`calendar-day ${isToday ? 'today' : ''} ${userRole === 'ADMIN' ? 'clickable' : ''}`}
                             style={{
                                 cursor: userRole === 'ADMIN' ? 'pointer' : 'default',
+                                border: isToday ? '3px solid #3b82f6' : '2px solid transparent'
                             }}
                             onMouseEnter={e => {
                                 if (userRole === 'ADMIN') {

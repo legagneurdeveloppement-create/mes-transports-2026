@@ -22,20 +22,5 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
   return false;
 };
 
-// Register Service Worker for PWA
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').then(reg => {
-      reg.onupdatefound = () => {
-        const installingWorker = reg.installing;
-        installingWorker.onstatechange = () => {
-          if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            if (window.confirm("Nouvelle mise à jour disponible ! Actualiser maintenant ?")) {
-              window.location.reload();
-            }
-          }
-        };
-      };
-    }).catch(err => console.log('SW registration failed: ', err));
-  });
-}
+// Manual SW registration removed in favor of vite-plugin-pwa auto-update
+// The plugin will inject the necessary registration script
