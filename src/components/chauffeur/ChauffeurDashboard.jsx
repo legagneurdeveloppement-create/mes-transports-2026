@@ -332,6 +332,30 @@ export default function ChauffeurDashboard() {
                         margin: 0 !important;
                     }
                 }
+                
+                .summary-header {
+                    display: flex; 
+                    justify-content: space-between; 
+                    align-items: center; 
+                    margin-bottom: 1rem;
+                }
+                
+                .summary-controls {
+                    display: flex; 
+                    gap: 0.25rem;
+                }
+
+                @media (max-width: 480px) {
+                    .summary-header {
+                        flex-direction: column;
+                        gap: 1rem;
+                        text-align: center;
+                    }
+                    .summary-controls {
+                        width: 100%;
+                        justify-content: center;
+                    }
+                }
             `}</style>
 
             <div className="dashboard-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -355,14 +379,14 @@ export default function ChauffeurDashboard() {
                     border: '1px solid #0891b2',
                     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
                 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <div className="summary-header">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <span style={{ fontSize: '1.5rem' }}>📊</span>
                             <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--primary)', margin: 0 }}>
                                 Récapitulatif - <span style={{ textTransform: 'capitalize' }}>{currentMonthLabel}</span>
                             </h3>
                         </div>
-                        <div className="no-print" style={{ display: 'flex', gap: '0.25rem' }}>
+                        <div className="no-print summary-controls">
                             <button onClick={() => changeMonth(-1)} className="btn btn-outline" style={{ padding: '0.25rem', minWidth: 'auto' }}><ChevronLeft size={18} /></button>
                             <button onClick={() => { setSelectedMonth(new Date().getMonth()); setSelectedYear(new Date().getFullYear()) }} className="btn btn-outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', minWidth: 'auto' }}>Aujourd'hui</button>
                             <button onClick={() => changeMonth(1)} className="btn btn-outline" style={{ padding: '0.25rem', minWidth: 'auto' }}><ChevronRight size={18} /></button>
