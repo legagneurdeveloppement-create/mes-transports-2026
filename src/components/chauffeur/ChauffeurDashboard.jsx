@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useAuth } from '../../context/AuthContext'
 import { Check, X, Calendar as CalendarIcon, Clock, MapPin, History, Inbox, Ban, Settings, Printer, CalendarPlus, ChevronLeft, ChevronRight } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import ScheduleManagerModal from './ScheduleManagerModal'
@@ -6,6 +7,7 @@ import { smsService } from '../../lib/smsService'
 import { generateICS } from '../../lib/calendarService'
 
 export default function ChauffeurDashboard() {
+    const { user } = useAuth()
     const [events, setEvents] = useState({})
     const [filteredTransports, setFilteredTransports] = useState([])
     const [activeTab, setActiveTab] = useState('pending')
@@ -109,6 +111,40 @@ export default function ChauffeurDashboard() {
 
                 // NOTIFICATION SMS AUX ADMINS
                 if (newStatus === 'validated' || newStatus === 'rejected') {
+                    const actionLabel = newStatus === 'validated' ? 'validé' : 'refusé';
+                    const dateStr = formatDate(dateKey);
+                    const chauffeurName = user?.name || 'Un chauffeur';
+
+                    // 1. Notification Interne (Supabase)
+                    try {
+                        await supabase.from('notifications').insert([
+                            {
+                                target_role: 'ADMIN', // Cible tous les admins
+                                message: `${chauffeurName} a ${actionLabel} le transport "${transport.title}" du ${dateStr}.`,
+                                type: newStatus === 'validated' ? 'success' : 'warning',
+                                related_transport_date: dateKey,
+                                meta: { transport_title: transport.title, chauffeur_email: user?.email }
+                            },
+                            {
+                                target_role: 'SUPER_ADMIN', // Cible aussi les super admins
+                                message: `${chauffeurName} a ${actionLabel} le transport "${transport.title}" du ${dateStr}.`,
+                                type: newStatus === 'validated' ? 'success' : 'warning',
+                                related_transport_date: dateKey,
+                                meta: { transport_title: transport.title, chauffeur_email: user?.email }
+                            },
+                            {
+                                target_role: 'CHAUFFEUR', // Informe les autres chauffeurs
+                                message: `${chauffeurName} a ${actionLabel} le transport "${transport.title}" du ${dateStr}.`,
+                                type: 'info',
+                                related_transport_date: dateKey,
+                                meta: { transport_title: transport.title, chauffeur_email: user?.email }
+                            }
+                        ]);
+                    } catch (notifError) {
+                        console.error('Erreur création notification:', notifError);
+                    }
+
+                    // 2. SMS (Existant)
                     try {
                         const allUsers = JSON.parse(localStorage.getItem('all_users') || '[]')
                         // Filter Admins and Super Admins
@@ -121,7 +157,7 @@ export default function ChauffeurDashboard() {
                         if (admins.length > 0) {
                             const recipientPhones = admins.map(u => u.phone)
                             const action = newStatus === 'validated' ? 'VALIDÉ ✅' : 'REFUSÉ ❌'
-                            const dateStr = formatDate(dateKey)
+                            // dateStr déjà calculé plus haut
                             const smsBody = `Info Transport:\nLe transport "${transport.title}" du ${dateStr} a été ${action} par le chauffeur.`
 
                             await smsService.sendSMS(recipientPhones, smsBody)

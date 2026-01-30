@@ -4,6 +4,8 @@ import { useAuth } from '../../context/AuthContext'
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 
+import NotificationCenter from '../common/NotificationCenter'
+
 export default function Navbar({ hideUserInfo = false }) {
     const { user, logout, viewAsChauffeur, setViewAsChauffeur } = useAuth() || {}
     const navigate = useNavigate()
@@ -91,6 +93,7 @@ export default function Navbar({ hideUserInfo = false }) {
                                     <HelpCircle size={20} /> <span className="mobile-hidden">Aide</span>
                                 </Link>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }} className="flex-col-mobile justify-center items-center">
+                                    <NotificationCenter />
                                     <span style={{ fontSize: '0.8rem', color: 'var(--text-light)', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={user.email}>{user.email}</span>
                                     <span className={`user-badge ${user.role === 'SUPER_ADMIN' ? 'badge-super-admin' :
                                         user.role === 'ADMIN' ? 'badge-admin' :
