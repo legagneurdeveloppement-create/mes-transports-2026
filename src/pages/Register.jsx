@@ -146,18 +146,41 @@ export default function Register() {
                         <div>
                             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Direction / Entité</label>
                             <select
-                                name="direction"
+                                name="direction_select"
                                 className="input"
-                                value={formData.direction}
-                                onChange={handleChange}
+                                value={formData.direction === 'Communauté de communes' || formData.direction === 'Commune' || formData.direction === 'Société de transport' || formData.direction === '' ? formData.direction : 'CUSTOM'}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val === 'CUSTOM') {
+                                        setFormData(prev => ({ ...prev, direction: ' ' }));
+                                    } else {
+                                        setFormData(prev => ({ ...prev, direction: val }));
+                                    }
+                                }}
                                 required
                             >
                                 <option value="">Choisir une direction...</option>
                                 <option value="Communauté de communes">Communauté de communes</option>
                                 <option value="Commune">Commune</option>
                                 <option value="Société de transport">Société de transport</option>
-                                <option value="Autre">Autre</option>
+                                <option value="CUSTOM">Saisir manuellement...</option>
                             </select>
+
+                            {(formData.direction !== 'Communauté de communes' &&
+                                formData.direction !== 'Commune' &&
+                                formData.direction !== 'Société de transport' &&
+                                formData.direction !== '') && (
+                                    <input
+                                        type="text"
+                                        name="direction"
+                                        className="input"
+                                        style={{ marginTop: '0.5rem' }}
+                                        placeholder="Nom de votre direction (ex: Syndicat Mixte)"
+                                        value={formData.direction === ' ' ? '' : formData.direction}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                )}
                         </div>
 
                         <button type="submit" className="btn btn-primary" style={{ marginTop: '1rem' }}>
