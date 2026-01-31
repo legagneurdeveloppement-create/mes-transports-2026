@@ -112,7 +112,7 @@ export default function UserManagement() {
                         <Link to="/dashboard" className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem' }}>
                             <ArrowLeft size={18} /> Retour au tableau de bord
                         </Link>
-                        <h1 className="admin-title">Gestion des Utilisateurs <small style={{ fontSize: '0.5em', opacity: 0.5 }}>v1.2</small></h1>
+                        <h1 className="admin-title">Gestion des Utilisateurs <span style={{ fontSize: '0.4em', background: 'var(--accent)', color: 'white', padding: '0.2rem 0.6rem', borderRadius: '1rem', verticalAlign: 'middle', marginLeft: '0.5rem' }}>v2.0</span></h1>
                     </div>
                     <button
                         onClick={() => setShowAddForm(!showAddForm)}
@@ -252,7 +252,26 @@ export default function UserManagement() {
                                         {u.phone && <div style={{ fontSize: '0.8rem', color: '#0891b2' }}>{u.phone}</div>}
                                     </td>
                                     <td data-label="Direction">
-                                        <div style={{ fontSize: '0.875rem', fontWeight: '500' }}>{u.direction || '-'}</div>
+                                        {u.direction ? (
+                                            <span style={{
+                                                fontSize: '0.75rem',
+                                                fontWeight: '600',
+                                                padding: '0.2rem 0.5rem',
+                                                borderRadius: '0.25rem',
+                                                background: u.direction === 'Communauté de communes' ? '#e0f2fe' :
+                                                    u.direction === 'Commune' ? '#f0fdf4' :
+                                                        u.direction === 'Société de transport' ? '#fef3c7' : '#f1f5f9',
+                                                color: u.direction === 'Communauté de communes' ? '#0369a1' :
+                                                    u.direction === 'Commune' ? '#15803d' :
+                                                        u.direction === 'Société de transport' ? '#a16207' : '#475569',
+                                                border: '1px solid currentColor',
+                                                display: 'inline-block'
+                                            }}>
+                                                {u.direction}
+                                            </span>
+                                        ) : (
+                                            <span style={{ color: '#94a3b8' }}>-</span>
+                                        )}
                                     </td>
                                     <td data-label="Mot de passe">
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
