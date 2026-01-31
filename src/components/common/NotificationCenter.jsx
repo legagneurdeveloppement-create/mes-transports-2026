@@ -42,8 +42,12 @@ export default function NotificationCenter() {
             }
 
             if (data) {
-                setNotifications(data)
-                setUnreadCount(data.filter(n => !n.is_read).length)
+                // Dédupliquer les notifications par ID (au cas où la requête OR retourne des doublons)
+                const uniqueNotifications = Array.from(
+                    new Map(data.map(notif => [notif.id, notif])).values()
+                )
+                setNotifications(uniqueNotifications)
+                setUnreadCount(uniqueNotifications.filter(n => !n.is_read).length)
             }
         } catch (e) {
             console.error('Exception chargement notifications:', e)
@@ -66,8 +70,15 @@ export default function NotificationCenter() {
                     (user.role === 'SUPER_ADMIN' && newNotif.target_role === 'ADMIN')
 
                 if (isForMe) {
-                    setNotifications(prev => [newNotif, ...prev])
-                    setUnreadCount(prev => prev + 1)
+                    setNotifications(prev => {
+                        // Éviter les doublons : vérifier si la notification existe déjà
+                        if (prev.some(n => n.id === newNotif.id)) {
+                            return prev
+                        }
+                        // N'incrémenter le compteur que si ce n'est pas un doublon
+                        setUnreadCount(c => c + 1)
+                        return [newNotif, ...prev]
+                    })
                 }
             })
             .subscribe()
@@ -167,8 +178,7 @@ export default function NotificationCenter() {
                 <div style={{
                     position: 'absolute',
                     top: '100%',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
+                    right: '0', // Aligner à droite par défaut
                     width: '320px',
                     maxWidth: 'calc(100vw - 2rem)',
                     maxHeight: '400px',
@@ -177,7 +187,7 @@ export default function NotificationCenter() {
                     borderRadius: '0.5rem',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                     border: '1px solid #e2e8f0',
-                    zIndex: 50,
+                    zIndex: 100, // Augmenter le z-index
                     marginTop: '0.5rem'
                 }}>
                     <div style={{

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Check, X, Shield, User, Trash2, ArrowLeft, Pencil } from 'lucide-react'
+import { Check, X, Shield, User, Trash2, ArrowLeft, Pencil, Eye, EyeOff } from 'lucide-react'
 
 export default function UserManagement() {
     const [users, setUsers] = useState([])
@@ -14,6 +14,7 @@ export default function UserManagement() {
         role: 'USER'
     })
     const [error, setError] = useState('')
+    const [visiblePasswords, setVisiblePasswords] = useState({})
 
     useEffect(() => {
         const storedUsers = JSON.parse(localStorage.getItem('all_users') || '[]')
@@ -60,6 +61,13 @@ export default function UserManagement() {
         setEditingEmail(null)
         setShowAddForm(false)
         setError('')
+    }
+
+    const togglePasswordVisibility = (email) => {
+        setVisiblePasswords(prev => ({
+            ...prev,
+            [email]: !prev[email]
+        }))
     }
 
     const handleSubmit = (e) => {
@@ -208,6 +216,7 @@ export default function UserManagement() {
                             <tr>
                                 <th>Utilisateur</th>
                                 <th>Contact</th>
+                                <th>Mot de passe</th>
                                 <th>Rôle</th>
                                 <th>Statut</th>
                                 <th style={{ textAlign: 'right' }}>Actions</th>
@@ -222,6 +231,34 @@ export default function UserManagement() {
                                     <td data-label="Contact">
                                         <div style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>{u.email}</div>
                                         {u.phone && <div style={{ fontSize: '0.8rem', color: '#0891b2' }}>{u.phone}</div>}
+                                    </td>
+                                    <td data-label="Mot de passe">
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <code style={{
+                                                fontSize: '0.875rem',
+                                                background: '#f1f5f9',
+                                                padding: '0.25rem 0.5rem',
+                                                borderRadius: '0.25rem',
+                                                fontFamily: 'monospace',
+                                                flex: 1
+                                            }}>
+                                                {visiblePasswords[u.email] ? u.password : '••••••••'}
+                                            </code>
+                                            <button
+                                                onClick={() => togglePasswordVisibility(u.email)}
+                                                style={{
+                                                    background: 'none',
+                                                    border: 'none',
+                                                    cursor: 'pointer',
+                                                    padding: '0.25rem',
+                                                    color: '#64748b',
+                                                    fontSize: '1.2rem'
+                                                }}
+                                                title={visiblePasswords[u.email] ? 'Masquer' : 'Afficher'}
+                                            >
+                                                {visiblePasswords[u.email] ? '🙈' : '👁️'}
+                                            </button>
+                                        </div>
                                     </td>
                                     <td data-label="Rôle">
                                         <select

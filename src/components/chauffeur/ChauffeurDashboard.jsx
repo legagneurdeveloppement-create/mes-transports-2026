@@ -119,14 +119,7 @@ export default function ChauffeurDashboard() {
                     try {
                         await supabase.from('notifications').insert([
                             {
-                                target_role: 'ADMIN', // Cible tous les admins
-                                message: `${chauffeurName} a ${actionLabel} le transport "${transport.title}" du ${dateStr}.`,
-                                type: newStatus === 'validated' ? 'success' : 'warning',
-                                related_transport_date: dateKey,
-                                meta: { transport_title: transport.title, chauffeur_email: user?.email }
-                            },
-                            {
-                                target_role: 'SUPER_ADMIN', // Cible aussi les super admins
+                                target_role: 'ADMIN', // Cible ADMIN et SUPER_ADMIN (via UI)
                                 message: `${chauffeurName} a ${actionLabel} le transport "${transport.title}" du ${dateStr}.`,
                                 type: newStatus === 'validated' ? 'success' : 'warning',
                                 related_transport_date: dateKey,
@@ -186,28 +179,32 @@ export default function ChauffeurDashboard() {
         if (!selectedTransport) return
 
         const updatedEvents = { ...events }
-        updatedEvents[selectedTransport.dateKey] = {
-            ...updatedEvents[selectedTransport.dateKey],
-            time_departure_school: scheduleData.time_departure_school,
-            time_arrival_school: scheduleData.time_arrival_school,
-            stayed_on_site: scheduleData.stayed_on_site
-        }
-        setEvents(updatedEvents)
-        filterTransports(updatedEvents, activeTab)
+        setIsScheduleModalOpen(false)
 
-        // Save to Supabase
+        // Update only the JSON columns that exist
         const { error } = await supabase
             .from('transports')
             .update({
                 time_departure_school: scheduleData.time_departure_school,
-                time_arrival_school: scheduleData.time_arrival_school,
-                stayed_on_site: scheduleData.stayed_on_site // Still send to DB in case column exists
+                time_arrival_school: scheduleData.time_arrival_school
+                // Note: stayed_on_site is stored in time_departure_school JSON, not as a separate column
             })
             .eq('date_key', selectedTransport.dateKey)
 
         if (!error) {
             showToast('Horaires enregistrés avec succès')
+            // Refresh data to show updated schedule
+            const { data } = await supabase.from('transports').select('*')
+            if (data) {
+                const eventMap = {}
+                data.forEach(item => {
+                    eventMap[item.date_key] = item
+                })
+                setEvents(eventMap)
+                filterTransports(eventMap, activeTab)
+            }
         } else {
+            console.error('Error saving schedule:', error)
             showToast('Erreur lors de l\'enregistrement', 'error')
         }
     }

@@ -5,6 +5,7 @@ export default function ScheduleManagerModal({ isOpen, onClose, transport, onSav
     const [allerSteps, setAllerSteps] = useState([])
     const [retourSteps, setRetourSteps] = useState([])
     const [stayedOnSite, setStayedOnSite] = useState(false)
+    const [timeErrors, setTimeErrors] = useState({ aller: [], retour: [], global: [] })
 
     useEffect(() => {
         if (isOpen && transport) {
@@ -72,6 +73,52 @@ export default function ScheduleManagerModal({ isOpen, onClose, transport, onSav
             setRetourSteps(updated)
         }
     }
+
+    // Convert time HH:MM to minutes for comparison
+    const timeToMinutes = (timeStr) => {
+        if (!timeStr || !timeStr.includes(':')) return null
+        const [hours, minutes] = timeStr.split(':').map(Number)
+        if (isNaN(hours) || isNaN(minutes)) return null
+        return hours * 60 + minutes
+    }
+
+    // Validate time order in steps
+    const validateTimeOrder = (steps) => {
+        const errors = []
+        for (let i = 1; i < steps.length; i++) {
+            const prevTime = timeToMinutes(steps[i - 1].time)
+            const currTime = timeToMinutes(steps[i].time)
+
+            if (prevTime !== null && currTime !== null && currTime < prevTime) {
+                errors.push({
+                    index: i,
+                    message: `${steps[i].time} est antérieur à ${steps[i - 1].time}`
+                })
+            }
+        }
+        return errors
+    }
+
+    // Validate overall schedule
+    useEffect(() => {
+        const allerErrors = validateTimeOrder(allerSteps)
+        const retourErrors = validateTimeOrder(retourSteps)
+        const globalErrors = []
+
+        // Check if retour starts before aller ends (if not stayed on site)
+        if (!stayedOnSite && allerSteps.length > 0 && retourSteps.length > 0) {
+            const lastAllerTime = timeToMinutes(allerSteps[allerSteps.length - 1].time)
+            const firstRetourTime = timeToMinutes(retourSteps[0].time)
+
+            if (lastAllerTime !== null && firstRetourTime !== null && firstRetourTime < lastAllerTime) {
+                globalErrors.push({
+                    message: `Le retour (${retourSteps[0].time}) commence avant la fin de l'aller (${allerSteps[allerSteps.length - 1].time})`
+                })
+            }
+        }
+
+        setTimeErrors({ aller: allerErrors, retour: retourErrors, global: globalErrors })
+    }, [allerSteps, retourSteps, stayedOnSite])
 
     const handleSave = () => {
         onSave({
@@ -147,6 +194,36 @@ export default function ScheduleManagerModal({ isOpen, onClose, transport, onSav
                     </>
                 )}
 
+                {/* Global Errors Alert */}
+                {(timeErrors.global.length > 0 || timeErrors.aller.length > 0 || timeErrors.retour.length > 0) && (
+                    <div style={{
+                        marginBottom: '1.5rem',
+                        padding: '0.75rem',
+                        background: '#fee2e2',
+                        borderRadius: '0.5rem',
+                        border: '1px solid #dc2626'
+                    }}>
+                        <div style={{ fontWeight: '600', color: '#991b1b', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
+                            ⚠️ Incohérences détectées
+                        </div>
+                        {timeErrors.global.map((err, idx) => (
+                            <div key={idx} style={{ fontSize: '0.85rem', color: '#b91c1c', marginBottom: '0.25rem' }}>
+                                • {err.message}
+                            </div>
+                        ))}
+                        {timeErrors.aller.map((err, idx) => (
+                            <div key={`aller-${idx}`} style={{ fontSize: '0.85rem', color: '#b91c1c', marginBottom: '0.25rem' }}>
+                                • Aller : {err.message}
+                            </div>
+                        ))}
+                        {timeErrors.retour.map((err, idx) => (
+                            <div key={`retour-${idx}`} style={{ fontSize: '0.85rem', color: '#b91c1c', marginBottom: '0.25rem' }}>
+                                • Retour : {err.message}
+                            </div>
+                        ))}
+                    </div>
+                )}
+
                 {/* Section Aller */}
                 <div style={{ marginBottom: '2rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
@@ -162,46 +239,50 @@ export default function ScheduleManagerModal({ isOpen, onClose, transport, onSav
                         </div>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                            {allerSteps.map((step, index) => (
-                                <div key={index} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                                    <input
-                                        type="time"
-                                        value={step.time}
-                                        onChange={(e) => updateStep('aller', index, 'time', e.target.value)}
-                                        style={{
-                                            padding: '0.5rem',
-                                            border: '1px solid #cbd5e1',
-                                            borderRadius: '0.375rem',
-                                            width: '120px'
-                                        }}
-                                    />
-                                    <input
-                                        type="text"
-                                        value={step.location}
-                                        onChange={(e) => updateStep('aller', index, 'location', e.target.value)}
-                                        placeholder="Lieu (ex: Domicile, Arrêt 1, École)"
-                                        style={{
-                                            flex: 1,
-                                            padding: '0.5rem',
-                                            border: '1px solid #cbd5e1',
-                                            borderRadius: '0.375rem'
-                                        }}
-                                    />
-                                    <button
-                                        onClick={() => removeStep('aller', index)}
-                                        style={{
-                                            padding: '0.5rem',
-                                            background: '#fee2e2',
-                                            border: 'none',
-                                            borderRadius: '0.375rem',
-                                            cursor: 'pointer',
-                                            color: '#dc2626'
-                                        }}
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
-                                </div>
-                            ))}
+                            {allerSteps.map((step, index) => {
+                                const hasError = timeErrors.aller.some(err => err.index === index)
+                                return (
+                                    <div key={index} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                        <input
+                                            type="time"
+                                            value={step.time}
+                                            onChange={(e) => updateStep('aller', index, 'time', e.target.value)}
+                                            style={{
+                                                padding: '0.5rem',
+                                                border: hasError ? '2px solid #dc2626' : '1px solid #cbd5e1',
+                                                borderRadius: '0.375rem',
+                                                width: '120px',
+                                                background: hasError ? '#fee2e2' : 'white'
+                                            }}
+                                        />
+                                        <input
+                                            type="text"
+                                            value={step.location}
+                                            onChange={(e) => updateStep('aller', index, 'location', e.target.value)}
+                                            placeholder="Lieu (ex: Domicile, Arrêt 1, École)"
+                                            style={{
+                                                flex: 1,
+                                                padding: '0.5rem',
+                                                border: '1px solid #cbd5e1',
+                                                borderRadius: '0.375rem'
+                                            }}
+                                        />
+                                        <button
+                                            onClick={() => removeStep('aller', index)}
+                                            style={{
+                                                padding: '0.5rem',
+                                                background: '#fee2e2',
+                                                border: 'none',
+                                                borderRadius: '0.375rem',
+                                                cursor: 'pointer',
+                                                color: '#dc2626'
+                                            }}
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
+                                )
+                            })}
                         </div>
                     )}
 
@@ -241,46 +322,50 @@ export default function ScheduleManagerModal({ isOpen, onClose, transport, onSav
                         </div>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                            {retourSteps.map((step, index) => (
-                                <div key={index} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                                    <input
-                                        type="time"
-                                        value={step.time}
-                                        onChange={(e) => updateStep('retour', index, 'time', e.target.value)}
-                                        style={{
-                                            padding: '0.5rem',
-                                            border: '1px solid #cbd5e1',
-                                            borderRadius: '0.375rem',
-                                            width: '120px'
-                                        }}
-                                    />
-                                    <input
-                                        type="text"
-                                        value={step.location}
-                                        onChange={(e) => updateStep('retour', index, 'location', e.target.value)}
-                                        placeholder="Lieu (ex: École, Arrêt 1, Domicile)"
-                                        style={{
-                                            flex: 1,
-                                            padding: '0.5rem',
-                                            border: '1px solid #cbd5e1',
-                                            borderRadius: '0.375rem'
-                                        }}
-                                    />
-                                    <button
-                                        onClick={() => removeStep('retour', index)}
-                                        style={{
-                                            padding: '0.5rem',
-                                            background: '#fee2e2',
-                                            border: 'none',
-                                            borderRadius: '0.375rem',
-                                            cursor: 'pointer',
-                                            color: '#dc2626'
-                                        }}
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
-                                </div>
-                            ))}
+                            {retourSteps.map((step, index) => {
+                                const hasError = timeErrors.retour.some(err => err.index === index)
+                                return (
+                                    <div key={index} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                        <input
+                                            type="time"
+                                            value={step.time}
+                                            onChange={(e) => updateStep('retour', index, 'time', e.target.value)}
+                                            style={{
+                                                padding: '0.5rem',
+                                                border: hasError ? '2px solid #dc2626' : '1px solid #cbd5e1',
+                                                borderRadius: '0.375rem',
+                                                width: '120px',
+                                                background: hasError ? '#fee2e2' : 'white'
+                                            }}
+                                        />
+                                        <input
+                                            type="text"
+                                            value={step.location}
+                                            onChange={(e) => updateStep('retour', index, 'location', e.target.value)}
+                                            placeholder="Lieu (ex: École, Arrêt 1, Domicile)"
+                                            style={{
+                                                flex: 1,
+                                                padding: '0.5rem',
+                                                border: '1px solid #cbd5e1',
+                                                borderRadius: '0.375rem'
+                                            }}
+                                        />
+                                        <button
+                                            onClick={() => removeStep('retour', index)}
+                                            style={{
+                                                padding: '0.5rem',
+                                                background: '#fee2e2',
+                                                border: 'none',
+                                                borderRadius: '0.375rem',
+                                                cursor: 'pointer',
+                                                color: '#dc2626'
+                                            }}
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
+                                )
+                            })}
                         </div>
                     )}
 
