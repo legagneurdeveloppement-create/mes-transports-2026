@@ -167,8 +167,10 @@ export default function NotificationCenter() {
                 <div style={{
                     position: 'absolute',
                     top: '100%',
-                    right: '0',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
                     width: '320px',
+                    maxWidth: 'calc(100vw - 2rem)',
                     maxHeight: '400px',
                     overflowY: 'auto',
                     background: 'white',

@@ -102,7 +102,7 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
 
     return (
         <div className="modal-overlay">
-            <div className="modal-content" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
+            <div className="modal-content" style={{ maxHeight: '90vh', overflowY: 'auto', paddingBottom: '2rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                     <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>
                         {eventData ? 'Modifier le transport' : 'Nouveau transport'}
@@ -397,7 +397,7 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
                         gap: '0.75rem',
                         flexWrap: 'wrap',
                         marginTop: '1rem',
-                        paddingBottom: '1rem' // Added space at the bottom
+                        paddingBottom: '2rem' // Increased space at the bottom to ensure buttons are visible
                     }}>
                         <button type="submit" className="btn btn-primary" style={{ flex: '1 1 150px', minHeight: '3rem' }}>Enregistrer</button>
                         {eventData && (
