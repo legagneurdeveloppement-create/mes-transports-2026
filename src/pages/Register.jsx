@@ -13,7 +13,8 @@ export default function Register() {
         email: '',
         phone: '',
         password: '',
-        role: 'USER'
+        role: 'USER',
+        direction: ''
     })
 
     const handleChange = (e) => {
@@ -139,6 +140,23 @@ export default function Register() {
                             >
                                 <option value="USER">Utilisateur (Parent / Élève)</option>
                                 <option value="CHAUFFEUR">Chauffeur</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Direction / Entité</label>
+                            <select
+                                name="direction"
+                                className="input"
+                                value={formData.direction}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="">Choisir une direction...</option>
+                                <option value="Communauté de communes">Communauté de communes</option>
+                                <option value="Commune">Commune</option>
+                                <option value="Société de transport">Société de transport</option>
+                                <option value="Autre">Autre</option>
                             </select>
                         </div>
 

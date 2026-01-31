@@ -20,14 +20,16 @@ export const AuthProvider = ({ children }) => {
                         email: 'admin@demo.com',
                         password: 'admin',
                         role: 'SUPER_ADMIN',
-                        approved: true
+                        approved: true,
+                        direction: 'Communauté de communes'
                     },
                     {
                         name: 'Chauffeur Demo',
                         email: 'chauffeur@demo.com',
                         password: 'demo',
                         role: 'CHAUFFEUR',
-                        approved: true
+                        approved: true,
+                        direction: 'Société de transport'
                     }
                 ]
                 localStorage.setItem('all_users', JSON.stringify(initialUsers))
@@ -61,7 +63,8 @@ export const AuthProvider = ({ children }) => {
                     email: 'chauffeur@demo.com',
                     password: 'demo',
                     role: 'CHAUFFEUR',
-                    approved: true
+                    approved: true,
+                    direction: 'Société de transport'
                 })
                 localStorage.setItem('all_users', JSON.stringify(allUsers))
             } else if (chauffeurUser.role !== 'CHAUFFEUR') {

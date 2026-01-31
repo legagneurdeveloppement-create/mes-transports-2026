@@ -11,7 +11,8 @@ export default function UserManagement() {
         email: '',
         phone: '',
         password: '',
-        role: 'USER'
+        role: 'USER',
+        direction: ''
     })
     const [error, setError] = useState('')
     const [visiblePasswords, setVisiblePasswords] = useState({})
@@ -49,7 +50,8 @@ export default function UserManagement() {
             email: user.email,
             phone: user.phone || '',
             password: user.password,
-            role: user.role
+            role: user.role,
+            direction: user.direction || ''
         })
         setEditingEmail(user.email)
         setShowAddForm(true)
@@ -57,7 +59,7 @@ export default function UserManagement() {
     }
 
     const resetForm = () => {
-        setNewUser({ name: '', email: '', phone: '', password: '', role: 'USER' })
+        setNewUser({ name: '', email: '', phone: '', password: '', role: 'USER', direction: '' })
         setEditingEmail(null)
         setShowAddForm(false)
         setError('')
@@ -201,6 +203,22 @@ export default function UserManagement() {
                                     <option value="SUPER_ADMIN">Super Administrateur</option>
                                 </select>
                             </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>Direction</label>
+                                <select
+                                    className="input"
+                                    value={newUser.direction}
+                                    onChange={(e) => setNewUser({ ...newUser, direction: e.target.value })}
+                                    style={{ width: '100%' }}
+                                    required
+                                >
+                                    <option value="">Choisir une direction...</option>
+                                    <option value="Communauté de communes">Communauté de communes</option>
+                                    <option value="Commune">Commune</option>
+                                    <option value="Société de transport">Société de transport</option>
+                                    <option value="Autre">Autre</option>
+                                </select>
+                            </div>
                             <div className="admin-form-actions">
                                 <button type="submit" className="btn btn-primary">
                                     {editingEmail ? "Enregistrer les modifications" : "Créer l'utilisateur"}
@@ -216,6 +234,7 @@ export default function UserManagement() {
                             <tr>
                                 <th>Utilisateur</th>
                                 <th>Contact</th>
+                                <th>Direction</th>
                                 <th>Mot de passe</th>
                                 <th>Rôle</th>
                                 <th>Statut</th>
@@ -231,6 +250,9 @@ export default function UserManagement() {
                                     <td data-label="Contact">
                                         <div style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>{u.email}</div>
                                         {u.phone && <div style={{ fontSize: '0.8rem', color: '#0891b2' }}>{u.phone}</div>}
+                                    </td>
+                                    <td data-label="Direction">
+                                        <div style={{ fontSize: '0.875rem', fontWeight: '500' }}>{u.direction || '-'}</div>
                                     </td>
                                     <td data-label="Mot de passe">
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
