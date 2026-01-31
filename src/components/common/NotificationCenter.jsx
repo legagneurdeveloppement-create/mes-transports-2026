@@ -42,10 +42,18 @@ export default function NotificationCenter() {
             }
 
             if (data) {
-                // Dédupliquer les notifications par ID (au cas où la requête OR retourne des doublons)
-                const uniqueNotifications = Array.from(
-                    new Map(data.map(notif => [notif.id, notif])).values()
-                )
+                // Dédupliquer les notifications par ID ET par contenu (pour nettoyer les vieux doublons en DB)
+                const uniqueMap = new Map()
+                data.forEach(notif => {
+                    // Clé d'unicité basée sur ID ou le contenu (message + date)
+                    const contentKey = `${notif.message}-${notif.related_transport_date}-${notif.type}`
+                    if (!uniqueMap.has(notif.id) && !uniqueMap.has(contentKey)) {
+                        uniqueMap.set(notif.id, notif)
+                        uniqueMap.set(contentKey, notif)
+                    }
+                })
+
+                const uniqueNotifications = Array.from(new Set(uniqueMap.values()))
                 setNotifications(uniqueNotifications)
                 setUnreadCount(uniqueNotifications.filter(n => !n.is_read).length)
             }
@@ -53,6 +61,14 @@ export default function NotificationCenter() {
             console.error('Exception chargement notifications:', e)
         }
     }
+
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768)
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
 
     useEffect(() => {
         if (!user) return
@@ -71,8 +87,9 @@ export default function NotificationCenter() {
 
                 if (isForMe) {
                     setNotifications(prev => {
-                        // Éviter les doublons : vérifier si la notification existe déjà
-                        if (prev.some(n => n.id === newNotif.id)) {
+                        // Éviter les doublons : vérifier si la notification existe déjà (ID ou contenu)
+                        const contentKey = `${newNotif.message}-${newNotif.related_transport_date}-${newNotif.type}`
+                        if (prev.some(n => n.id === newNotif.id || (`${n.message}-${n.related_transport_date}-${n.type}` === contentKey))) {
                             return prev
                         }
                         // N'incrémenter le compteur que si ce n'est pas un doublon
@@ -134,6 +151,24 @@ export default function NotificationCenter() {
 
     if (!user) return null
 
+    // Mobile specific styles
+    const mobileStyles = isMobile ? {
+        position: 'fixed',
+        top: '60px',
+        left: '10px',
+        right: '10px',
+        width: 'auto',
+        maxWidth: 'none',
+        transform: 'none'
+    } : {
+        position: 'absolute',
+        top: '100%',
+        right: '0',
+        width: '320px',
+        maxWidth: 'calc(100vw - 2rem)',
+        marginTop: '0.5rem'
+    }
+
     return (
         <div className="relative" ref={dropdownRef} style={{ position: 'relative' }}>
             <button
@@ -176,19 +211,14 @@ export default function NotificationCenter() {
 
             {isOpen && (
                 <div style={{
-                    position: 'absolute',
-                    top: '100%',
-                    right: '0', // Aligner à droite par défaut
-                    width: '320px',
-                    maxWidth: 'calc(100vw - 2rem)',
+                    ...mobileStyles,
                     maxHeight: '400px',
                     overflowY: 'auto',
                     background: 'white',
                     borderRadius: '0.5rem',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                     border: '1px solid #e2e8f0',
-                    zIndex: 100, // Augmenter le z-index
-                    marginTop: '0.5rem'
+                    zIndex: 1000
                 }}>
                     <div style={{
                         padding: '0.75rem',

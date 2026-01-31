@@ -86,9 +86,14 @@ export default function ChauffeurDashboard() {
         setTimeout(() => setToast(null), 3000)
     }
 
+    const [isUpdating, setIsUpdating] = useState(false)
+
     const handleStatusUpdate = async (e, dateKey, newStatus) => {
         e.preventDefault()
         e.stopPropagation()
+
+        if (isUpdating) return
+        setIsUpdating(true)
 
         const updatedEvents = { ...events }
         if (updatedEvents[dateKey]) {
@@ -150,24 +155,26 @@ export default function ChauffeurDashboard() {
                         if (admins.length > 0) {
                             const recipientPhones = admins.map(u => u.phone)
                             const action = newStatus === 'validated' ? 'VALIDÉ ✅' : 'REFUSÉ ❌'
-                            // dateStr déjà calculé plus haut
-                            const smsBody = `Info Transport:\nLe transport "${transport.title}" du ${dateStr} a été ${action} par le chauffeur.`
+                            const smsMessage = `CHAUFFEUR: ${chauffeurName} a ${action} le transport "${transport.title}" du ${dateStr}.`;
 
-                            await smsService.sendSMS(recipientPhones, smsBody)
-                            message += ' + Notif SMS envoyée'
+                            for (const phone of recipientPhones) {
+                                await smsService.sendSMS(phone, smsMessage);
+                            }
                         }
                     } catch (smsError) {
-                        console.error('Erreur envoi SMS:', smsError)
+                        console.error('Erreur envoi SMS:', smsError);
                     }
                 }
 
                 showToast(message)
             } else {
+                console.error('Error updating status:', error)
                 showToast('Erreur lors de la mise à jour', 'error')
+                // Revert optimistic update?
             }
         }
+        setIsUpdating(false)
     }
-
     const handleOpenScheduleModal = (e, transport) => {
         e.preventDefault()
         e.stopPropagation()
