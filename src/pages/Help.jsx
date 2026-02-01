@@ -229,12 +229,21 @@ const styles = `
 }
 .guide-list li {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+.guide-list li > *:first-child {
+    margin-top: 0.25rem; /* Better alignment for icons with first line of text */
 }
 .help-container {
     padding: 2rem;
+}
+p {
+    margin-bottom: 1rem;
+}
+p:last-child {
+    margin-bottom: 0;
 }
 .guide-steps {
     padding-left: 1.25rem;
@@ -321,14 +330,24 @@ const styles = `
     }
 
     .card > div:first-child button {
-        padding: 0.75rem !important;
-        font-size: 0.9rem !important;
+        padding: 1rem !important;
+        font-size: 1rem !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        width: 100% !important;
+    }
+    .card > div:first-child button:last-child {
+        border-bottom: none !important;
     }
 
     /* Paragraphs wrapping */
     p {
         word-break: break-word !important;
         overflow-wrap: break-word !important;
+        line-height: 1.5 !important;
+    }
+    /* Guide section padding */
+    .card > div:last-child {
+        padding: 1.25rem !important;
     }
 }
 `
