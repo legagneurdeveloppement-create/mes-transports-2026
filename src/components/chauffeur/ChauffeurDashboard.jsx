@@ -242,6 +242,82 @@ export default function ChauffeurDashboard() {
         })
     }
 
+    const getTransportDurations = (transport) => {
+        let allerMinutes = 0
+        let retourMinutes = 0
+
+        if (!transport) return { allerMinutes, retourMinutes, totalMinutes: 0 }
+
+        // Calculate Aller duration
+        try {
+            if (transport.time_departure_school) {
+                let rawAller = []
+                try {
+                    rawAller = typeof transport.time_departure_school === 'string'
+                        ? JSON.parse(transport.time_departure_school || '[]')
+                        : transport.time_departure_school
+                } catch (pe) {
+                    rawAller = []
+                }
+
+                let allerSteps = []
+                if (Array.isArray(rawAller)) {
+                    allerSteps = rawAller
+                } else if (rawAller && typeof rawAller === 'object') {
+                    allerSteps = rawAller.steps || []
+                }
+
+                if (allerSteps.length >= 2) {
+                    const validSteps = allerSteps.filter(s => s.time && s.time.trim())
+                    if (validSteps.length >= 2) {
+                        const firstTime = validSteps[0].time
+                        const lastTime = validSteps[validSteps.length - 1].time
+                        const [h1, m1] = firstTime.split(':').map(Number)
+                        const [h2, m2] = lastTime.split(':').map(Number)
+                        const mins = (h2 * 60 + m2) - (h1 * 60 + m1)
+                        if (mins > 0) allerMinutes = mins
+                    }
+                }
+            }
+
+            // Calculate Retour duration
+            if (transport.time_arrival_school) {
+                let retourSteps = []
+                try {
+                    const parsed = typeof transport.time_arrival_school === 'string'
+                        ? JSON.parse(transport.time_arrival_school || '[]')
+                        : transport.time_arrival_school
+                    retourSteps = Array.isArray(parsed) ? parsed : (parsed?.steps || [])
+                } catch (pe) {
+                    retourSteps = []
+                }
+
+                if (retourSteps.length >= 2) {
+                    const validSteps = retourSteps.filter(s => s.time && s.time.trim())
+                    if (validSteps.length >= 2) {
+                        const firstTime = validSteps[0].time
+                        const lastTime = validSteps[validSteps.length - 1].time
+                        const [h1, m1] = firstTime.split(':').map(Number)
+                        const [h2, m2] = lastTime.split(':').map(Number)
+                        const mins = (h2 * 60 + m2) - (h1 * 60 + m1)
+                        if (mins > 0) retourMinutes = mins
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Error calculating durations for transport:', e)
+        }
+
+        return {
+            allerMinutes,
+            retourMinutes,
+            totalMinutes: allerMinutes + retourMinutes,
+            allerFormatted: `${Math.floor(allerMinutes / 60)}h${(allerMinutes % 60).toString().padStart(2, '0')}`,
+            retourFormatted: `${Math.floor(retourMinutes / 60)}h${(retourMinutes % 60).toString().padStart(2, '0')}`,
+            totalFormatted: `${Math.floor((allerMinutes + retourMinutes) / 60)}h${((allerMinutes + retourMinutes) % 60).toString().padStart(2, '0')}`
+        }
+    }
+
     const calculateMonthlyHours = () => {
         let totalAllerMinutes = 0
         let totalRetourMinutes = 0
@@ -254,74 +330,13 @@ export default function ChauffeurDashboard() {
             const [year, month] = parts
             if (year === selectedYear && month === selectedMonth) {
                 transportCount++
-                // Calculate Aller duration
-                try {
-                    if (transport.time_departure_school) {
-                        let rawAller = []
-                        try {
-                            rawAller = typeof transport.time_departure_school === 'string'
-                                ? JSON.parse(transport.time_departure_school || '[]')
-                                : transport.time_departure_school
-                        } catch (pe) {
-                            console.error('Error parsing aller schedule:', pe)
-                            rawAller = []
-                        }
-
-                        let allerSteps = []
-                        if (Array.isArray(rawAller)) {
-                            allerSteps = rawAller
-                        } else if (rawAller && typeof rawAller === 'object') {
-                            allerSteps = rawAller.steps || []
-                        }
-
-                        if (allerSteps.length >= 2) {
-                            const validSteps = allerSteps.filter(s => s.time && s.time.trim())
-                            if (validSteps.length >= 2) {
-                                const firstTime = validSteps[0].time
-                                const lastTime = validSteps[validSteps.length - 1].time
-                                const [h1, m1] = firstTime.split(':').map(Number)
-                                const [h2, m2] = lastTime.split(':').map(Number)
-                                const minutes = (h2 * 60 + m2) - (h1 * 60 + m1)
-                                if (minutes > 0) {
-                                    totalAllerMinutes += minutes
-                                }
-                            }
-                        }
-                    }
-
-                    // Calculate Retour duration
-                    if (transport.time_arrival_school) {
-                        let retourSteps = []
-                        try {
-                            const parsed = typeof transport.time_arrival_school === 'string'
-                                ? JSON.parse(transport.time_arrival_school || '[]')
-                                : transport.time_arrival_school
-                            retourSteps = Array.isArray(parsed) ? parsed : (parsed?.steps || [])
-                        } catch (pe) {
-                            console.error('Error parsing retour schedule:', pe)
-                            retourSteps = []
-                        }
-
-                        if (retourSteps.length >= 2) {
-                            const validSteps = retourSteps.filter(s => s.time && s.time.trim())
-                            if (validSteps.length >= 2) {
-                                const firstTime = validSteps[0].time
-                                const lastTime = validSteps[validSteps.length - 1].time
-                                const [h1, m1] = firstTime.split(':').map(Number)
-                                const [h2, m2] = lastTime.split(':').map(Number)
-                                const minutes = (h2 * 60 + m2) - (h1 * 60 + m1)
-                                if (minutes > 0) totalRetourMinutes += minutes
-                            }
-                        }
-                    }
-                } catch (e) {
-                    console.error('Error calculating hours for transport:', dateKey, e)
-                }
+                const { allerMinutes, retourMinutes } = getTransportDurations(transport)
+                totalAllerMinutes += allerMinutes
+                totalRetourMinutes += retourMinutes
             }
         })
 
         const totalMinutes = totalAllerMinutes + totalRetourMinutes
-
         return {
             allerHours: Math.floor(totalAllerMinutes / 60),
             allerMinutes: totalAllerMinutes % 60,
@@ -655,6 +670,23 @@ export default function ChauffeurDashboard() {
                                                         {transport.schoolClass}
                                                     </div>
                                                 )}
+                                                {(() => {
+                                                    const { allerFormatted, retourFormatted, totalFormatted, totalMinutes } = getTransportDurations(transport);
+                                                    if (totalMinutes === 0) return null;
+                                                    return (
+                                                        <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.25rem', flexWrap: 'wrap' }}>
+                                                            <div className="meta-item" style={{ color: '#0891b2', fontWeight: '600' }}>
+                                                                <Clock size={12} /> Aller: {allerFormatted}
+                                                            </div>
+                                                            <div className="meta-item" style={{ color: '#f97316', fontWeight: '600' }}>
+                                                                <Clock size={12} /> Retour: {retourFormatted}
+                                                            </div>
+                                                            <div className="meta-item" style={{ color: 'var(--primary)', fontWeight: '700', borderLeft: '1px solid #cbd5e1', paddingLeft: '0.75rem' }}>
+                                                                Σ Total: {totalFormatted}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })()}
                                             </div>
                                         </div>
 
