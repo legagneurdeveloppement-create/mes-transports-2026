@@ -223,24 +223,20 @@ const ShieldIcon = () => (
 
 const styles = `
 .guide-list {
-    list-style: none;
-    padding: 0;
+    list-style: disc;
+    padding-left: 1.5rem;
     margin: 1rem 0;
 }
 .guide-list li {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-}
-.guide-list li > *:first-child {
-    margin-top: 0.25rem; /* Better alignment for icons with first line of text */
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
 }
 .help-container {
     padding: 2rem;
 }
 p {
     margin-bottom: 1rem;
+    line-height: 1.6;
 }
 p:last-child {
     margin-bottom: 0;
@@ -315,8 +311,8 @@ p:last-child {
     }
 
     .guide-list li, .guide-steps li {
-        font-size: 0.9rem !important;
-        line-height: 1.4 !important;
+        font-size: 0.95rem !important;
+        line-height: 1.6 !important;
     }
 
     .tip-box {
@@ -341,13 +337,11 @@ p:last-child {
 
     /* Paragraphs wrapping */
     p {
-        word-break: break-word !important;
-        overflow-wrap: break-word !important;
-        line-height: 1.5 !important;
+        line-height: 1.6 !important;
     }
     /* Guide section padding */
     .card > div:last-child {
-        padding: 1.25rem !important;
+        padding: 1rem !important;
     }
 }
 `
