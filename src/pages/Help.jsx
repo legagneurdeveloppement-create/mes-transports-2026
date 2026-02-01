@@ -17,7 +17,7 @@ export default function Help() {
         <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
             <style>{styles}</style>
             <Navbar />
-            <div className="container" style={{ padding: '2rem' }}>
+            <div className="container help-container">
                 <header className="help-header" style={{ marginBottom: '2rem', textAlign: 'center', position: 'relative' }}>
                     <button
                         onClick={() => navigate('/dashboard')}
@@ -229,9 +229,12 @@ const styles = `
 }
 .guide-list li {
     display: flex;
-    alignItems: center;
+    align-items: center;
     gap: 0.5rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+.help-container {
+    padding: 2rem;
 }
 .guide-steps {
     padding-left: 1.25rem;
@@ -270,14 +273,62 @@ const styles = `
 .text-dark { color: #1e293b; }
 
 @media (max-width: 768px) {
+    .help-container {
+        padding: 1rem !important;
+    }
     .help-header {
-        margin-bottom: 1rem !important;
-        padding-top: 3rem !important;
+        margin-bottom: 1.5rem !important;
+        padding-top: 3.5rem !important;
     }
     
     .help-close-btn {
         padding: 0.4rem 0.8rem !important;
+        font-size: 0.8rem !important;
+        top: -0.5rem !important;
+    }
+
+    .help-page-title {
+        font-size: 1.5rem !important;
+        margin-top: 1rem !important;
+    }
+
+    .help-subtitle {
+        font-size: 0.9rem !important;
+    }
+
+    section {
+        padding: 1rem !important;
+    }
+
+    h3 {
+        font-size: 1rem !important;
+        gap: 0.5rem !important;
+    }
+
+    .guide-list li, .guide-steps li {
+        font-size: 0.9rem !important;
+        line-height: 1.4 !important;
+    }
+
+    .tip-box {
+        padding: 0.75rem !important;
         font-size: 0.85rem !important;
+    }
+
+    /* Tabs mobile layout */
+    .card > div:first-child {
+        flex-direction: column !important;
+    }
+
+    .card > div:first-child button {
+        padding: 0.75rem !important;
+        font-size: 0.9rem !important;
+    }
+
+    /* Paragraphs wrapping */
+    p {
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
     }
 }
 `
