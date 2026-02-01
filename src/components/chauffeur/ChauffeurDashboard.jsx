@@ -93,7 +93,13 @@ export default function ChauffeurDashboard() {
 
                 return true
             })
-            .sort((a, b) => (a.dateKey || '').localeCompare(b.dateKey || ''))
+            .sort((a, b) => {
+                const [yA, mA, dA] = (a.dateKey || '').split('-').map(Number)
+                const [yB, mB, dB] = (b.dateKey || '').split('-').map(Number)
+                if (yA !== yB) return yA - yB
+                if (mA !== mB) return mA - mB
+                return dA - dB
+            })
 
         setFilteredTransports(list)
     }
