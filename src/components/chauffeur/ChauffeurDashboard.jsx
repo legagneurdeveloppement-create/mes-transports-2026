@@ -16,6 +16,8 @@ export default function ChauffeurDashboard() {
     const [selectedTransport, setSelectedTransport] = useState(null)
     const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
+    const [searchDate, setSearchDate] = useState('')
+    const [isFilteredByMonth, setIsFilteredByMonth] = useState(true)
 
     useEffect(() => {
         const fetchTransports = async () => {
@@ -63,7 +65,7 @@ export default function ChauffeurDashboard() {
         return () => {
             supabase.removeChannel(channel)
         }
-    }, [activeTab])
+    }, [activeTab, selectedMonth, selectedYear, searchDate, isFilteredByMonth])
 
     const filterTransports = (allEvents, tab) => {
         const list = Object.entries(allEvents || {})
@@ -73,8 +75,23 @@ export default function ChauffeurDashboard() {
             }))
             .filter(t => {
                 const status = t.status || 'pending'
-                if (tab === 'pending') return status === 'pending'
-                return status === tab
+                const tabMatch = tab === 'pending' ? status === 'pending' : status === tab
+
+                if (!tabMatch) return false
+
+                // Date filtering
+                if (searchDate) {
+                    const [y, m, d] = searchDate.split('-').map(Number)
+                    const normalizedSearchDate = `${y}-${m - 1}-${d}`
+                    return t.dateKey === normalizedSearchDate
+                }
+
+                if (isFilteredByMonth) {
+                    const [year, month] = t.dateKey.split('-').map(Number)
+                    return year === selectedYear && month === selectedMonth
+                }
+
+                return true
             })
             .sort((a, b) => (a.dateKey || '').localeCompare(b.dateKey || ''))
 
@@ -236,6 +253,7 @@ export default function ChauffeurDashboard() {
             if (parts.length < 2) return
             const [year, month] = parts
             if (year === selectedYear && month === selectedMonth) {
+                transportCount++
                 // Calculate Aller duration
                 try {
                     if (transport.time_departure_school) {
@@ -266,7 +284,6 @@ export default function ChauffeurDashboard() {
                                 const minutes = (h2 * 60 + m2) - (h1 * 60 + m1)
                                 if (minutes > 0) {
                                     totalAllerMinutes += minutes
-                                    transportCount++
                                 }
                             }
                         }
@@ -344,7 +361,7 @@ export default function ChauffeurDashboard() {
             {/* Print Styles */}
             <style>{`
                 @media print {
-                    .no-print, .dashboard-actions, .navbar, .dashboard-header, .tabs-container, .chauffeur-card-actions, .toast {
+                    .no-print, .dashboard-actions, .navbar, .dashboard-header, .tabs-container, .chauffeur-card-actions, .toast, .tab-content, .filter-bar, .dashboard-section-header {
                         display: none !important;
                     }
                     .chauffeur-dashboard {
@@ -396,6 +413,53 @@ export default function ChauffeurDashboard() {
                         justify-content: center;
                     }
                 }
+
+                .filter-bar {
+                    margin-top: 1rem;
+                    display: flex;
+                    gap: 1rem;
+                    flex-wrap: wrap;
+                    align-items: center;
+                    background: rgba(255,255,255,0.4);
+                    padding: 0.85rem;
+                    border-radius: 0.5rem;
+                    border: 1px solid rgba(8, 145, 178, 0.2);
+                }
+
+                .filter-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    flex: 1 1 auto;
+                    min-width: 200px;
+                }
+
+                @media (max-width: 768px) {
+                    .filter-bar {
+                        margin-bottom: 1rem !important;
+                        padding: 1rem !important;
+                    }
+                    .filter-item {
+                        flex-direction: column !important;
+                        align-items: stretch !important;
+                        gap: 0.5rem !important;
+                    }
+                    .filter-item input[type="date"] {
+                        width: 100% !important;
+                        min-height: 44px !important;
+                    }
+                    .filter-actions {
+                        width: 100% !important;
+                        justify-content: flex-start !important;
+                    }
+                }
+                
+                .filter-actions {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                    flex-wrap: wrap;
+                }
             `}</style>
 
             <div className="dashboard-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -409,8 +473,65 @@ export default function ChauffeurDashboard() {
                 </button>
             </div>
 
+            <div className="filter-bar" id="debug-filter-bar-unique" style={{ display: 'flex !important', visibility: 'visible !important', opacity: '1 !important' }}>
+                <div className="filter-item">
+                    <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--primary)' }}>📅 Sauter à une date :</label>
+                    <input
+                        type="date"
+                        className="input"
+                        value={searchDate}
+                        onChange={(e) => {
+                            setSearchDate(e.target.value)
+                            if (e.target.value) {
+                                setIsFilteredByMonth(false)
+                                const d = new Date(e.target.value)
+                                setSelectedMonth(d.getMonth())
+                                setSelectedYear(d.getFullYear())
+                            }
+                        }}
+                        style={{
+                            padding: '0.4rem',
+                            fontSize: '0.85rem',
+                            border: '1px solid #0891b2',
+                            borderRadius: '0.375rem',
+                            width: 'auto'
+                        }}
+                    />
+                </div>
+
+                <div className="filter-actions">
+                    <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'white', padding: '0.4rem 0.75rem', borderRadius: '0.375rem', border: '1px solid #e2e8f0' }}>
+                        <input
+                            type="checkbox"
+                            checked={isFilteredByMonth}
+                            onChange={(e) => {
+                                setIsFilteredByMonth(e.target.checked)
+                                if (e.target.checked) setSearchDate('')
+                            }}
+                            style={{ width: '16px', height: '16px' }}
+                        />
+                        Filtrer par mois
+                    </label>
+
+                    {(searchDate || !isFilteredByMonth) && (
+                        <button
+                            onClick={() => {
+                                setSearchDate('')
+                                setIsFilteredByMonth(true)
+                                setSelectedMonth(new Date().getMonth())
+                                setSelectedYear(new Date().getFullYear())
+                            }}
+                            className="btn btn-outline"
+                            style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem', minWidth: 'auto', background: 'white' }}
+                        >
+                            Retirer les filtres
+                        </button>
+                    )}
+                </div>
+            </div>
+
             {/* Monthly Hours Summary */}
-            <div style={{
+            <div className="monthly-summary-container" style={{
                 marginBottom: '1.5rem',
                 padding: '1.25rem',
                 background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
@@ -460,7 +581,7 @@ export default function ChauffeurDashboard() {
                     </>
                 ) : (
                     <div style={{ textAlign: 'center', padding: '1rem', color: '#64748b', fontSize: '0.9rem', background: 'rgba(255,255,255,0.5)', borderRadius: '0.5rem', border: '1px dashed #0891b2' }}>
-                        Aucun transport enregistré pour ce mois
+                        Aucune heure de travail saisie pour ce mois
                     </div>
                 )}
             </div>

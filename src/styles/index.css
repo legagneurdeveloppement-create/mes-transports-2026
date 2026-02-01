@@ -236,8 +236,14 @@ h6 {
     display: none !important;
   }
 
-  /* Hide monthly summary card when printing */
-  .chauffeur-dashboard>div:first-of-type {
+  /* Ensure monthly summary card is visible when printing */
+  .chauffeur-dashboard > div.monthly-summary-container {
+    display: block !important;
+  }
+
+  .tab-content, 
+  .transports-list,
+  .filter-bar {
     display: none !important;
   }
 
