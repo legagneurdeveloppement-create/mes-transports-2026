@@ -551,61 +551,7 @@ export default function ChauffeurDashboard() {
                 </div>
             </div>
 
-            {/* Monthly Hours Summary */}
-            <div className="monthly-summary-container" style={{
-                marginBottom: '1.5rem',
-                padding: '1.25rem',
-                background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
-                borderRadius: '0.75rem',
-                border: '1px solid #0891b2',
-                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
-            }}>
-                <div className="summary-header">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span style={{ fontSize: '1.5rem' }}>📊</span>
-                        <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--primary)', margin: 0 }}>
-                            Récapitulatif - <span style={{ textTransform: 'capitalize' }}>{currentMonthLabel}</span>
-                        </h3>
-                    </div>
-                    <div className="no-print summary-controls">
-                        <button onClick={() => changeMonth(-1)} className="btn btn-outline" style={{ padding: '0.25rem', minWidth: 'auto' }}><ChevronLeft size={18} /></button>
-                        <button onClick={() => { setSelectedMonth(new Date().getMonth()); setSelectedYear(new Date().getFullYear()) }} className="btn btn-outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', minWidth: 'auto' }}>Aujourd'hui</button>
-                        <button onClick={() => changeMonth(1)} className="btn btn-outline" style={{ padding: '0.25rem', minWidth: 'auto' }}><ChevronRight size={18} /></button>
-                    </div>
-                </div>
 
-                {monthlyStats.transportCount > 0 ? (
-                    <>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem' }}>
-                            <div style={{ textAlign: 'center', padding: '0.75rem', background: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-                                <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem', fontWeight: '600' }}>Aller</div>
-                                <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#0891b2' }}>
-                                    {monthlyStats.allerHours}h{monthlyStats.allerMinutes.toString().padStart(2, '0')}
-                                </div>
-                            </div>
-                            <div style={{ textAlign: 'center', padding: '0.75rem', background: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-                                <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem', fontWeight: '600' }}>Retour</div>
-                                <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#f97316' }}>
-                                    {monthlyStats.retourHours}h{monthlyStats.retourMinutes.toString().padStart(2, '0')}
-                                </div>
-                            </div>
-                            <div style={{ textAlign: 'center', padding: '0.75rem', background: '#0891b2', borderRadius: '0.5rem', boxShadow: '0 2px 4px rgba(0,0,0,0.15)' }}>
-                                <div style={{ fontSize: '0.75rem', color: 'white', marginBottom: '0.25rem', fontWeight: '600', opacity: 0.9 }}>Total</div>
-                                <div style={{ fontSize: '1.4rem', fontWeight: '700', color: 'white' }}>
-                                    {monthlyStats.totalHours}h{monthlyStats.totalMinutes.toString().padStart(2, '0')}
-                                </div>
-                            </div>
-                        </div>
-                        <div style={{ marginTop: '0.75rem', textAlign: 'center', fontSize: '0.8rem', color: '#64748b' }}>
-                            {monthlyStats.transportCount} transport{monthlyStats.transportCount > 1 ? 's' : ''} comptabilisé{monthlyStats.transportCount > 1 ? 's' : ''}
-                        </div>
-                    </>
-                ) : (
-                    <div style={{ textAlign: 'center', padding: '1rem', color: '#64748b', fontSize: '0.9rem', background: 'rgba(255,255,255,0.5)', borderRadius: '0.5rem', border: '1px dashed #0891b2' }}>
-                        Aucune heure de travail saisie pour ce mois
-                    </div>
-                )}
-            </div>
 
             {/* Tabs */}
             <div className="tabs-container no-print">
@@ -644,6 +590,63 @@ export default function ChauffeurDashboard() {
             )}
 
             <div className="tab-content">
+                {/* Monthly Hours Summary - Only in Pending Tab */}
+                {activeTab === 'pending' && (
+                    <div className="monthly-summary-container" style={{
+                        marginBottom: '1.5rem',
+                        padding: '1.25rem',
+                        background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+                        borderRadius: '0.75rem',
+                        border: '1px solid #0891b2',
+                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
+                    }}>
+                        <div className="summary-header">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <span style={{ fontSize: '1.5rem' }}>📊</span>
+                                <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--primary)', margin: 0 }}>
+                                    Récapitulatif - <span style={{ textTransform: 'capitalize' }}>{currentMonthLabel}</span>
+                                </h3>
+                            </div>
+                            <div className="no-print summary-controls">
+                                <button onClick={() => changeMonth(-1)} className="btn btn-outline" style={{ padding: '0.25rem', minWidth: 'auto' }}><ChevronLeft size={18} /></button>
+                                <button onClick={() => { setSelectedMonth(new Date().getMonth()); setSelectedYear(new Date().getFullYear()) }} className="btn btn-outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', minWidth: 'auto' }}>Aujourd'hui</button>
+                                <button onClick={() => changeMonth(1)} className="btn btn-outline" style={{ padding: '0.25rem', minWidth: 'auto' }}><ChevronRight size={18} /></button>
+                            </div>
+                        </div>
+
+                        {monthlyStats.transportCount > 0 ? (
+                            <>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem' }}>
+                                    <div style={{ textAlign: 'center', padding: '0.75rem', background: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                                        <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem', fontWeight: '600' }}>Aller</div>
+                                        <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#0891b2' }}>
+                                            {monthlyStats.allerHours}h{monthlyStats.allerMinutes.toString().padStart(2, '0')}
+                                        </div>
+                                    </div>
+                                    <div style={{ textAlign: 'center', padding: '0.75rem', background: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                                        <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem', fontWeight: '600' }}>Retour</div>
+                                        <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#f97316' }}>
+                                            {monthlyStats.retourHours}h{monthlyStats.retourMinutes.toString().padStart(2, '0')}
+                                        </div>
+                                    </div>
+                                    <div style={{ textAlign: 'center', padding: '0.75rem', background: '#0891b2', borderRadius: '0.5rem', boxShadow: '0 2px 4px rgba(0,0,0,0.15)' }}>
+                                        <div style={{ fontSize: '0.75rem', color: 'white', marginBottom: '0.25rem', fontWeight: '600', opacity: 0.9 }}>Total</div>
+                                        <div style={{ fontSize: '1.4rem', fontWeight: '700', color: 'white' }}>
+                                            {monthlyStats.totalHours}h{monthlyStats.totalMinutes.toString().padStart(2, '0')}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style={{ marginTop: '0.75rem', textAlign: 'center', fontSize: '0.8rem', color: '#64748b' }}>
+                                    {monthlyStats.transportCount} transport{monthlyStats.transportCount > 1 ? 's' : ''} comptabilisé{monthlyStats.transportCount > 1 ? 's' : ''}
+                                </div>
+                            </>
+                        ) : (
+                            <div style={{ textAlign: 'center', padding: '1rem', color: '#64748b', fontSize: '0.9rem', background: 'rgba(255,255,255,0.5)', borderRadius: '0.5rem', border: '1px dashed #0891b2' }}>
+                                Aucune heure de travail saisie pour ce mois
+                            </div>
+                        )}
+                    </div>
+                )}
                 {filteredTransports.length === 0 ? (
                     <div className="card empty-state" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-light)' }}>
                         <div className="empty-icon" style={{ opacity: 0.2, marginBottom: '1rem' }}>
