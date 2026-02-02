@@ -298,13 +298,48 @@ export default function Calendar({ userRole }) {
                                 <div style={{ background: '#f8fafc', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
                                     <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.75rem', color: '#0891b2', textTransform: 'uppercase' }}>Départ</h4>
                                     <div style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--primary)' }}>
-                                        {selectedEventDetails.time_departure_origin || '--:--'}
+                                        {(() => {
+                                            if (selectedEventDetails.time_departure_origin) return selectedEventDetails.time_departure_origin;
+                                            // Fallback to first step of chauffeur schedule
+                                            try {
+                                                const rawAller = typeof selectedEventDetails.time_departure_school === 'string'
+                                                    ? JSON.parse(selectedEventDetails.time_departure_school)
+                                                    : selectedEventDetails.time_departure_school;
+                                                const steps = Array.isArray(rawAller) ? rawAller : (rawAller?.steps || []);
+                                                return steps[0]?.time || '--:--';
+                                            } catch (e) {
+                                                return '--:--';
+                                            }
+                                        })()}
                                     </div>
                                 </div>
                                 <div style={{ background: '#f8fafc', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
                                     <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.75rem', color: '#0891b2', textTransform: 'uppercase' }}>Retour</h4>
                                     <div style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--primary)' }}>
-                                        {selectedEventDetails.time_departure_destination || '--:--'}
+                                        {(() => {
+                                            if (selectedEventDetails.time_departure_destination) return selectedEventDetails.time_departure_destination;
+                                            // Fallback to first step of retour schedule or last step of aller if stayed on site? 
+                                            // Usually it's the first step of retour.
+                                            try {
+                                                const rawRetour = typeof selectedEventDetails.time_arrival_school === 'string'
+                                                    ? JSON.parse(selectedEventDetails.time_arrival_school)
+                                                    : selectedEventDetails.time_arrival_school;
+                                                const steps = Array.isArray(rawRetour) ? rawRetour : (rawRetour?.steps || []);
+                                                if (steps.length > 0) return steps[0].time || '--:--';
+
+                                                // If stayed on site, maybe the last step of aller?
+                                                const rawAller = typeof selectedEventDetails.time_departure_school === 'string'
+                                                    ? JSON.parse(selectedEventDetails.time_departure_school)
+                                                    : selectedEventDetails.time_departure_school;
+                                                if (rawAller?.stayedOnSite) {
+                                                    const allerSteps = Array.isArray(rawAller) ? rawAller : (rawAller.steps || []);
+                                                    return allerSteps[allerSteps.length - 1]?.time || '--:--';
+                                                }
+                                                return '--:--';
+                                            } catch (e) {
+                                                return '--:--';
+                                            }
+                                        })()}
                                     </div>
                                 </div>
                             </div>
