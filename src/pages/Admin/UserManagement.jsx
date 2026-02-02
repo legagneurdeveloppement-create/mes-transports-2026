@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Check, X, Shield, User, Trash2, ArrowLeft, Pencil, Eye, EyeOff } from 'lucide-react'
 
@@ -16,6 +16,13 @@ export default function UserManagement() {
     })
     const [error, setError] = useState('')
     const [visiblePasswords, setVisiblePasswords] = useState({})
+    const formRef = useRef(null)
+
+    const scrollToForm = () => {
+        setTimeout(() => {
+            formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }, 100)
+    }
 
     useEffect(() => {
         const storedUsers = JSON.parse(localStorage.getItem('all_users') || '[]')
@@ -56,6 +63,7 @@ export default function UserManagement() {
         setEditingEmail(user.email)
         setShowAddForm(true)
         setError('')
+        scrollToForm()
     }
 
     const resetForm = () => {
@@ -115,7 +123,11 @@ export default function UserManagement() {
                         <h1 className="admin-title">Gestion des Utilisateurs <span style={{ fontSize: '0.4em', background: 'var(--accent)', color: 'white', padding: '0.2rem 0.6rem', borderRadius: '1rem', verticalAlign: 'middle', marginLeft: '0.5rem' }}>v2.0</span></h1>
                     </div>
                     <button
-                        onClick={() => setShowAddForm(!showAddForm)}
+                        onClick={() => {
+                            const newShow = !showAddForm
+                            setShowAddForm(newShow)
+                            if (newShow) scrollToForm()
+                        }}
                         className="btn btn-primary"
                         style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                     >
@@ -124,7 +136,7 @@ export default function UserManagement() {
                 </div>
 
                 {showAddForm && (
-                    <div className="card" style={{ marginBottom: '2rem' }}>
+                    <div ref={formRef} className="card" style={{ marginBottom: '2rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                             <h3 style={{ fontSize: '1.25rem', fontWeight: '600' }}>
                                 {editingEmail ? "Modifier l'utilisateur" : "Nouvel Utilisateur"}
