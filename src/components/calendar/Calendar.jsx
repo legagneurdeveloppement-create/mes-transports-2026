@@ -318,16 +318,15 @@ export default function Calendar({ userRole }) {
                                     <div style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--primary)' }}>
                                         {(() => {
                                             if (selectedEventDetails.time_departure_destination) return selectedEventDetails.time_departure_destination;
-                                            // Fallback to first step of retour schedule or last step of aller if stayed on site? 
-                                            // Usually it's the first step of retour.
+                                            // Fallback to LAST step of retour schedule
                                             try {
                                                 const rawRetour = typeof selectedEventDetails.time_arrival_school === 'string'
                                                     ? JSON.parse(selectedEventDetails.time_arrival_school)
                                                     : selectedEventDetails.time_arrival_school;
                                                 const steps = Array.isArray(rawRetour) ? rawRetour : (rawRetour?.steps || []);
-                                                if (steps.length > 0) return steps[0].time || '--:--';
+                                                if (steps.length > 0) return steps[steps.length - 1].time || '--:--';
 
-                                                // If stayed on site, maybe the last step of aller?
+                                                // If stayed on site, take the last step of aller
                                                 const rawAller = typeof selectedEventDetails.time_departure_school === 'string'
                                                     ? JSON.parse(selectedEventDetails.time_departure_school)
                                                     : selectedEventDetails.time_departure_school;
