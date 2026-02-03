@@ -535,59 +535,6 @@ export default function AdminCalendar() {
                 })}
             </div>
 
-            <div className="calendar-semester-grid" style={{ marginTop: '1.5rem' }}>
-                {(monthNames || []).slice(6, 12).map((monthName, i) => {
-                    const monthIndex = i + 6
-                    const { days, firstDay } = getDaysInMonth(currentYear, monthIndex)
-                    const startOffset = Math.max(0, firstDay === 0 ? 6 : firstDay - 1)
-                    return (
-                        <div key={monthName} className="print-compact-month">
-                            <h4 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '0.75rem', color: 'var(--primary)' }}>{monthName}</h4>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '2px', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '600' }}>
-                                {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, index) => (
-                                    <div key={index} style={{ textAlign: 'center' }}>{d}</div>
-                                ))}
-                            </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '2px' }}>
-                                {[...Array(startOffset)].map((_, i) => <div key={`empty-${i}`} />)}
-                                {[...Array(days)].map((_, i) => {
-                                    const day = i + 1
-                                    const dateKey = `${currentYear}-${monthIndex}-${day}`
-                                    const hasEvent = events[dateKey]
-                                    const isToday = new Date().toDateString() === new Date(currentYear, monthIndex, day).toDateString()
-                                    return (
-                                        <div
-                                            key={day}
-                                            onClick={() => handleDayClick(currentYear, monthIndex, day)}
-                                            style={{
-                                                aspectRatio: '1',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                cursor: 'pointer',
-                                                fontSize: '0.9rem',
-                                                fontWeight: '600',
-                                                borderRadius: '0.25rem',
-                                                backgroundColor: hasEvent ? getEventColor(hasEvent) : 'transparent',
-                                                color: hasEvent ? 'white' : 'inherit',
-                                                border: isToday ? '3px solid #3b82f6' : (
-                                                    hasEvent?.status === 'validated' ? '3px solid #16a34a' :
-                                                        hasEvent?.status === 'rejected' ? '3px solid #dc2626' : 'none'
-                                                ),
-                                                position: 'relative',
-                                                boxShadow: hasEvent?.status === 'pending' ? '0 0 0 2px #eab308' : 'none'
-                                            }}
-                                            title={hasEvent ? `${hasEvent.title} (${hasEvent.schoolClass || ''})` : ''}
-                                        >
-                                            {day}
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                        </div>
-                    )
-                })}
-            </div>
 
             <EventModal
                 isOpen={isModalOpen}

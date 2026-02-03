@@ -1380,3 +1380,27 @@ h6 {
     font-size: 0.9rem;
   }
 }
+/* Legend Styles */
+.calendar-legend-container {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 1.5rem !important;
+  margin-bottom: 2rem !important;
+  padding: 1rem !important;
+  background: #f8fafc !important;
+  border-radius: 0.5rem !important;
+  border: 1px solid #e2e8f0 !important;
+}
+.legend-item { display: flex !important; align-items: center !important; gap: 0.5rem !important; font-size: 0.9rem !important; }
+.legend-dot {
+  width: 1rem !important;
+  height: 1rem !important;
+  border-radius: 50% !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+.legend-text { font-weight: 500 !important; color: #334155 !important; }
+.legend-class { color: #64748b !important; font-weight: normal !important; margin-left: 4px !important; }
+.print-only-title { display: none; }
+
