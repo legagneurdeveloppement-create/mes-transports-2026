@@ -488,7 +488,7 @@ export default function AdminCalendar() {
                     const startOffset = Math.max(0, firstDay === 0 ? 6 : firstDay - 1)
 
                     return (
-                        <div key={monthName} className="print-compact-month" style={{ maxWidth: '350px', margin: '0 auto', width: '100%' }}>
+                        <div key={monthName} className="print-compact-month" style={{ maxWidth: '350px', margin: '0 auto', width: '100%', background: 'white', padding: '1rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                             <h4 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '0.75rem', color: 'var(--primary)' }}>{monthName}</h4>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '2px', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '600' }}>
                                 {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, index) => (

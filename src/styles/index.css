@@ -1404,3 +1404,22 @@ h6 {
 .legend-class { color: #64748b !important; font-weight: normal !important; margin-left: 4px !important; }
 .print-only-title { display: none; }
 
+
+/* Screen Grid Fix */
+.calendar-semester-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  justify-content: center;
+  align-items: start;
+  max-width: 1400px;
+  margin: 2rem auto;
+}
+
+@media print {
+  .print-only-title { display: block !important; margin: 0 0 0.5cm 0 !important; padding: 0 !important; font-size: 20pt !important; page-break-after: avoid !important; }
+  .calendar-semester-grid { margin-top: 0 !important; padding-top: 0 !important; }
+  .admin-header, .navbar, .no-print { display: none !important; }
+  @page { margin: 0.5cm !important; }
+}
+
