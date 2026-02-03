@@ -427,9 +427,11 @@ export default function AdminCalendar() {
                     </button>
                 </div>
 
-                <h3 className="admin-title" style={{ fontSize: '2rem', marginBottom: 0 }}>
+                <h3 className="admin-title no-print" style={{ fontSize: '2rem', marginBottom: 0 }}>
                     {currentYear}
                 </h3>
+                {/* Print-only title */}
+                <h1 className="print-only-title">{currentYear}</h1>
 
                 <div className="admin-header-actions">
                     <button
@@ -456,16 +458,7 @@ export default function AdminCalendar() {
                 </div>
             )}
 
-            <div style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '1.5rem',
-                marginBottom: '2rem',
-                padding: '1rem',
-                background: '#f8fafc',
-                borderRadius: '0.5rem',
-                border: '1px solid #e2e8f0'
-            }}>
+            <div className="calendar-legend-container">
                 {effectiveDestinations.length === 0 && (
                     <span style={{ color: '#64748b', fontSize: '0.9rem', width: '100%', textAlign: 'center' }}>
                         Aucun lieu défini (Détection automatique en cours...)
@@ -478,11 +471,11 @@ export default function AdminCalendar() {
                         ))
                     )
                     .map((dest, idx) => (
-                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
-                            <div style={{ width: '1rem', height: '1rem', borderRadius: '50%', backgroundColor: dest.color || '#3b82f6', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}></div>
-                            <span style={{ fontWeight: '500', color: '#334155' }}>
+                        <div key={idx} className="legend-item">
+                            <div className="legend-dot" style={{ backgroundColor: dest.color || '#3b82f6' }}></div>
+                            <span className="legend-text">
                                 {dest.name}
-                                {dest.defaultClass && <span style={{ color: '#64748b', fontWeight: 'normal', marginLeft: '4px' }}>({dest.defaultClass})</span>}
+                                {dest.defaultClass && <span className="legend-class">({dest.defaultClass})</span>}
                             </span>
                         </div>
                     ))}
@@ -548,7 +541,7 @@ export default function AdminCalendar() {
                     const { days, firstDay } = getDaysInMonth(currentYear, monthIndex)
                     const startOffset = Math.max(0, firstDay === 0 ? 6 : firstDay - 1)
                     return (
-                        <div key={monthName} className="print-compact-month" style={{ background: 'white', padding: '1rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                        <div key={monthName} className="print-compact-month">
                             <h4 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '0.75rem', color: 'var(--primary)' }}>{monthName}</h4>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '2px', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '600' }}>
                                 {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, index) => (

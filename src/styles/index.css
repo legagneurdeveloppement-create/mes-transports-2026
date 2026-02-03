@@ -220,6 +220,47 @@ h6 {
     min-height: 80px !important;
   }
 
+  .calendar-semester-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.25cm !important;
+    margin-top: 0.2cm !important;
+  }
+
+  .print-compact-month {
+    padding: 0.1cm !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 0.2cm !important;
+  }
+
+  .print-compact-month h4 {
+    font-size: 8pt !important;
+    margin-bottom: 0.1cm !important;
+  }
+
+  .print-only-title {
+    display: block !important;
+    text-align: center;
+    font-size: 16pt !important;
+    margin-bottom: 0.2cm !important;
+    color: #0f172a !important;
+  }
+
+  .calendar-legend-container {
+    gap: 0.2cm !important;
+    margin-bottom: 0.2cm !important;
+    padding: 0.15cm !important;
+    font-size: 7pt !important;
+  }
+
+  .legend-dot {
+    width: 6pt !important;
+    height: 6pt !important;
+  }
+
+  .legend-text {
+    font-size: 7pt !important;
+  }
+
   /* Chauffeur Dashboard Print Styles - Single Page Ultra Compact */
   .dashboard-section-header {
     display: none !important;
@@ -237,11 +278,11 @@ h6 {
   }
 
   /* Ensure monthly summary card is visible when printing */
-  .chauffeur-dashboard > div.monthly-summary-container {
+  .chauffeur-dashboard>div.monthly-summary-container {
     display: block !important;
   }
 
-  .tab-content, 
+  .tab-content,
   .transports-list,
   .filter-bar {
     display: none !important;
@@ -1027,9 +1068,8 @@ h6 {
 @media print {
   .calendar-semester-grid {
     display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 1rem !important;
-    page-break-after: always;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 0.15cm !important;
   }
 }
 
