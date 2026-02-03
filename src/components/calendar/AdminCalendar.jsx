@@ -526,7 +526,8 @@ export default function AdminCalendar() {
                                             }}
                                             title={hasEvent ? `${hasEvent.title} (${hasEvent.schoolClass || ''})` : ''}
                                         >
-                                            {day}
+                                            <span className="day-number">{day}</span>
+                                            {hasEvent && <span className="print-day-label">{hasEvent.title}</span>}
                                         </div>
                                     )
                                 })}

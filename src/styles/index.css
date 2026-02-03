@@ -1536,4 +1536,43 @@ h6 {
     align-items: center !important;
     justify-content: center !important;
   }
+}/* Final Visibility Polish */
+.print-day-label {
+    display: none;
+}
+
+@media print {
+    .legend-dot {
+        width: 8pt !important;
+        height: 8pt !important;
+        border: 1px solid #cbd5e1 !important;
+    }
+
+    .legend-item {
+        gap: 0.1cm !important;
+    }
+
+    .legend-text {
+        font-size: 7pt !important;
+    }
+
+    .print-day-label {
+        display: block !important;
+        font-size: 3pt !important;
+        line-height: 1 !important;
+        position: absolute;
+        bottom: 1px;
+        width: 100%;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-weight: bold;
+        color: white !important;
+    }
+
+    .day-number {
+        font-size: 5pt !important;
+        margin-top: -2px !important;
+    }
 }
