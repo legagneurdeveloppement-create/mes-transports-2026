@@ -482,7 +482,7 @@ export default function AdminCalendar() {
             </div>
 
             <div className="calendar-semester-grid">
-                {(monthNames || []).slice(0, 6).map((monthName, monthIndex) => {
+                {(monthNames || []).map((monthName, monthIndex) => {
                     const { days, firstDay } = getDaysInMonth(currentYear, monthIndex)
                     const startOffset = Math.max(0, firstDay === 0 ? 6 : firstDay - 1)
 
