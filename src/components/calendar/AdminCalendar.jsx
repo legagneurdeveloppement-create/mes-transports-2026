@@ -417,6 +417,9 @@ export default function AdminCalendar() {
 
     return (
         <div>
+            {/* Print-only title */}
+            <h1 className="print-only-title">{currentYear}</h1>
+
             <div className="admin-header no-print">
                 <div className="flex gap-2">
                     <button onClick={() => changeYear(-1)} className="btn btn-outline" style={{ padding: '0.5rem', border: 'none' }}>
@@ -427,11 +430,9 @@ export default function AdminCalendar() {
                     </button>
                 </div>
 
-                <h3 className="admin-title no-print" style={{ fontSize: '2rem', marginBottom: 0 }}>
+                <h3 className="admin-title" style={{ fontSize: '2rem', marginBottom: 0 }}>
                     {currentYear}
                 </h3>
-                {/* Print-only title */}
-                <h1 className="print-only-title">{currentYear}</h1>
 
                 <div className="admin-header-actions">
                     <button
@@ -487,7 +488,7 @@ export default function AdminCalendar() {
                     const startOffset = Math.max(0, firstDay === 0 ? 6 : firstDay - 1)
 
                     return (
-                        <div key={monthName} className="print-compact-month" style={{ background: 'white', padding: '1rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                        <div key={monthName} className="print-compact-month" style={{ maxWidth: '350px', margin: '0 auto', width: '100%' }}>
                             <h4 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '0.75rem', color: 'var(--primary)' }}>{monthName}</h4>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '2px', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '600' }}>
                                 {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, index) => (
