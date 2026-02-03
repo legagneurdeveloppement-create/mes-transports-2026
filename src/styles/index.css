@@ -1380,6 +1380,7 @@ h6 {
     font-size: 0.9rem;
   }
 }
+
 /* Legend Styles */
 .calendar-legend-container {
   display: flex !important;
@@ -1391,18 +1392,37 @@ h6 {
   border-radius: 0.5rem !important;
   border: 1px solid #e2e8f0 !important;
 }
-.legend-item { display: flex !important; align-items: center !important; gap: 0.5rem !important; font-size: 0.9rem !important; }
+
+.legend-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  font-size: 0.9rem !important;
+}
+
 .legend-dot {
   width: 1rem !important;
   height: 1rem !important;
   border-radius: 50% !important;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
-.legend-text { font-weight: 500 !important; color: #334155 !important; }
-.legend-class { color: #64748b !important; font-weight: normal !important; margin-left: 4px !important; }
-.print-only-title { display: none; }
+
+.legend-text {
+  font-weight: 500 !important;
+  color: #334155 !important;
+}
+
+.legend-class {
+  color: #64748b !important;
+  font-weight: normal !important;
+  margin-left: 4px !important;
+}
+
+.print-only-title {
+  display: none;
+}
 
 
 /* Screen Grid Fix */
@@ -1416,24 +1436,104 @@ h6 {
   margin: 2rem auto;
 }
 
+
 @media print {
-  .print-only-title { display: block !important; margin: 0 0 0.5cm 0 !important; padding: 0 !important; font-size: 20pt !important; page-break-after: avoid !important; }
-  .calendar-semester-grid { margin-top: 0 !important; padding-top: 0 !important; }
-  .admin-header, .navbar, .no-print { display: none !important; }
-  @page { margin: 0.5cm !important; }
+
+  /* Global Page Setup */
+  @page {
+    margin: 0.2cm !important;
+    size: A4 portrait;
+  }
+
+  /* Hide UI elements */
+  .admin-header,
+  .navbar,
+  .no-print,
+  .btn,
+  .toast,
+  .navbar,
+  .dashboard-header {
+    display: none !important;
+  }
+
+  /* Force Colors */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Annual Title */
+  .print-only-title {
+    display: block !important;
+    text-align: center;
+    font-size: 16pt !important;
+    margin: 0 0 0.1cm 0 !important;
+    padding: 0 !important;
+    color: #0f172a !important;
+    page-break-after: avoid !important;
+  }
+
+  /* Legend */
+  .calendar-legend-container {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    margin-bottom: 0.1cm !important;
+    padding: 0.05cm !important;
+    gap: 0.1cm !important;
+    font-size: 5pt !important;
+    background: transparent !important;
+    border: none !important;
+  }
+
+  .legend-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.05cm !important;
+  }
+
+  .legend-dot {
+    width: 4pt !important;
+    height: 4pt !important;
+    border-radius: 50% !important;
+    border: 0.5px solid #cbd5e1 !important;
+  }
+
+  /* Calendar Grid */
+  .calendar-semester-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.05cm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Individual Months */
+  .print-compact-month {
+    padding: 0.05cm !important;
+    margin-bottom: 0.1cm !important;
+    border: 0.5px solid #e2e8f0 !important;
+    background: white !important;
+    page-break-inside: avoid !important;
+    box-shadow: none !important;
+  }
+
+  .print-compact-month h4 {
+    font-size: 6pt !important;
+    margin-top: 0 !important;
+    margin-bottom: 0.05cm !important;
+  }
+
+  /* Days Grid */
+  .print-compact-month div {
+    font-size: 5pt !important;
+    line-height: 1 !important;
+  }
+
+  /* Specific override for day boxes in print to ensure centering */
+  .print-compact-month div[style*="grid-template-columns"] div {
+    min-height: 0.4cm !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
 }
-
-
-/* Ultra Compact Print Overrides */
-@media print {
-  .print-only-title { font-size: 16pt !important; margin-bottom: 0.2cm !important; }
-  .calendar-legend-container { margin-bottom: 0.2cm !important; padding: 0.05cm !important; gap: 0.1cm !important; font-size: 5pt !important; }
-  .legend-dot { width: 5pt !important; height: 5pt !important; }
-  .calendar-semester-grid { gap: 0.05cm !important; }
-  .print-compact-month { padding: 0.05cm !important; margin-bottom: 0.05cm !important; }
-  .print-compact-month h4 { font-size: 6pt !important; margin-bottom: 0.02cm !important; }
-  .print-compact-month div { font-size: 5pt !important; line-height: 1 !important; }
-  .calendar-semester-grid > div { max-height: 4.5cm !important; }
-  @page { margin: 0.2cm !important; }
-}
-
