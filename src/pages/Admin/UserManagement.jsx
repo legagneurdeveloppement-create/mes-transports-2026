@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Check, X, Shield, User, Trash2, ArrowLeft, Pencil, Eye, EyeOff } from 'lucide-react'
+import { useAuth } from '../../context/AuthContext'
 
 export default function UserManagement() {
+    const { user: currentUser, setUser: setSessionUser } = useAuth()
     const [users, setUsers] = useState([])
     const [showAddForm, setShowAddForm] = useState(false)
     const [editingEmail, setEditingEmail] = useState(null)
@@ -93,6 +95,14 @@ export default function UserManagement() {
 
             const updated = users.map(u => u.email === editingEmail ? { ...newUser, approved: u.approved } : u)
             saveUsers(updated)
+
+            // Update session if editing current user
+            if (editingEmail === currentUser?.email) {
+                const refreshedUser = { ...newUser, approved: true }
+                setSessionUser(refreshedUser)
+                localStorage.setItem('user', JSON.stringify(refreshedUser))
+            }
+
             resetForm()
         } else {
             // Mode Création

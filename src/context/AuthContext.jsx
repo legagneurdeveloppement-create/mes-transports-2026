@@ -35,16 +35,6 @@ export const AuthProvider = ({ children }) => {
                 localStorage.setItem('all_users', JSON.stringify(initialUsers))
             }
 
-            // Check active session
-            const stored = localStorage.getItem('user')
-            if (stored && stored !== 'undefined') {
-                try {
-                    setUser(JSON.parse(stored))
-                } catch (pe) {
-                    console.error('Error parsing stored user:', pe)
-                }
-            }
-
             // Migration: Ensure Chauffeur Demo exists for testing and has the correct role
             const allUsersStr = localStorage.getItem('all_users') || '[]'
             let allUsers = []
@@ -55,8 +45,25 @@ export const AuthProvider = ({ children }) => {
                 allUsers = []
             }
 
-            const chauffeurUser = allUsers.find(u => u.email === 'chauffeur@demo.com')
+            // Check active session and SYNC with all_users
+            const stored = localStorage.getItem('user')
+            if (stored && stored !== 'undefined') {
+                try {
+                    const sessionUser = JSON.parse(stored)
+                    // Find the most up-to-date data for this user
+                    const updatedUser = allUsers.find(u => u.email === sessionUser.email)
+                    if (updatedUser) {
+                        setUser(updatedUser)
+                        localStorage.setItem('user', JSON.stringify(updatedUser))
+                    } else {
+                        setUser(sessionUser)
+                    }
+                } catch (pe) {
+                    console.error('Error parsing stored user:', pe)
+                }
+            }
 
+            const chauffeurUser = allUsers.find(u => u.email === 'chauffeur@demo.com')
             if (!chauffeurUser) {
                 allUsers.push({
                     name: 'Chauffeur Demo',
@@ -146,7 +153,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, register, logout, viewAsChauffeur, setViewAsChauffeur }}>
+        <AuthContext.Provider value={{ user, setUser, loading, login, register, logout, viewAsChauffeur, setViewAsChauffeur }}>
             {children}
         </AuthContext.Provider>
     )
