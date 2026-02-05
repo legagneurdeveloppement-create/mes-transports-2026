@@ -4,7 +4,7 @@ import Navbar from '../components/layout/Navbar'
 import {
     Calendar, CheckCircle, XCircle, Clock, MapPin,
     Settings, Shield, User, Smartphone, CalendarPlus,
-    HelpCircle, ArrowRight, Printer
+    HelpCircle, ArrowRight, Printer, CloudUpload
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
@@ -143,44 +143,60 @@ function AdminGuide() {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             <GuideSection
-                title="1. Planifier un Transport"
+                title="1. Planifier un Transport (Base)"
                 icon={<Calendar className="text-primary" />}
             >
-                <p>Cliquez sur une date dans le calendrier pour ouvrir le formulaire de création.</p>
+                <p>Cliquez sur une date dans le calendrier pour ouvrir le formulaire.</p>
                 <ul className="guide-list">
-                    <li>Remplissez la <strong>Destination</strong> (ou choisissez dans la liste).</li>
-                    <li>Assignez une <strong>Classe</strong> et une <strong>Couleur</strong>.</li>
-                    <li>Définissez les heures prévues.</li>
+                    <li><strong>Destination :</strong> Sélectionnez une ville ou un lieu existant. La couleur s'ajustera automatiquement.</li>
+                    <li><strong>Classe :</strong> Indiquez le groupe concerné (ex: CP, 6ème).</li>
+                    <li><strong>Horaires :</strong> Définissez l'heure de départ et de retour prévues.</li>
                 </ul>
                 <div className="tip-box">
-                    📱 <strong>SMS :</strong> Si vous modifiez un transport existant, le chauffeur concerné recevra une notification SMS.
+                    📱 <strong>Notification :</strong> Lors de la création ou modification, le chauffeur reçoit un SMS si son numéro est renseigné.
                 </div>
             </GuideSection>
 
             <GuideSection
-                title="2. Gestion des Utilisateurs (Super Admin)"
-                icon={<Shield className="text-danger" />}
+                title="2. Sélection Multiple & Actions Groupées (Nouveau)"
+                icon={<CalendarPlus className="text-warning" />}
             >
-                <div className="tip-box" style={{ marginTop: 0, marginBottom: '1rem', borderLeftColor: '#dc2626', background: '#fef2f2', color: '#991b1b' }}>
-                    🔒 <strong>Réservé au Super Administrateur</strong>
-                </div>
-                <p>Accédez à la page <strong>Gestion des utilisateurs</strong> via le bouton <Shield size={14} /> en haut à droite.</p>
+                <p>Pour planifier rapidement plusieurs jours (ex: tous les lundis du mois) :</p>
+                <ol className="guide-steps">
+                    <li>Activez le bouton <strong>"Sélection Multiple"</strong> en haut du calendrier (il devient violet).</li>
+                    <li>Cliquez sur tous les jours souhaités (ils s'entourent de violet).</li>
+                    <li>Cliquez sur le bouton <strong>"Planifier X dates"</strong> qui apparaît.</li>
+                </ol>
+                <p>Dans la fenêtre qui s'ouvre :</p>
                 <ul className="guide-list">
-                    <li>Approuvez les nouveaux comptes en attente.</li>
-                    <li>Modifiez les informations (Email, Téléphone, Rôle) avec le bouton ✏️.</li>
-                    <li>Supprimez un accès si nécessaire.</li>
+                    <li>Remplissez les infos : elles s'appliqueront à <strong>toutes</strong> les dates sélectionnées.</li>
+                    <li>Pour supprimer, cliquez sur le bouton <strong>Supprimer</strong> en bas à gauche : cela effacera tous les transports sélectionnés.</li>
+                </ul>
+                <div className="tip-box">
+                    💡 <strong>Astuce pro :</strong> Vous pouvez aussi maintenir la touche <code>Ctrl</code> (ou <code>Cmd</code>) enfoncée pour sélectionner des dates sans activer le bouton.
+                </div>
+            </GuideSection>
+
+            <GuideSection
+                title="3. Gestion des Utilisateurs"
+                icon={<User className="text-success" />}
+            >
+                <p>Accédez à la gestion via le menu principal ou l'icône <Shield size={14} />.</p>
+                <ul className="guide-list">
+                    <li><strong>Approuver :</strong> Validez les nouveaux inscrits pour qu'ils puissent se connecter.</li>
+                    <li><strong>Rôle :</strong> Définissez qui est Chauffeur, Admin ou simple Utilisateur.</li>
+                    <li><strong>Direction :</strong> Attribuez une structure (Commune, Société...) pour soigner l'affichage.</li>
                 </ul>
             </GuideSection>
 
             <GuideSection
-                title="3. Impression des Plannings"
+                title="4. Impression & Export"
                 icon={<Printer className="text-dark" />}
             >
-                <p>Vous pouvez imprimer une vue propre du planning :</p>
-                <ol className="guide-steps">
-                    <li>Sur le Dashboard, un bouton <strong>🖨️ Imprimer</strong> est disponible.</li>
-                    <li>L'impression est optimisée pour masquer les menus et ne garder que l'essentiel (liste des transports).</li>
-                </ol>
+                <ul className="guide-list">
+                    <li><strong>Imprimer le mois :</strong> Utilisez le bouton d'impression du navigateur (Ctrl+P) ou le bouton dédié sur le Dashboard. L'affichage s'adapte automatiquement au format papier.</li>
+                    <li><strong>Envoyer vers Cloud :</strong> Si vous utilisez l'application sur plusieurs appareils (PC + Téléphone), pensez à cliquer sur le bouton <span style={{ color: '#0891b2' }}><CloudUpload size={14} /> Envoyer vers Cloud</span> pour synchroniser vos dernières modifications.</li>
+                </ul>
             </GuideSection>
         </div>
     )
