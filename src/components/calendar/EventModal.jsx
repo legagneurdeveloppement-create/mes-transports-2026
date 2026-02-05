@@ -410,22 +410,24 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
                         paddingBottom: '2rem' // Increased space at the bottom to ensure buttons are visible
                     }}>
                         <button type="submit" className="btn btn-primary" style={{ flex: '1 1 150px', minHeight: '3rem' }}>Enregistrer</button>
-                        {eventData && (
+                        {(eventData || selectedDates.length > 0) && (
                             <>
-                                <button
-                                    type="button"
-                                    onClick={() => generateICS(eventData)}
-                                    className="btn btn-outline"
-                                    style={{
-                                        flex: '1 1 120px',
-                                        borderColor: '#0891b2',
-                                        color: '#0891b2',
-                                        minHeight: '3rem'
-                                    }}
-                                    title="Ajouter au calendrier (Rappel)"
-                                >
-                                    <CalendarIcon size={18} style={{ marginRight: '0.4rem' }} /> Rappel
-                                </button>
+                                {eventData && (
+                                    <button
+                                        type="button"
+                                        onClick={() => generateICS(eventData)}
+                                        className="btn btn-outline"
+                                        style={{
+                                            flex: '1 1 120px',
+                                            borderColor: '#0891b2',
+                                            color: '#0891b2',
+                                            minHeight: '3rem'
+                                        }}
+                                        title="Ajouter au calendrier (Rappel)"
+                                    >
+                                        <CalendarIcon size={18} style={{ marginRight: '0.4rem' }} /> Rappel
+                                    </button>
+                                )}
                                 <button
                                     type="button"
                                     onClick={handleDelete}
