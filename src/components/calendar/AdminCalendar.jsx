@@ -17,6 +17,7 @@ export default function AdminCalendar() {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isDestManagerOpen, setIsDestManagerOpen] = useState(false)
     const [selectedDateKey, setSelectedDateKey] = useState(null)
+    const [selectedDates, setSelectedDates] = useState([]) // New state for multi-selection
     const [selectedEventData, setSelectedEventData] = useState(null)
 
     useEffect(() => {
@@ -223,9 +224,11 @@ export default function AdminCalendar() {
         }
     }
 
-    const saveEvents = async (newEvents, updatedKey, updatedData) => {
+    const saveEvents = async (newEvents, updatedKeys, updatedData) => {
         setEvents(newEvents)
         localStorage.setItem('transport_events', JSON.stringify(newEvents))
+
+        const keys = Array.isArray(updatedKeys) ? updatedKeys : (updatedKeys ? [updatedKeys] : [])
 
         // SMS Notification Logic
         try {
@@ -243,18 +246,17 @@ export default function AdminCalendar() {
                 u.phone.trim() !== ''
             )
 
-            if (chauffeurs.length > 0 && updatedKey) {
+            if (chauffeurs.length > 0 && keys.length > 0) {
                 const recipientPhones = chauffeurs.map(u => u.phone)
                 let message = ''
 
                 if (!updatedData) {
                     // Deletion
-                    message = `Info Transport: Le transport du ${updatedKey} a été ANNULÉ par l'administrateur.`
+                    message = `Info Transport: Les transports du ${keys.join(', ')} ont été ANNULÉS par l'administrateur.`
                 } else {
                     // Creation or Update
-                    const isNew = !events[updatedKey]
-                    const action = isNew ? 'NOUVEAU transport' : 'MODIFICATION transport'
-                    message = `Info Transport: ${action} le ${updatedKey}. ${updatedData.title} (${updatedData.schoolClass || 'N/A'})\nDépart: ${updatedData.time_departure_origin || '?'}`
+                    const action = keys.length > 1 ? 'NOUVEAUX transports' : 'NOUVEAU transport'
+                    message = `Info Transport: ${action} le ${keys.join(', ')}. ${updatedData.title} (${updatedData.schoolClass || 'N/A'})\nDépart: ${updatedData.time_departure_origin || '?'}`
                 }
 
                 if (message) {
@@ -265,22 +267,24 @@ export default function AdminCalendar() {
             console.error("Erreur lors de l'envoi du SMS aux chauffeurs:", error)
         }
 
-        if (updatedKey) {
-            if (!updatedData) {
-                await supabase.from('transports').delete().eq('date_key', updatedKey)
-            } else {
-                await supabase.from('transports').upsert({
-                    date_key: updatedKey,
-                    title: updatedData.title,
-                    school_class: updatedData.schoolClass,
-                    color: updatedData.color,
-                    status: updatedData.status || 'pending',
-                    time_departure_origin: updatedData.time_departure_origin,
-                    time_departure_destination: updatedData.time_departure_destination,
-                    time_departure_school: updatedData.time_departure_school,
-                    time_arrival_school: updatedData.time_arrival_school,
-                    stayed_on_site: updatedData.stayed_on_site
-                })
+        if (keys.length > 0) {
+            for (const key of keys) {
+                if (!updatedData) {
+                    await supabase.from('transports').delete().eq('date_key', key)
+                } else {
+                    await supabase.from('transports').upsert({
+                        date_key: key,
+                        title: updatedData.title,
+                        school_class: updatedData.schoolClass,
+                        color: updatedData.color,
+                        status: updatedData.status || 'pending',
+                        time_departure_origin: updatedData.time_departure_origin,
+                        time_departure_destination: updatedData.time_departure_destination,
+                        time_departure_school: updatedData.time_departure_school,
+                        time_arrival_school: updatedData.time_arrival_school,
+                        stayed_on_site: updatedData.stayed_on_site
+                    })
+                }
             }
         }
     }
@@ -350,38 +354,58 @@ export default function AdminCalendar() {
         setCurrentYear(currentYear + delta)
     }
 
-    const handleDayClick = (year, month, day) => {
+    const handleDayClick = (year, month, day, e) => {
         const dateKey = `${year}-${month}-${day}`
-        setSelectedDateKey(dateKey)
-        setSelectedEventData(events[dateKey] || null)
-        setIsModalOpen(true)
+
+        if (e && (e.ctrlKey || e.metaKey)) {
+            // Toggle selection
+            setSelectedDates(prev =>
+                prev.includes(dateKey)
+                    ? prev.filter(k => k !== dateKey)
+                    : [...prev, dateKey]
+            )
+        } else {
+            // Single selection
+            setSelectedDateKey(dateKey)
+            setSelectedDates([dateKey])
+            setSelectedEventData(events[dateKey] || null)
+            setIsModalOpen(true)
+        }
     }
 
     const handleSaveEvent = async (eventData) => {
         try {
-            if (!selectedDateKey) return
+            if (selectedDates.length === 0) return
 
             if (!eventData) {
                 // Deletion
                 const newEv = { ...events }
-                if (newEv[selectedDateKey]) {
-                    delete newEv[selectedDateKey]
-                    await saveEvents(newEv, selectedDateKey, null)
+                let deletedCount = 0
+                selectedDates.forEach(key => {
+                    if (newEv[key]) {
+                        delete newEv[key]
+                        deletedCount++
+                    }
+                })
+                if (deletedCount > 0) {
+                    await saveEvents(newEv, selectedDates, null)
                 }
             } else {
                 // Update / Create
-                const existing = events[selectedDateKey] || {}
-                const updatedData = {
-                    ...existing,
-                    ...eventData,
-                    type: 'available',
-                    status: eventData.status || existing.status || 'pending'
-                }
-                saveEvents({
-                    ...events,
-                    [selectedDateKey]: updatedData
-                }, selectedDateKey, updatedData)
+                const newEv = { ...events }
+                selectedDates.forEach(key => {
+                    const existing = newEv[key] || {}
+                    newEv[key] = {
+                        ...existing,
+                        ...eventData,
+                        type: 'available',
+                        status: eventData.status || existing.status || 'pending'
+                    }
+                })
+                await saveEvents(newEv, selectedDates, eventData)
             }
+            setSelectedDates([])
+            setSelectedDateKey(null)
         } catch (error) {
             console.error("Erreur lors de la sauvegarde/suppression:", error)
             alert("Une erreur est survenue lors de l'opération.")
@@ -435,6 +459,18 @@ export default function AdminCalendar() {
                 </h3>
 
                 <div className="admin-header-actions">
+                    {selectedDates.length > 1 && (
+                        <button
+                            onClick={() => {
+                                setSelectedEventData(null)
+                                setIsModalOpen(true)
+                            }}
+                            className="btn btn-primary"
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#8b5cf6' }}
+                        >
+                            Planifier {selectedDates.length} dates
+                        </button>
+                    )}
                     <button
                         onClick={syncLocalToCloud}
                         className="btn btn-outline"
@@ -505,7 +541,7 @@ export default function AdminCalendar() {
                                     return (
                                         <div
                                             key={day}
-                                            onClick={() => handleDayClick(currentYear, monthIndex, day)}
+                                            onClick={(e) => handleDayClick(currentYear, monthIndex, day, e)}
                                             style={{
                                                 aspectRatio: '1',
                                                 display: 'flex',
@@ -515,14 +551,18 @@ export default function AdminCalendar() {
                                                 fontSize: '0.9rem',
                                                 fontWeight: '600',
                                                 borderRadius: '0.25rem',
-                                                backgroundColor: hasEvent ? getEventColor(hasEvent) : 'transparent',
+                                                backgroundColor: hasEvent ? getEventColor(hasEvent) : (selectedDates.includes(dateKey) ? '#ddd6fe' : 'transparent'),
                                                 color: hasEvent ? 'white' : 'inherit',
-                                                border: isToday ? '3px solid #3b82f6' : (
-                                                    hasEvent?.status === 'validated' ? '3px solid #16a34a' :
-                                                        hasEvent?.status === 'rejected' ? '3px solid #dc2626' : 'none'
+                                                border: selectedDates.includes(dateKey) ? '3px solid #8b5cf6' : (
+                                                    isToday ? '3px solid #3b82f6' : (
+                                                        hasEvent?.status === 'validated' ? '3px solid #16a34a' :
+                                                            hasEvent?.status === 'rejected' ? '3px solid #dc2626' : 'none'
+                                                    )
                                                 ),
                                                 position: 'relative',
-                                                boxShadow: hasEvent?.status === 'pending' ? '0 0 0 2px #eab308' : 'none'
+                                                boxShadow: hasEvent?.status === 'pending' ? '0 0 0 2px #eab308' : 'none',
+                                                transform: selectedDates.includes(dateKey) ? 'scale(0.95)' : 'none',
+                                                transition: 'all 0.2s ease'
                                             }}
                                             title={hasEvent ? `${hasEvent.title} (${hasEvent.schoolClass || ''})` : ''}
                                         >
@@ -544,6 +584,7 @@ export default function AdminCalendar() {
                 onSave={handleSaveEvent}
                 eventData={selectedEventData}
                 selectedDate={selectedDateKey}
+                selectedDates={selectedDates}
                 destinations={effectiveDestinations}
             />
 

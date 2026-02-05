@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { X, Calendar as CalendarIcon } from 'lucide-react'
 import { generateICS } from '../../lib/calendarService'
 
-export default function EventModal({ isOpen, onClose, onSave, eventData, selectedDate, destinations = [] }) {
+export default function EventModal({ isOpen, onClose, onSave, eventData, selectedDate, selectedDates = [], destinations = [] }) {
     const [title, setTitle] = useState('')
     const [schoolClass, setSchoolClass] = useState('')
     const [color, setColor] = useState('#3b82f6') // Default blue
@@ -84,7 +84,11 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
     }
 
     const handleDelete = () => {
-        if (window.confirm('Voulez-vous vraiment supprimer cet événement ?')) {
+        const message = selectedDates.length > 1
+            ? `Voulez-vous vraiment supprimer les transports pour les ${selectedDates.length} dates sélectionnées ?`
+            : 'Voulez-vous vraiment supprimer cet événement ?'
+
+        if (window.confirm(message)) {
             onSave(null)
             onClose()
         }
@@ -105,7 +109,7 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
             <div className="modal-content" style={{ maxHeight: '90vh', overflowY: 'auto', paddingBottom: '2rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                     <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>
-                        {eventData ? 'Modifier le transport' : 'Nouveau transport'}
+                        {selectedDates.length > 1 ? `Planifier ${selectedDates.length} dates` : (eventData ? 'Modifier le transport' : 'Nouveau transport')}
                     </h3>
                     <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
                         <X size={24} />
@@ -113,11 +117,17 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
                 </div>
 
                 <div style={{ marginBottom: '1rem', fontSize: '0.9rem', color: '#64748b' }}>
-                    Date : {(() => {
-                        if (!selectedDate) return ''
-                        const [year, month, day] = selectedDate.split('-').map(Number)
-                        return `${day.toString().padStart(2, '0')} - ${(month + 1).toString().padStart(2, '0')} - ${year}`
-                    })()}
+                    {selectedDates.length > 1 ? (
+                        <div style={{ fontWeight: '600', color: '#8b5cf6' }}>
+                            📅 {selectedDates.length} dates sélectionnées
+                        </div>
+                    ) : (
+                        <>Date : {(() => {
+                            if (!selectedDate) return ''
+                            const [year, month, day] = selectedDate.split('-').map(Number)
+                            return `${day.toString().padStart(2, '0')} - ${(month + 1).toString().padStart(2, '0')} - ${year}`
+                        })()}</>
+                    )}
                 </div>
 
                 <form onSubmit={handleSubmit}>
