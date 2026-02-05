@@ -35,7 +35,8 @@ export const AuthProvider = ({ children }) => {
                 localStorage.setItem('all_users', JSON.stringify(initialUsers))
             }
 
-            // Migration: Ensure Chauffeur Demo exists for testing and has the correct role
+            // Migration: Ensure Chauffeur Demo exists for testing
+            // We verify existence but avoid overwriting properties unless critical
             const allUsersStr = localStorage.getItem('all_users') || '[]'
             let allUsers = []
             try {
@@ -65,6 +66,7 @@ export const AuthProvider = ({ children }) => {
 
             const chauffeurUser = allUsers.find(u => u.email === 'chauffeur@demo.com')
             if (!chauffeurUser) {
+                // Only create if missing
                 allUsers.push({
                     name: 'Chauffeur Demo',
                     email: 'chauffeur@demo.com',
@@ -74,10 +76,8 @@ export const AuthProvider = ({ children }) => {
                     direction: 'Société de transport'
                 })
                 localStorage.setItem('all_users', JSON.stringify(allUsers))
-            } else if (chauffeurUser.role !== 'CHAUFFEUR') {
-                chauffeurUser.role = 'CHAUFFEUR'
-                localStorage.setItem('all_users', JSON.stringify(allUsers))
             }
+            // Removed the aggressive role reset to avoid side effects on modified users
         } catch (err) {
             console.error('Fatal crash in AuthProvider useEffect:', err)
         } finally {

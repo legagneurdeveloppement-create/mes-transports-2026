@@ -226,42 +226,43 @@ export default function UserManagement() {
                                 </select>
                             </div>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>Direction</label>
-                                <select
-                                    className="input"
-                                    value={newUser.direction === 'Communauté de communes' || newUser.direction === 'Commune' || newUser.direction === 'Société de transport' || newUser.direction === '' ? newUser.direction : 'CUSTOM'}
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        if (val === 'CUSTOM') {
-                                            setNewUser({ ...newUser, direction: ' ' }); // Use a space to trigger the custom input but keep it truthy
-                                        } else {
-                                            setNewUser({ ...newUser, direction: val });
-                                        }
-                                    }}
-                                    style={{ width: '100%' }}
-                                    required
-                                >
-                                    <option value="">Choisir une direction...</option>
-                                    <option value="Communauté de communes">Communauté de communes</option>
-                                    <option value="Commune">Commune</option>
-                                    <option value="Société de transport">Société de transport</option>
-                                    <option value="CUSTOM">Saisir manuellement...</option>
-                                </select>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>Direction / Structure</label>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    <select
+                                        className="input"
+                                        value={['Communauté de communes', 'Commune', 'Société de transport', ''].includes(newUser.direction) ? newUser.direction : 'CUSTOM'}
+                                        onChange={(e) => {
+                                            const val = e.target.value
+                                            if (val === 'CUSTOM') {
+                                                // Keep existing value if it was already custom, or clear it
+                                                if (['Communauté de communes', 'Commune', 'Société de transport'].includes(newUser.direction)) {
+                                                    setNewUser({ ...newUser, direction: '' })
+                                                }
+                                                // If it was empty, it stays empty but input appears
+                                            } else {
+                                                setNewUser({ ...newUser, direction: val })
+                                            }
+                                        }}
+                                        style={{ width: '100%' }}
+                                    >
+                                        <option value="">Sélectionner ou saisir...</option>
+                                        <option value="Communauté de communes">Communauté de communes</option>
+                                        <option value="Commune">Commune</option>
+                                        <option value="Société de transport">Société de transport</option>
+                                        <option value="CUSTOM">Autre / Personnalisé</option>
+                                    </select>
 
-                                {(newUser.direction !== 'Communauté de communes' &&
-                                    newUser.direction !== 'Commune' &&
-                                    newUser.direction !== 'Société de transport' &&
-                                    newUser.direction !== '') && (
+                                    {/* Show input if CUSTOM is selected OR if the current value is not one of the presets (and not empty) */}
+                                    {(!['Communauté de communes', 'Commune', 'Société de transport'].includes(newUser.direction) || newUser.direction === '') && (
                                         <input
                                             type="text"
                                             className="input"
-                                            style={{ marginTop: '0.5rem' }}
-                                            placeholder="Saisir la direction..."
-                                            value={newUser.direction === ' ' ? '' : newUser.direction}
+                                            placeholder="Saisir le nom de la direction..."
+                                            value={newUser.direction}
                                             onChange={(e) => setNewUser({ ...newUser, direction: e.target.value })}
-                                            required
                                         />
                                     )}
+                                </div>
                             </div>
                             <div className="admin-form-actions">
                                 <button type="submit" className="btn btn-primary">

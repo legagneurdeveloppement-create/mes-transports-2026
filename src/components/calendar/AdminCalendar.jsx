@@ -17,7 +17,8 @@ export default function AdminCalendar() {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isDestManagerOpen, setIsDestManagerOpen] = useState(false)
     const [selectedDateKey, setSelectedDateKey] = useState(null)
-    const [selectedDates, setSelectedDates] = useState([]) // New state for multi-selection
+    const [selectedDates, setSelectedDates] = useState([])
+    const [isSelectionMode, setIsSelectionMode] = useState(false) // Explicit selection mode
     const [selectedEventData, setSelectedEventData] = useState(null)
 
     useEffect(() => {
@@ -357,7 +358,8 @@ export default function AdminCalendar() {
     const handleDayClick = (year, month, day, e) => {
         const dateKey = `${year}-${month}-${day}`
 
-        if (e && (e.ctrlKey || e.metaKey)) {
+        // If selection mode is active OR if user holds Ctrl/Meta
+        if (isSelectionMode || (e && (e.ctrlKey || e.metaKey))) {
             // Toggle selection
             setSelectedDates(prev =>
                 prev.includes(dateKey)
@@ -365,9 +367,11 @@ export default function AdminCalendar() {
                     : [...prev, dateKey]
             )
         } else {
-            // Single selection
+            // Standard behavior: Single selection -> Open Modal
+            // But if we have selected dates and user clicks a new one without Ctrl/Mode, 
+            // should we reset selection? Yes, standard behavior usually implies reset selection on new click.
             setSelectedDateKey(dateKey)
-            setSelectedDates([dateKey])
+            setSelectedDates([dateKey]) // Reset multi-selection to single focus
             setSelectedEventData(events[dateKey] || null)
             setIsModalOpen(true)
         }
@@ -459,16 +463,45 @@ export default function AdminCalendar() {
                 </h3>
 
                 <div className="admin-header-actions">
-                    {selectedDates.length > 1 && (
+                    {/* Selection Mode Toggle */}
+                    <button
+                        onClick={() => {
+                            setIsSelectionMode(!isSelectionMode)
+                            if (isSelectionMode) {
+                                // Optional: Clear selection when turning off? 
+                                // Better UX: Keep selection but allow normal clicking again.
+                            }
+                        }}
+                        className={`btn ${isSelectionMode ? 'btn-primary' : 'btn-outline'}`}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            backgroundColor: isSelectionMode ? '#8b5cf6' : 'transparent',
+                            borderColor: '#8b5cf6',
+                            color: isSelectionMode ? 'white' : '#8b5cf6'
+                        }}
+                        title="Activer pour sélectionner plusieurs dates sans ouvrir le formulaire"
+                    >
+                        {isSelectionMode ? 'Mode Sélection ACTIF' : 'Sélection Multiple'}
+                    </button>
+
+                    {selectedDates.length > 0 && (
                         <button
                             onClick={() => {
-                                setSelectedEventData(null)
+                                setSelectedEventData(null) // Reset event data for new entry
                                 setIsModalOpen(true)
                             }}
                             className="btn btn-primary"
-                            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#8b5cf6' }}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                backgroundColor: isSelectionMode ? '#8b5cf6' : 'var(--primary)',
+                                animation: 'pulse 2s infinite'
+                            }}
                         >
-                            Planifier {selectedDates.length} dates
+                            {selectedDates.length > 1 ? `Planifier ${selectedDates.length} dates` : 'Planifier'}
                         </button>
                     )}
                     <button
