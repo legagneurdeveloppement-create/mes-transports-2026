@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard'
 import UserManagement from './pages/Admin/UserManagement'
 import Help from './pages/Help'
 import Footer from './components/layout/Footer'
+import ProtectedRoute from './components/auth/ProtectedRoute'
 
 
 function App() {
@@ -18,9 +19,24 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/admin/users" element={<UserManagement />} />
-          <Route path="/help" element={<Help />} />
+
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/users" element={
+            <ProtectedRoute requiredRole={['ADMIN', 'SUPER_ADMIN']}>
+              <UserManagement />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/help" element={
+            <ProtectedRoute>
+              <Help />
+            </ProtectedRoute>
+          } />
         </Routes>
       </div>
       <Footer />

@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import Navbar from '../components/layout/Navbar'
 import { UserPlus } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
@@ -22,13 +21,20 @@ export default function Register() {
         setError('')
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
         try {
-            register(formData)
+            await register(formData)
+            window.alert("Inscription réussie ! Votre compte est en attente d'approbation par l'administrateur.")
             setSuccess(true)
         } catch (err) {
-            setError(err.message)
+            let message = err.message
+            if (message.includes('User already registered') || message.includes('already used')) {
+                message = "Cet email est déjà utilisé. Si vous avez déjà un compte, essayez de vous connecter ou contactez l'administrateur."
+            } else if (message.includes('Password should be')) {
+                message = "Le mot de passe doit faire au moins 6 caractères."
+            }
+            setError(message)
         }
     }
 

@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import Navbar from '../components/layout/Navbar'
 import { LogIn } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
 export default function Login() {
     const { login } = useAuth()
+    const navigate = useNavigate()
     const [error, setError] = useState('')
     const [formData, setFormData] = useState({
         email: '',
@@ -21,8 +22,18 @@ export default function Login() {
         e.preventDefault()
         try {
             await login(formData.email, formData.password)
+            navigate('/dashboard')
         } catch (err) {
-            setError(err.message)
+            let message = err.message
+            // Traduction des erreurs communes de Supabase
+            if (message === 'Email not confirmed') {
+                message = "Votre adresse email n'a pas encore été confirmée. Veuillez vérifier vos messages ou contacter un administrateur."
+            } else if (message === 'Invalid login credentials') {
+                message = "Email ou mot de passe incorrect."
+            } else if (message === 'User not found') {
+                message = "Cet utilisateur n'existe pas."
+            }
+            setError(message)
         }
     }
 
@@ -84,13 +95,6 @@ export default function Login() {
 
                     <div className="auth-footer">
                         Pas encore de compte ? <Link to="/register" className="auth-footer-link">S'inscrire</Link>
-                        <hr style={{ margin: '1.5rem 0', opacity: 0.1 }} />
-                        <button
-                            onClick={() => { if (window.confirm("Voulez-vous vider le cache ? Vous devrez vous reconnecter.")) { localStorage.clear(); window.location.reload(); } }}
-                            style={{ fontSize: '0.75rem', color: '#64748b', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-                        >
-                            ⚠️ Problème d'affichage ? Vider le cache
-                        </button>
                     </div>
                 </div>
             </div>

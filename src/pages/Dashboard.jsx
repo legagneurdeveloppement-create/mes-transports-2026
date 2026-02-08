@@ -23,34 +23,23 @@ export default function Dashboard() {
 
         const fetchPending = async () => {
             try {
-                if (user?.role === 'SUPER_ADMIN') {
-                    const allUsersStr = localStorage.getItem('all_users') || '[]'
-                    let allUsers = []
-                    try {
-                        allUsers = JSON.parse(allUsersStr)
-                    } catch (e) {
-                        console.error('Error parsing all_users in Dashboard:', e)
+                if (user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN') {
+                    const { count, error } = await supabase
+                        .from('profiles')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('approved', false)
+
+                    if (!error) {
+                        setPendingCount(count || 0)
                     }
-                    const pending = (Array.isArray(allUsers) ? allUsers : []).filter(u => u && !u.approved).length
-                    setPendingCount(pending)
                 } else if (user?.role === 'CHAUFFEUR') {
-                    const { data, error } = await supabase
+                    const { count, error } = await supabase
                         .from('transports')
-                        .select('status')
+                        .select('*', { count: 'exact', head: true })
                         .eq('status', 'pending')
 
-                    if (!error && data) {
-                        setPendingCount(data.length)
-                    } else {
-                        const storedEventsStr = localStorage.getItem('transport_events') || '{}'
-                        let storedEvents = {}
-                        try {
-                            storedEvents = JSON.parse(storedEventsStr)
-                        } catch (e) {
-                            console.error('Error parsing transport_events in Dashboard:', e)
-                        }
-                        const pending = Object.values(storedEvents || {}).filter(e => e && (e.status === 'pending' || !e.status)).length
-                        setPendingCount(pending)
+                    if (!error) {
+                        setPendingCount(count || 0)
                     }
                 }
             } catch (err) {
@@ -93,13 +82,12 @@ export default function Dashboard() {
                 <p>Cela peut arriver après une mise à jour. Essayez de vider le cache de votre navigateur.</p>
                 <button
                     onClick={() => {
-                        localStorage.clear();
                         window.location.reload();
                     }}
                     className="btn btn-primary"
                     style={{ marginTop: '1rem' }}
                 >
-                    Réinitialiser et Recharger
+                    Recharger
                 </button>
             </div>
         )
@@ -116,24 +104,7 @@ export default function Dashboard() {
                         <h1 className="dashboard-title">Tableau de bord</h1>
                         <p className="dashboard-subtitle">Bienvenue, {user?.email}</p>
                         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', fontSize: '0.7rem', color: '#94a3b8' }}>
-                            <span>v2.2.0-fix</span>
-                            <button
-                                onClick={async () => {
-                                    if (window.confirm("Forcer la mise à jour ? L'application va redémarrer.")) {
-                                        if ('serviceWorker' in navigator) {
-                                            const regs = await navigator.serviceWorker.getRegistrations();
-                                            for (const reg of regs) {
-                                                await reg.unregister();
-                                            }
-                                        }
-                                        localStorage.removeItem('transport_destinations');
-                                        window.location.reload();
-                                    }
-                                }}
-                                style={{ background: 'none', border: 'none', color: '#0ea5e9', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
-                            >
-                                Recharger (Cache vidé)
-                            </button>
+                            <span>v3.0.0-sec</span>
                         </div>
                         <p className="dashboard-welcome">
                             Bienvenue, {user.email}. Vous êtes connecté en tant que <span className="dashboard-role">

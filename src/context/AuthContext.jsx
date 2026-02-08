@@ -1,155 +1,114 @@
 import { createContext, useState, useContext, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext(null)
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
-    const navigate = useNavigate()
     const [viewAsChauffeur, setViewAsChauffeur] = useState(false)
+    const navigate = useNavigate()
 
     useEffect(() => {
+        // 1. Get initial session
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+                fetchProfile(session.user)
+            } else {
+                setLoading(false)
+            }
+        })
+
+        // 2. Listen for auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (session) {
+                fetchProfile(session.user)
+            } else {
+                setUser(null)
+                setLoading(false)
+            }
+        })
+
+        return () => subscription.unsubscribe()
+    }, [])
+
+    const fetchProfile = async (authUser) => {
         try {
-            // Init users list if empty
-            const storedAllUsers = localStorage.getItem('all_users')
-            if (!storedAllUsers) {
-                const initialUsers = [
-                    {
-                        name: 'Admin General',
-                        email: 'admin@demo.com',
-                        password: 'admin',
-                        role: 'SUPER_ADMIN',
-                        approved: true,
-                        direction: 'Communauté de communes'
-                    },
-                    {
-                        name: 'Chauffeur Demo',
-                        email: 'chauffeur@demo.com',
-                        password: 'demo',
-                        role: 'CHAUFFEUR',
-                        approved: true,
-                        direction: 'Société de transport'
-                    }
-                ]
-                localStorage.setItem('all_users', JSON.stringify(initialUsers))
-            }
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', authUser.id)
+                .single()
 
-            // Migration: Ensure Chauffeur Demo exists for testing
-            // We verify existence but avoid overwriting properties unless critical
-            const allUsersStr = localStorage.getItem('all_users') || '[]'
-            let allUsers = []
-            try {
-                allUsers = JSON.parse(allUsersStr)
-            } catch (pe) {
-                console.error('Error parsing all_users:', pe)
-                allUsers = []
+            if (error) {
+                console.error('Error fetching profile:', error)
+                // Fallback if profile doesn't exist yet (should be handled by trigger, but just in case)
+                setUser({ ...authUser, role: authUser.user_metadata?.role || 'USER' })
+            } else {
+                setUser({ ...authUser, ...data })
             }
-
-            // Check active session and SYNC with all_users
-            const stored = localStorage.getItem('user')
-            if (stored && stored !== 'undefined') {
-                try {
-                    const sessionUser = JSON.parse(stored)
-                    // Find the most up-to-date data for this user
-                    const updatedUser = allUsers.find(u => u.email === sessionUser.email)
-                    if (updatedUser) {
-                        setUser(updatedUser)
-                        localStorage.setItem('user', JSON.stringify(updatedUser))
-                    } else {
-                        setUser(sessionUser)
-                    }
-                } catch (pe) {
-                    console.error('Error parsing stored user:', pe)
-                }
-            }
-
-            const chauffeurUser = allUsers.find(u => u.email === 'chauffeur@demo.com')
-            if (!chauffeurUser) {
-                // Only create if missing
-                allUsers.push({
-                    name: 'Chauffeur Demo',
-                    email: 'chauffeur@demo.com',
-                    password: 'demo',
-                    role: 'CHAUFFEUR',
-                    approved: true,
-                    direction: 'Société de transport'
-                })
-                localStorage.setItem('all_users', JSON.stringify(allUsers))
-            }
-            // Removed the aggressive role reset to avoid side effects on modified users
         } catch (err) {
-            console.error('Fatal crash in AuthProvider useEffect:', err)
+            console.error('Unexpected error fetching profile:', err)
         } finally {
             setLoading(false)
         }
-    }, [])
+    }
 
-    // Automatic Logout on Inactivity
-    useEffect(() => {
-        if (!user) return
-
-        const INACTIVITY_TIMEOUT = 30 * 60 * 1000 // 30 minutes
-        let timeoutId
-
-        const resetTimer = () => {
-            if (timeoutId) clearTimeout(timeoutId)
-            timeoutId = setTimeout(() => {
-                logout()
-            }, INACTIVITY_TIMEOUT)
-        }
-
-        const events = ['mousemove', 'keypress', 'click', 'scroll']
-        events.forEach(e => window.addEventListener(e, resetTimer))
-        resetTimer()
-
-        return () => {
-            if (timeoutId) clearTimeout(timeoutId)
-            events.forEach(e => window.removeEventListener(e, resetTimer))
-        }
-    }, [user])
-
-    const login = (email, password) => {
+    const login = async (email, password) => {
         try {
-            const allUsers = JSON.parse(localStorage.getItem('all_users') || '[]')
-            const foundUser = allUsers.find(u => u.email === email && u.password === password)
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            })
 
-            if (!foundUser) throw new Error('Identifiants incorrects')
-            if (!foundUser.approved) throw new Error('Compte en attente d\'approbation')
-
-            setUser(foundUser)
-            localStorage.setItem('user', JSON.stringify(foundUser))
-            navigate('/dashboard')
-            return foundUser
+            if (error) throw error
+            return data
         } catch (e) {
-            throw e
+            console.error("Login error:", e)
+            throw new Error(e.message === "Invalid login credentials" ? "Identifiants incorrects" : e.message)
         }
     }
 
-    const register = (userData) => {
+    const register = async (userData) => {
         try {
-            const allUsers = JSON.parse(localStorage.getItem('all_users') || '[]')
-            if (allUsers.find(u => u.email === userData.email)) throw new Error('Email déjà utilisé')
+            console.log("DEBUG: Tentative d'inscription pour", userData.email)
 
-            const newUser = {
-                ...userData,
-                role: userData.role || (userData.email.toLowerCase().includes('admin') ? 'ADMIN' : 'USER'),
-                approved: false
+            const { data, error } = await supabase.auth.signUp({
+                email: userData.email,
+                password: userData.password,
+                options: {
+                    data: {
+                        full_name: userData.name,
+                        role: userData.role || 'USER',
+                        direction: userData.direction,
+                        phone: userData.phone
+                    }
+                }
+            })
+
+            if (error) {
+                throw error
             }
 
-            const updatedUsers = [...allUsers, newUser]
-            localStorage.setItem('all_users', JSON.stringify(updatedUsers))
-            return newUser
+            // Note: The 'profiles' trigger in SQL will handle creating the profile record.
+            return data
         } catch (e) {
-            throw e
+            console.error("Registration error:", e)
+            alert("ERREUR CRITIQUE: " + e.message);
+            throw new Error(e.message)
         }
     }
 
-    const logout = () => {
-        setUser(null)
-        setViewAsChauffeur(false)
-        localStorage.removeItem('user')
-        navigate('/login')
+    const logout = async () => {
+        try {
+            await supabase.auth.signOut()
+            setUser(null)
+            setViewAsChauffeur(false)
+            navigate('/login')
+        } catch (e) {
+            console.error("Logout error:", e)
+        }
     }
 
     return (

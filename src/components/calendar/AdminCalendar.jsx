@@ -233,21 +233,14 @@ export default function AdminCalendar() {
 
         // SMS Notification Logic
         try {
-            const allUsersStr = localStorage.getItem('all_users') || '[]'
-            let allUsers = []
-            try {
-                allUsers = JSON.parse(allUsersStr)
-            } catch (e) {
-                console.error('Error parsing all_users in saveEvents:', e)
-            }
+            const { data: chauffeurs } = await supabase
+                .from('profiles')
+                .select('phone')
+                .or('role.eq.CHAUFFEUR,role.eq.chauffeur')
+                .not('phone', 'is', null)
+                .neq('phone', '')
 
-            const chauffeurs = (Array.isArray(allUsers) ? allUsers : []).filter(u =>
-                u && (u.role === 'CHAUFFEUR' || u.role === 'chauffeur') &&
-                u.phone &&
-                u.phone.trim() !== ''
-            )
-
-            if (chauffeurs.length > 0 && keys.length > 0) {
+            if (chauffeurs && chauffeurs.length > 0 && keys.length > 0) {
                 const recipientPhones = chauffeurs.map(u => u.phone)
                 let message = ''
 

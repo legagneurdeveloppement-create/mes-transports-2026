@@ -166,16 +166,16 @@ export default function ChauffeurDashboard() {
                     }
 
                     // 2. SMS (Existant)
+                    // 2. SMS (Existant)
                     try {
-                        const allUsers = JSON.parse(localStorage.getItem('all_users') || '[]')
-                        // Filter Admins and Super Admins
-                        const admins = allUsers.filter(u =>
-                            (u.role === 'ADMIN' || u.role === 'SUPER_ADMIN') &&
-                            u.phone &&
-                            u.phone.trim() !== ''
-                        )
+                        const { data: admins } = await supabase
+                            .from('profiles')
+                            .select('phone')
+                            .in('role', ['ADMIN', 'SUPER_ADMIN'])
+                            .not('phone', 'is', null)
+                            .neq('phone', '')
 
-                        if (admins.length > 0) {
+                        if (admins && admins.length > 0) {
                             const recipientPhones = admins.map(u => u.phone)
                             const action = newStatus === 'validated' ? 'VALIDÉ ✅' : 'REFUSÉ ❌'
                             const smsMessage = `CHAUFFEUR: ${chauffeurName} a ${action} le transport "${transport.title}" du ${dateStr}.`;
