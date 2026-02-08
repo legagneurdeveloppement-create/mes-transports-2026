@@ -57,14 +57,25 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         try {
+            setLoading(true) // Start loading during login
             const { data, error } = await supabase.auth.signInWithPassword({
                 email,
                 password,
             })
 
-            if (error) throw error
+            if (error) {
+                setLoading(false)
+                throw error
+            }
+
+            // Immediately fetch profile instead of waiting for onAuthStateChange
+            if (data?.user) {
+                await fetchProfile(data.user)
+            }
+
             return data
         } catch (e) {
+            setLoading(false)
             console.error("Login error:", e)
             throw new Error(e.message === "Invalid login credentials" ? "Identifiants incorrects" : e.message)
         }

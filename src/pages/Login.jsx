@@ -88,8 +88,27 @@ export default function Login() {
                             />
                         </div>
 
-                        <button type="submit" className="btn btn-primary" style={{ marginTop: '1rem' }}>
-                            Se connecter
+                        <button
+                            type="submit"
+                            className="btn btn-primary"
+                            style={{
+                                marginTop: '1rem',
+                                opacity: loading ? 0.7 : 1,
+                                cursor: loading ? 'not-allowed' : 'pointer',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                gap: '0.5rem'
+                            }}
+                            disabled={loading}
+                        >
+                            {loading ? (
+                                <>
+                                    <span className="animate-spin">🌀</span> Connexion...
+                                </>
+                            ) : (
+                                'Se connecter'
+                            )}
                         </button>
                     </form>
 
