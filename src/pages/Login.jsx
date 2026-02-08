@@ -5,7 +5,7 @@ import { LogIn } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
 export default function Login() {
-    const { login } = useAuth()
+    const { login, loading } = useAuth()
     const navigate = useNavigate()
     const [error, setError] = useState('')
     const [formData, setFormData] = useState({
