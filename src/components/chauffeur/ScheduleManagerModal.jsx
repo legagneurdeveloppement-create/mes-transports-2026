@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { X, Plus, Trash2, ArrowRight, ArrowLeft } from 'lucide-react'
+import { X, Plus, Trash2, ArrowRight, ArrowLeft, Copy, Clipboard } from 'lucide-react'
 
-export default function ScheduleManagerModal({ isOpen, onClose, transport, onSave }) {
+export default function ScheduleManagerModal({ isOpen, onClose, transport, onSave, copiedSchedule, onCopy }) {
     const [allerSteps, setAllerSteps] = useState([])
     const [retourSteps, setRetourSteps] = useState([])
     const [stayedOnSite, setStayedOnSite] = useState(false)
@@ -129,6 +129,40 @@ export default function ScheduleManagerModal({ isOpen, onClose, transport, onSav
         onClose()
     }
 
+    const handlePasteInternal = () => {
+        if (!copiedSchedule) return
+
+        try {
+            const rawAller = copiedSchedule.time_departure_school
+                ? (typeof copiedSchedule.time_departure_school === 'string'
+                    ? JSON.parse(copiedSchedule.time_departure_school)
+                    : copiedSchedule.time_departure_school)
+                : []
+
+            let aller = []
+            let stayed = false
+
+            if (Array.isArray(rawAller)) {
+                aller = rawAller
+            } else if (rawAller && typeof rawAller === 'object') {
+                aller = rawAller.steps || []
+                stayed = rawAller.stayedOnSite || false
+            }
+
+            const retour = copiedSchedule.time_arrival_school
+                ? (typeof copiedSchedule.time_arrival_school === 'string'
+                    ? JSON.parse(copiedSchedule.time_arrival_school)
+                    : copiedSchedule.time_arrival_school)
+                : []
+
+            setAllerSteps(Array.isArray(aller) ? [...aller] : [])
+            setRetourSteps(Array.isArray(retour) ? [...retour] : [])
+            setStayedOnSite(stayed)
+        } catch (e) {
+            console.error('Error pasting internal schedule:', e)
+        }
+    }
+
     if (!isOpen) return null
 
     return (
@@ -159,9 +193,51 @@ export default function ScheduleManagerModal({ isOpen, onClose, transport, onSav
                     <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--primary)' }}>
                         Gérer les horaires détaillés
                     </h3>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-                        <X size={24} />
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <button
+                            onClick={onCopy}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.4rem',
+                                padding: '0.4rem 0.6rem',
+                                background: '#f1f5f9',
+                                border: '1px solid #cbd5e1',
+                                borderRadius: '0.375rem',
+                                fontSize: '0.8rem',
+                                cursor: 'pointer',
+                                height: '32px'
+                            }}
+                            title="Copier les horaires"
+                        >
+                            <Copy size={16} /> <span className="no-mobile">Copier</span>
+                        </button>
+                        {copiedSchedule && (
+                            <button
+                                onClick={handlePasteInternal}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.4rem',
+                                    padding: '0.4rem 0.6rem',
+                                    background: '#ecfdf5',
+                                    border: '1px solid #10b981',
+                                    borderRadius: '0.375rem',
+                                    fontSize: '0.8rem',
+                                    cursor: 'pointer',
+                                    color: '#059669',
+                                    fontWeight: '600',
+                                    height: '32px'
+                                }}
+                                title="Appliquer les horaires copiés"
+                            >
+                                <Clipboard size={16} /> <span className="no-mobile">Coller</span>
+                            </button>
+                        )}
+                        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }}>
+                            <X size={24} />
+                        </button>
+                    </div>
                 </div>
 
                 {transport && (

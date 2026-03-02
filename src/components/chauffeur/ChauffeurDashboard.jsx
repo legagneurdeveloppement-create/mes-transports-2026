@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
-import { Check, X, Calendar as CalendarIcon, Clock, MapPin, History, Inbox, Ban, Settings, Printer, CalendarPlus, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Check, X, Calendar as CalendarIcon, Clock, MapPin, History, Inbox, Ban, Settings, Printer, CalendarPlus, ChevronLeft, ChevronRight, Copy, Clipboard } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import ScheduleManagerModal from './ScheduleManagerModal'
 import { smsService } from '../../lib/smsService'
@@ -18,6 +18,7 @@ export default function ChauffeurDashboard() {
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
     const [searchDate, setSearchDate] = useState('')
     const [isFilteredByMonth, setIsFilteredByMonth] = useState(true)
+    const [copiedSchedule, setCopiedSchedule] = useState(null)
 
     useEffect(() => {
         const fetchTransports = async () => {
@@ -212,11 +213,9 @@ export default function ChauffeurDashboard() {
         setSelectedTransport(transport)
         setIsScheduleModalOpen(true)
     }
-
     const handleSaveSchedule = async (scheduleData) => {
         if (!selectedTransport) return
 
-        const updatedEvents = { ...events }
         setIsScheduleModalOpen(false)
 
         // Update only the JSON columns that exist
@@ -225,7 +224,6 @@ export default function ChauffeurDashboard() {
             .update({
                 time_departure_school: scheduleData.time_departure_school,
                 time_arrival_school: scheduleData.time_arrival_school
-                // Note: stayed_on_site is stored in time_departure_school JSON, not as a separate column
             })
             .eq('date_key', selectedTransport.dateKey)
 
@@ -244,6 +242,43 @@ export default function ChauffeurDashboard() {
         } else {
             console.error('Error saving schedule:', error)
             showToast('Erreur lors de l\'enregistrement', 'error')
+        }
+    }
+
+    const handleCopySchedule = (transport) => {
+        setCopiedSchedule({
+            time_departure_school: transport.time_departure_school,
+            time_arrival_school: transport.time_arrival_school
+        })
+        showToast('Horaires copiés !')
+    }
+
+    const handlePasteSchedule = async (targetDateKey) => {
+        if (!copiedSchedule) return
+
+        const { error } = await supabase
+            .from('transports')
+            .update({
+                time_departure_school: copiedSchedule.time_departure_school,
+                time_arrival_school: copiedSchedule.time_arrival_school
+            })
+            .eq('date_key', targetDateKey)
+
+        if (!error) {
+            showToast('Horaires collés avec succès')
+            // Refresh data
+            const { data } = await supabase.from('transports').select('*')
+            if (data) {
+                const eventMap = {}
+                data.forEach(item => {
+                    eventMap[item.date_key] = item
+                })
+                setEvents(eventMap)
+                filterTransports(eventMap, activeTab)
+            }
+        } else {
+            console.error('Error pasting schedule:', error)
+            showToast('Erreur lors du collage', 'error')
         }
     }
 
@@ -489,6 +524,12 @@ export default function ChauffeurDashboard() {
                     gap: 0.75rem;
                     flex-wrap: wrap;
                 }
+
+                @media (max-width: 640px) {
+                    .no-mobile {
+                        display: none !important;
+                    }
+                }
             `}</style>
 
             <div className="dashboard-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -598,8 +639,8 @@ export default function ChauffeurDashboard() {
             )}
 
             <div className="tab-content">
-                {/* Monthly Hours Summary - Only in Pending Tab */}
-                {activeTab === 'pending' && (
+                {/* Monthly Hours Summary - Visible in all tabs to help the chauffeur track their progress */}
+                {(activeTab === 'pending' || activeTab === 'validated') && (
                     <div className="monthly-summary-container" style={{
                         marginBottom: '1.5rem',
                         padding: '1.25rem',
@@ -756,6 +797,31 @@ export default function ChauffeurDashboard() {
                                             >
                                                 <Settings size={18} /> <span>Gérer horaires</span>
                                             </button>
+                                            <div style={{ display: 'flex', gap: '0.25rem' }}>
+                                                <button
+                                                    onClick={() => handleCopySchedule(transport)}
+                                                    className="btn btn-outline"
+                                                    title="Copier ces horaires"
+                                                    style={{ minWidth: 'auto', padding: '0.4rem' }}
+                                                >
+                                                    <Copy size={16} />
+                                                </button>
+                                                {copiedSchedule && (
+                                                    <button
+                                                        onClick={() => handlePasteSchedule(transport.dateKey)}
+                                                        className="btn btn-primary"
+                                                        title="Coller les horaires copiés ici"
+                                                        style={{
+                                                            minWidth: 'auto',
+                                                            padding: '0.4rem',
+                                                            background: 'var(--success)',
+                                                            borderColor: 'var(--success)'
+                                                        }}
+                                                    >
+                                                        <Clipboard size={16} />
+                                                    </button>
+                                                )}
+                                            </div>
                                             {activeTab === 'pending' && (
                                                 <>
                                                     <button
@@ -801,6 +867,8 @@ export default function ChauffeurDashboard() {
                 onClose={() => setIsScheduleModalOpen(false)}
                 transport={selectedTransport}
                 onSave={handleSaveSchedule}
+                copiedSchedule={copiedSchedule}
+                onCopy={() => handleCopySchedule(selectedTransport)}
             />
         </div>
     )
