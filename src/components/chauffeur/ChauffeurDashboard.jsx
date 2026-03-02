@@ -467,6 +467,9 @@ export default function ChauffeurDashboard() {
                 }
 
                 @media (max-width: 480px) {
+                    .chauffeur-card-actions {
+                        grid-template-columns: 1fr;
+                    }
                     .summary-header {
                         flex-direction: column;
                         gap: 1rem;
@@ -797,14 +800,14 @@ export default function ChauffeurDashboard() {
                                             >
                                                 <Settings size={18} /> <span>Gérer horaires</span>
                                             </button>
-                                            <div style={{ display: 'flex', gap: '0.25rem' }}>
+                                            <div style={{ display: 'flex', gap: '0.25rem', gridColumn: 'span 2' }}>
                                                 <button
                                                     onClick={() => handleCopySchedule(transport)}
                                                     className="btn btn-outline"
                                                     title="Copier ces horaires"
-                                                    style={{ minWidth: 'auto', padding: '0.4rem' }}
+                                                    style={{ flex: 1, padding: '0.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
                                                 >
-                                                    <Copy size={16} />
+                                                    <Copy size={20} /> <span>Copier</span>
                                                 </button>
                                                 {copiedSchedule && (
                                                     <button
@@ -812,13 +815,17 @@ export default function ChauffeurDashboard() {
                                                         className="btn btn-primary"
                                                         title="Coller les horaires copiés ici"
                                                         style={{
-                                                            minWidth: 'auto',
-                                                            padding: '0.4rem',
+                                                            flex: 1,
+                                                            padding: '0.6rem',
                                                             background: 'var(--success)',
-                                                            borderColor: 'var(--success)'
+                                                            borderColor: 'var(--success)',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            gap: '0.5rem'
                                                         }}
                                                     >
-                                                        <Clipboard size={16} />
+                                                        <Clipboard size={20} /> <span>Coller</span>
                                                     </button>
                                                 )}
                                             </div>
