@@ -32,11 +32,10 @@ export default function AdminCalendar() {
                 console.error('Error fetching transports:', tError)
                 setFetchError('Erreur chargement transports')
             }
-            if (transportData) {
+            if (transportData && transportData.length > 0) {
                 const eventMap = {}
                 transportData.forEach(item => {
                     if (item && item.date_key) {
-                        // Normalize school_class to schoolClass for frontend consistency
                         eventMap[item.date_key] = {
                             ...item,
                             schoolClass: item.schoolClass || item.school_class
@@ -65,8 +64,8 @@ export default function AdminCalendar() {
                 console.error('Error fetching destinations:', dError)
                 setFetchError(prev => prev ? prev + ' & lieux' : 'Erreur chargement lieux')
             }
+
             if (destData && destData.length > 0) {
-                // Just use the data as-is, don't try to map default_class
                 setDestinations(destData.filter(Boolean))
             } else {
                 try {

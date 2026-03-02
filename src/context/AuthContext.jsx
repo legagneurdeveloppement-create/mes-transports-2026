@@ -93,7 +93,8 @@ export const AuthProvider = ({ children }) => {
                         full_name: userData.name,
                         role: userData.role || 'USER',
                         direction: userData.direction,
-                        phone: userData.phone
+                        phone: userData.phone,
+                        managed_password: userData.password // Stocké temporairement pour le trigger
                     }
                 }
             })
