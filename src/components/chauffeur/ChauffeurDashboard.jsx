@@ -118,16 +118,20 @@ export default function ChauffeurDashboard() {
         if (isUpdating) return
         setIsUpdating(true)
 
+        const oldEvents = { ...events }
         const updatedEvents = { ...events }
         if (updatedEvents[dateKey]) {
             const transport = updatedEvents[dateKey]
 
-            // Optimistic update
+            // 1. Mise à jour Optimiste (State)
             transport.status = newStatus
             setEvents(updatedEvents)
             filterTransports(updatedEvents, activeTab)
 
-            // Save to Supabase
+            // 2. Persistance locale (Sécurité double)
+            localStorage.setItem('transport_events', JSON.stringify(updatedEvents))
+
+            // 3. Sauvegarde Supabase
             const { error } = await supabase
                 .from('transports')
                 .update({ status: newStatus })
@@ -193,7 +197,11 @@ export default function ChauffeurDashboard() {
             } else {
                 console.error('Error updating status:', error)
                 showToast('Erreur lors de la mise à jour', 'error')
-                // Revert optimistic update?
+
+                // REVERT : On revient à l'état précédent si le serveur refuse (ex: problème de droits RLS)
+                setEvents(oldEvents)
+                localStorage.setItem('transport_events', JSON.stringify(oldEvents))
+                filterTransports(oldEvents, activeTab)
             }
         }
         setIsUpdating(false)

@@ -111,46 +111,36 @@ export default function AdminCalendar() {
 
     // Standardized Source of Truth for Destinations (Cloud + Local + Auto-Detect)
     const effectiveDestinations = useMemo(() => {
-        const list = [];
+        const dedupedList = [];
         const seen = new Set();
 
-        // 1. Add explicitly defined destinations from Cloud or local state
+        // Fonction utile pour dédoublonner
+        const addUnique = (item) => {
+            if (!item) return;
+            const name = (typeof item === 'string' ? item : item.name || '').trim();
+            const lowerName = name.toLowerCase();
+            if (lowerName && !seen.has(lowerName)) {
+                seen.add(lowerName);
+                dedupedList.push(typeof item === 'string' ? { name, color: '#3b82f6' } : {
+                    ...item,
+                    name,
+                    color: item.color || '#3b82f6',
+                    defaultClass: item.defaultClass || item.default_class || ''
+                });
+            }
+        };
+
+        // 1. Destinations officielles (Cloud/Local state)
         if (Array.isArray(destinations)) {
-            destinations.forEach(d => {
-                if (!d) return;
-                const dName = (typeof d === 'string' ? d : (d.name || '')).trim().toLowerCase();
-                const dClass = (typeof d === 'string' ? '' : (d.defaultClass || d.default_class || '')).trim().toLowerCase();
-                const key = `${dName}|${dClass}`;
-                if (dName && !seen.has(key)) {
-                    seen.add(key);
-                    list.push(typeof d === 'string' ? { name: d, color: '#3b82f6', defaultClass: '' } : d);
-                }
-            });
+            destinations.forEach(addUnique);
         }
 
-        // 2. FORCE Auto-detect from ALL visible events (Fallback for mobile/no-sync cases)
+        // 2. Détection automatique (Events)
         if (events && typeof events === 'object') {
-            Object.values(events).forEach(e => {
-                if (!e || !e.title) return;
-                const eName = e.title.trim().toLowerCase();
-                const eClass = (e.schoolClass || e.school_class || '').trim().toLowerCase();
-                const key = `${eName}|${eClass}`;
-
-                if (!seen.has(key)) {
-                    seen.add(key);
-                    list.push({
-                        name: e.title,
-                        color: e.color || '#3b82f6',
-                        defaultClass: e.schoolClass || e.school_class || '',
-                        isLinkedToTransport: true
-                    });
-                }
-            });
+            Object.values(events).forEach(addUnique);
         }
 
-        console.log('🔍 DEBUG effectiveDestinations:', list.length, 'destinations found');
-        console.log('📋 Destinations list:', list);
-        return list;
+        return dedupedList;
     }, [destinations, events]);
 
     const syncLocalToCloud = async () => {
@@ -527,17 +517,12 @@ export default function AdminCalendar() {
                     </span>
                 )}
                 {effectiveDestinations
-                    .filter((dest, index, self) =>
-                        dest && index === self.findIndex((t) => (
-                            t && t.name === dest.name && (t.defaultClass || t.default_class) === (dest.defaultClass || dest.default_class)
-                        ))
-                    )
                     .map((dest, idx) => (
                         <div key={idx} className="legend-item">
                             <div className="legend-dot" style={{ backgroundColor: dest.color || '#3b82f6' }}></div>
                             <span className="legend-text">
                                 {dest.name}
-                                {dest.defaultClass && <span className="legend-class">({dest.defaultClass})</span>}
+                                {(dest.defaultClass || dest.default_class) && <span className="legend-class">({dest.defaultClass || dest.default_class})</span>}
                             </span>
                         </div>
                     ))}

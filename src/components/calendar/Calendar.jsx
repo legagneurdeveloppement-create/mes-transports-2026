@@ -81,33 +81,33 @@ export default function Calendar({ userRole }) {
 
     // Standardized Source of Truth for Destinations (Cloud + Auto-Detect)
     const effectiveDestinations = useMemo(() => {
-        const list = [...(destinations || [])];
+        const dedupedList = [];
         const seen = new Set();
 
-        // Add existing from cloud to 'seen'
-        list.forEach(d => {
-            const dName = (typeof d === 'string' ? d : (d.name || '')).trim().toLowerCase();
-            const dClass = (typeof d === 'string' ? '' : (d.defaultClass || d.default_class || '')).trim().toLowerCase();
-            seen.add(`${dName}|${dClass}`);
-        });
-
-        // Auto-detect from visible events
-        Object.values(events || {}).forEach(e => {
-            if (!e || !e.title) return;
-            const eName = e.title.trim().toLowerCase();
-            const eClass = (e.schoolClass || e.school_class || '').trim().toLowerCase();
-            const key = `${eName}|${eClass}`;
-
-            if (!seen.has(key)) {
-                seen.add(key);
-                list.push({
-                    name: e.title,
-                    color: e.color || '#3b82f6',
-                    defaultClass: e.schoolClass || e.school_class || ''
+        const addUnique = (item) => {
+            if (!item) return;
+            const name = (typeof item === 'string' ? item : item.name || '').trim();
+            const lowerName = name.toLowerCase();
+            if (lowerName && !seen.has(lowerName)) {
+                seen.add(lowerName);
+                dedupedList.push(typeof item === 'string' ? { name, color: '#3b82f6' } : {
+                    ...item,
+                    name,
+                    color: item.color || '#3b82f6',
+                    defaultClass: item.defaultClass || item.default_class || ''
                 });
             }
-        });
-        return list;
+        };
+
+        if (Array.isArray(destinations)) {
+            destinations.forEach(addUnique);
+        }
+
+        if (events && typeof events === 'object') {
+            Object.values(events).forEach(addUnique);
+        }
+
+        return dedupedList;
     }, [destinations, events]);
 
     const getEventColor = (event) => {
