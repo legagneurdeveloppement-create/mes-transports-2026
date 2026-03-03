@@ -34,22 +34,7 @@ export default function ChauffeurDashboard() {
                 setEvents(eventMap)
                 filterTransports(eventMap, activeTab)
             } else {
-                // Fallback to local storage if Supabase is blocked (RLS) or offline
-                try {
-                    const storedEvents = localStorage.getItem('transport_events')
-                    if (storedEvents) {
-                        const parsed = JSON.parse(storedEvents)
-                        if (parsed && typeof parsed === 'object') {
-                            setEvents(parsed)
-                            filterTransports(parsed, activeTab)
-                        } else {
-                            setEvents({})
-                        }
-                    }
-                } catch (err) {
-                    console.error('Error loading events from localStorage:', err)
-                    setEvents({})
-                }
+                setEvents({})
             }
         }
 
@@ -129,10 +114,7 @@ export default function ChauffeurDashboard() {
             setEvents(updatedEvents)
             filterTransports(updatedEvents, activeTab)
 
-            // 2. Persistance locale (Sécurité double)
-            localStorage.setItem('transport_events', JSON.stringify(updatedEvents))
-
-            // 3. Sauvegarde Supabase
+            // 2. Sauvegarde Supabase
             const { error } = await supabase
                 .from('transports')
                 .update({ status: newStatus })
@@ -146,7 +128,7 @@ export default function ChauffeurDashboard() {
                 if (newStatus === 'validated' || newStatus === 'rejected') {
                     const actionLabel = newStatus === 'validated' ? 'validé' : 'refusé';
                     const dateStr = formatDate(dateKey);
-                    const chauffeurName = user?.name || 'Un chauffeur';
+                    const chauffeurName = user?.full_name || user?.name || 'Un chauffeur';
 
                     // 1. Notification Interne (Supabase)
                     try {
@@ -183,11 +165,9 @@ export default function ChauffeurDashboard() {
                         if (admins && admins.length > 0) {
                             const recipientPhones = admins.map(u => u.phone)
                             const action = newStatus === 'validated' ? 'VALIDÉ ✅' : 'REFUSÉ ❌'
-                            const smsMessage = `CHAUFFEUR: ${chauffeurName} a ${action} le transport "${transport.title}" du ${dateStr}.`;
+                            const smsMessage = `Mes Transports: ${chauffeurName} a ${action} le transport "${transport.title}" du ${dateStr}.`;
 
-                            for (const phone of recipientPhones) {
-                                await smsService.sendSMS(phone, smsMessage);
-                            }
+                            await smsService.sendSMS(recipientPhones, smsMessage);
                         }
                     } catch (smsError) {
                         console.error('Erreur envoi SMS:', smsError);
@@ -201,7 +181,6 @@ export default function ChauffeurDashboard() {
 
                 // REVERT : On revient à l'état précédent si le serveur refuse (ex: problème de droits RLS)
                 setEvents(oldEvents)
-                localStorage.setItem('transport_events', JSON.stringify(oldEvents))
                 filterTransports(oldEvents, activeTab)
             }
         }

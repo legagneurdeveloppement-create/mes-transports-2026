@@ -147,13 +147,20 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
                         {!isCustomTitle ? (
                             <select
                                 value={(() => {
-                                    // Use name + schoolClass for matching since name is no longer unique
-                                    const matchedIndex = availableDestinations.findIndex(d => {
+                                    // 1. Try for a perfect match (Name + Class)
+                                    const perfectMatch = availableDestinations.findIndex(d => {
                                         const dName = typeof d === 'string' ? d : d.name
                                         const dClass = typeof d === 'string' ? '' : (d.defaultClass || d.default_class || '')
                                         return dName === title && dClass === schoolClass
                                     })
-                                    return matchedIndex !== -1 ? matchedIndex.toString() : ""
+                                    if (perfectMatch !== -1) return perfectMatch.toString()
+
+                                    // 2. Fallback to name match only to keep the select filled
+                                    const nameMatch = availableDestinations.findIndex(d => {
+                                        const dName = typeof d === 'string' ? d : d.name
+                                        return dName === title
+                                    })
+                                    return nameMatch !== -1 ? nameMatch.toString() : ""
                                 })()}
                                 onChange={(e) => {
                                     const idxStr = e.target.value

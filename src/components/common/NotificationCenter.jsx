@@ -29,9 +29,9 @@ export default function NotificationCenter() {
 
             if (user.role === 'SUPER_ADMIN') {
                 // Super Admin voit tout ce qui est pour ADMIN ou SUPER_ADMIN
-                query = query.or(`user_email.eq.${user.email},target_role.eq.ADMIN,target_role.eq.SUPER_ADMIN`)
+                query = query.or(`user_email.eq."${user.email}",target_role.eq.ADMIN,target_role.eq.SUPER_ADMIN`)
             } else {
-                query = query.or(`user_email.eq.${user.email},target_role.eq.${user.role}`)
+                query = query.or(`user_email.eq."${user.email}",target_role.eq."${user.role}"`)
             }
 
             const { data, error } = await query
@@ -67,7 +67,19 @@ export default function NotificationCenter() {
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768)
         window.addEventListener('resize', handleResize)
-        return () => window.removeEventListener('resize', handleResize)
+
+        // Refresh when tab becomes visible again
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                fetchNotifications()
+            }
+        }
+        document.addEventListener('visibilitychange', handleVisibilityChange)
+
+        return () => {
+            window.removeEventListener('resize', handleResize)
+            document.removeEventListener('visibilitychange', handleVisibilityChange)
+        }
     }, [])
 
     useEffect(() => {
@@ -77,31 +89,52 @@ export default function NotificationCenter() {
 
         // Realtime subscription
         const channel = supabase
-            .channel('my-notifications')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, (payload) => {
-                const newNotif = payload.new
-                // Check if relevant for me
-                const isForMe = newNotif.user_email === user.email ||
-                    newNotif.target_role === user.role ||
-                    (user.role === 'SUPER_ADMIN' && newNotif.target_role === 'ADMIN')
+            .channel(`notifs-${user.id}`)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, (payload) => {
+                console.log('Realtime Notification update:', payload)
+                if (payload.eventType === 'INSERT') {
+                    const newNotif = payload.new
+                    const isForMe = newNotif.user_email === user.email ||
+                        newNotif.target_role === user.role ||
+                        (user.role === 'SUPER_ADMIN' && newNotif.target_role === 'ADMIN')
 
-                if (isForMe) {
-                    setNotifications(prev => {
-                        // Éviter les doublons : vérifier si la notification existe déjà (ID ou contenu)
-                        const contentKey = `${newNotif.message}-${newNotif.related_transport_date}-${newNotif.type}`
-                        if (prev.some(n => n.id === newNotif.id || (`${n.message}-${n.related_transport_date}-${n.type}` === contentKey))) {
-                            return prev
+                    if (isForMe) {
+                        // 1. Déclencher une notification locale si autorisé
+                        if (Notification.permission === 'granted' && ('serviceWorker' in navigator)) {
+                            navigator.serviceWorker.ready.then(reg => {
+                                reg.showNotification('Mes Transports', {
+                                    body: newNotif.message,
+                                    icon: '/logo.jpg',
+                                    badge: '/logo.jpg',
+                                    vibrate: [100, 50, 100],
+                                    data: { url: '/dashboard' }
+                                });
+                            }).catch(err => console.error('Error showing notification from SW:', err));
                         }
-                        // N'incrémenter le compteur que si ce n'est pas un doublon
-                        setUnreadCount(c => c + 1)
-                        return [newNotif, ...prev]
-                    })
+
+                        setNotifications(prev => {
+                            const contentKey = `${newNotif.message}-${newNotif.related_transport_date}-${newNotif.type}`
+                            if (prev.some(n => n.id === newNotif.id || (`${n.message}-${n.related_transport_date}-${n.type}` === contentKey))) {
+                                return prev
+                            }
+                            setUnreadCount(c => c + 1)
+                            return [newNotif, ...prev]
+                        })
+                    }
+                } else if (payload.eventType === 'UPDATE' || payload.eventType === 'DELETE') {
+                    fetchNotifications()
                 }
             })
-            .subscribe()
+            .subscribe((status) => {
+                console.log(`Notification subscription status for ${user.id}:`, status)
+            })
+
+        // Polling fallback every 30 seconds
+        const interval = setInterval(fetchNotifications, 30000)
 
         return () => {
             supabase.removeChannel(channel)
+            clearInterval(interval)
         }
     }, [user])
 
@@ -173,20 +206,21 @@ export default function NotificationCenter() {
         <div className="relative" ref={dropdownRef} style={{ position: 'relative' }}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="btn-icon relative"
+                className={`btn-icon relative ${unreadCount > 0 ? 'notif-pulse' : ''}`}
                 style={{
                     background: 'white',
                     border: '1px solid #e2e8f0',
                     cursor: 'pointer',
                     padding: '0.5rem',
-                    color: '#334155',
+                    color: unreadCount > 0 ? 'var(--primary)' : '#334155',
                     borderRadius: '50%',
                     display: 'flex',
                     boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-                    alignItems: 'center'
+                    alignItems: 'center',
+                    transition: 'all 0.3s'
                 }}
             >
-                <Bell size={20} />
+                <Bell size={20} className={unreadCount > 0 ? 'animate-bounce-subtle' : ''} />
                 {unreadCount > 0 && (
                     <span style={{
                         position: 'absolute',
@@ -202,7 +236,8 @@ export default function NotificationCenter() {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        padding: '2px'
+                        padding: '2px',
+                        border: '2px solid white'
                     }}>
                         {unreadCount > 9 ? '9+' : unreadCount}
                     </span>

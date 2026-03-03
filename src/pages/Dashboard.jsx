@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/layout/Navbar'
-import { Shield, Car, HelpCircle, RefreshCw } from 'lucide-react'
+import { Shield, Car, HelpCircle, RefreshCw, BellRing } from 'lucide-react'
 import Calendar from '../components/calendar/Calendar'
 import AdminCalendar from '../components/calendar/AdminCalendar'
 import ChauffeurDashboard from '../components/chauffeur/ChauffeurDashboard'
-import { supabase } from '../lib/supabase'
+import { pushService } from '../lib/pushService'
 
 export default function Dashboard() {
     const { user, loading, viewAsChauffeur } = useAuth()
@@ -99,6 +99,7 @@ export default function Dashboard() {
         <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
             <Navbar />
             <div className="container dashboard-container">
+                <PushNotificationBanner user={user} />
                 <header className="dashboard-header no-print">
                     <div>
                         <h1 className="dashboard-title">Tableau de bord</h1>
@@ -174,33 +175,19 @@ export default function Dashboard() {
                                 </Link>
                             </div>
 
-                            <div className="card" style={{ border: '1px solid #ef4444', background: '#fef2f2' }}>
+                            <div className="card" style={{ border: '1px solid var(--primary)', background: '#f8fafc' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                                    <div style={{ padding: '0.75rem', background: '#fee2e2', borderRadius: '0.5rem', color: '#ef4444' }}>
-                                        <RefreshCw size={24} />
+                                    <div style={{ padding: '0.75rem', background: 'rgba(15, 23, 42, 0.1)', borderRadius: '0.5rem', color: 'var(--primary)' }}>
+                                        <HelpCircle size={24} />
                                     </div>
                                     <div>
-                                        <h3 style={{ fontSize: '1.1rem', fontWeight: '700' }}>Récupération Données</h3>
-                                        <p style={{ fontSize: '0.85rem', color: '#991b1b' }}>Si vos dates ont disparu après un changement de lien</p>
+                                        <h3 style={{ fontSize: '1.1rem', fontWeight: '700' }}>Centre d'Aide</h3>
+                                        <p style={{ fontSize: '0.85rem', color: 'var(--text-light)' }}>Consulter les guides d'utilisation</p>
                                     </div>
                                 </div>
-                                <div style={{ fontSize: '0.8rem', color: '#b91c1c', marginBottom: '1rem' }}>
-                                    Mémoire locale sur ce lien : <strong>{localStorage.getItem('transport_events') ? '✅ Trouvée' : '❌ Vide'}</strong>
-                                </div>
-                                <button
-                                    onClick={() => {
-                                        const events = localStorage.getItem('transport_events');
-                                        if (!events) {
-                                            alert("Désolé, aucune donnée locale n'est stockée sur l'adresse actuelle (" + window.location.hostname + ").\n\nSi vous utilisiez une adresse 'trycloudflare.com' avant, vous devez rouvrir cette ADRESSE PRÉCISE pour retrouver vos données.");
-                                        } else {
-                                            alert("Données détectées ! Elles devraient s'afficher dans le calendrier ci-dessous. N'oubliez pas de cliquer sur 'Envoyer vers Cloud' pour les sauvegarder définitivement.");
-                                        }
-                                    }}
-                                    className="btn btn-outline w-full"
-                                    style={{ borderColor: '#ef4444', color: '#ef4444' }}
-                                >
-                                    Vérifier la mémoire
-                                </button>
+                                <Link to="/help" className="btn btn-outline w-full">
+                                    Voir l'aide
+                                </Link>
                             </div>
                         </div>
                     </section>
@@ -252,4 +239,70 @@ export default function Dashboard() {
             </div>
         </div>
     )
+}
+
+function PushNotificationBanner({ user }) {
+    const [isSubscribed, setIsSubscribed] = useState(false);
+    const [isSupported, setIsSupported] = useState(true);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const checkStatus = async () => {
+            const supported = ('serviceWorker' in navigator) && ('PushManager' in window);
+            setIsSupported(supported);
+            if (supported) {
+                const sub = await pushService.checkSubscription();
+                setIsSubscribed(sub);
+            }
+            setLoading(false);
+        };
+        checkStatus();
+    }, []);
+
+    const handleSubscribe = async () => {
+        setLoading(true);
+        const success = await pushService.subscribeUser(user);
+        if (success) setIsSubscribed(true);
+        setLoading(false);
+    };
+
+    if (!isSupported || loading || isSubscribed) return null;
+
+    return (
+        <div className="card" style={{
+            background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+            color: 'white',
+            marginBottom: '1.5rem',
+            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+            flexWrap: 'wrap',
+            animation: 'fadeIn 0.5s ease-out'
+        }}>
+            <div style={{ flex: 1, minWidth: '250px' }}>
+                <h3 style={{ color: 'white', fontSize: '1.1rem', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <BellRing size={20} className="notif-pulse" /> ✨ Alertes Instantanées
+                </h3>
+                <p style={{ fontSize: '0.85rem', opacity: 0.9 }}>
+                    Voulez-vous être prévenu sur votre téléphone dès qu'un transport est ajouté ou validé ?
+                </p>
+            </div>
+            <button
+                onClick={handleSubscribe}
+                className="btn btn-primary"
+                style={{
+                    background: 'white',
+                    color: '#0f172a',
+                    padding: '0.6rem 1.2rem',
+                    boxShadow: '0 4px 6px rgba(0,0,0,0.2)',
+                    fontWeight: 'bold',
+                    border: 'none'
+                }}
+            >
+                Activer les notifications
+            </button>
+        </div>
+    );
 }

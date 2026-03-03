@@ -1,0 +1,52 @@
+import { precacheAndRoute } from 'workbox-precaching';
+import { clientsClaim } from 'workbox-core';
+
+// Pre-caching
+precacheAndRoute(self.__WB_MANIFEST || []);
+
+// Prompt new version immediately after skip waiting
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
+});
+
+clientsClaim();
+
+// --- PUSH NOTIFICATIONS ---
+
+self.addEventListener('push', (event) => {
+    let data = { title: 'Mes Transports', body: 'Nouvelle notification' };
+    if (event.data) {
+        try {
+            data = event.data.json();
+            console.log('Push data received:', data);
+        } catch (e) {
+            data = { title: 'Mes Transports', body: event.data.text() };
+        }
+    }
+
+    const options = {
+        body: data.body,
+        icon: '/logo.jpg',
+        badge: '/logo.jpg',
+        vibrate: [100, 50, 100],
+        data: {
+            url: data.url || '/dashboard'
+        },
+        actions: [
+            { action: 'open', title: 'Ouvrir' }
+        ]
+    };
+
+    event.waitUntil(
+        self.registration.showNotification(data.title, options)
+    );
+});
+
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    event.waitUntil(
+        self.clients.openWindow(event.notification.data.url)
+    );
+});

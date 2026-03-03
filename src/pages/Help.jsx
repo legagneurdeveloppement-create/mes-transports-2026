@@ -4,7 +4,7 @@ import Navbar from '../components/layout/Navbar'
 import {
     Calendar, CheckCircle, XCircle, Clock, MapPin,
     Settings, Shield, User, Smartphone, CalendarPlus,
-    HelpCircle, ArrowRight, Printer, CloudUpload
+    HelpCircle, ArrowRight, Printer
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
@@ -194,8 +194,7 @@ function AdminGuide() {
                 icon={<Printer className="text-dark" />}
             >
                 <ul className="guide-list">
-                    <li><strong>Imprimer le mois :</strong> Utilisez le bouton d'impression du navigateur (Ctrl+P) ou le bouton dédié sur le Dashboard. L'affichage s'adapte automatiquement au format papier.</li>
-                    <li><strong>Envoyer vers Cloud :</strong> Si vous utilisez l'application sur plusieurs appareils (PC + Téléphone), pensez à cliquer sur le bouton <span style={{ color: '#0891b2' }}><CloudUpload size={14} /> Envoyer vers Cloud</span> pour synchroniser vos dernières modifications.</li>
+                    <li><strong>Impression du planning :</strong> Vous pouvez imprimer le planning annuel complet ou le résumé mensuel. L'affichage s'adapte automatiquement pour une lisibilité optimale sur papier.</li>
                 </ul>
             </GuideSection>
         </div>

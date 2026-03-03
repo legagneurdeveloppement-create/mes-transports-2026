@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { ChevronLeft, ChevronRight, Settings, CloudUpload, RefreshCw } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Settings, CloudUpload, RefreshCw, Trash2 } from 'lucide-react'
 import EventModal from './EventModal'
 import DestinationManagerModal from './DestinationManagerModal'
 import { supabase } from '../../lib/supabase'
@@ -44,16 +44,7 @@ export default function AdminCalendar() {
                 })
                 setEvents(eventMap)
             } else {
-                try {
-                    const storedEvents = localStorage.getItem('transport_events')
-                    if (storedEvents) {
-                        const parsed = JSON.parse(storedEvents)
-                        setEvents(parsed && typeof parsed === 'object' ? parsed : {})
-                    }
-                } catch (e) {
-                    console.error('Error loading events from local storage:', e)
-                    setEvents({})
-                }
+                setEvents({})
             }
 
             const { data: destData, error: dError } = await supabase
@@ -68,21 +59,7 @@ export default function AdminCalendar() {
             if (destData && destData.length > 0) {
                 setDestinations(destData.filter(Boolean))
             } else {
-                try {
-                    const storedDestinations = localStorage.getItem('transport_destinations')
-                    if (storedDestinations) {
-                        const parsed = JSON.parse(storedDestinations)
-                        if (Array.isArray(parsed) && parsed.length > 0) {
-                            if (typeof parsed[0] === 'string') {
-                                setDestinations(parsed.map(d => ({ name: d, color: '#3b82f6' })))
-                            } else {
-                                setDestinations(parsed.filter(Boolean))
-                            }
-                        }
-                    }
-                } catch (e) {
-                    console.error('Error loading destinations from local storage:', e)
-                }
+                setDestinations([])
             }
         }
 
@@ -143,80 +120,10 @@ export default function AdminCalendar() {
         return dedupedList;
     }, [destinations, events]);
 
-    const syncLocalToCloud = async () => {
-        if (!window.confirm("Voulez-vous envoyer vos transports locaux vers le Cloud ? Cela les rendra visibles sur votre téléphone.")) return
 
-        setIsSyncing(true)
-        try {
-            const storedEvents = JSON.parse(localStorage.getItem('transport_events') || '{}')
-            const entries = Object.entries(storedEvents)
-
-            for (const [dateKey, data] of entries) {
-                // Determine the "True" current color from destinations
-                const calculatedColor = getEventColor(data)
-
-                await supabase.from('transports').upsert({
-                    date_key: dateKey,
-                    title: data.title,
-                    school_class: data.schoolClass || data.school_class,
-                    color: calculatedColor,
-                    status: data.status || 'pending',
-                    time_departure_origin: data.time_departure_origin,
-                    time_departure_destination: data.time_departure_destination,
-                    time_departure_school: data.time_departure_school,
-                    time_arrival_school: data.time_arrival_school,
-                    stayed_on_site: data.stayed_on_site
-                })
-            }
-
-            // 2. Destinations Sync (Enhanced Safety)
-            const currentDests = destinations && destinations.length > 0 ? destinations : JSON.parse(localStorage.getItem('transport_destinations') || '[]')
-
-            if (currentDests.length > 0) {
-                // Use a more structured mapping to avoid bad data
-                const destsToInsert = currentDests.map(d => {
-                    const name = typeof d === 'string' ? d : (d.name || '')
-                    const color = typeof d === 'string' ? '#3b82f6' : (d.color || '#3b82f6')
-                    // Don't include default_class if it doesn't exist in DB schema
-                    return { name, color }
-                }).filter(innerD => innerD.name.trim() !== '')
-
-                if (destsToInsert.length > 0) {
-                    console.log("Syncing destinations...", destsToInsert.length)
-                    // Clear existing (except the placeholder ID if any)
-                    const { error: delError } = await supabase.from('destinations').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-                    if (delError) throw new Error("Erreur lors du nettoyage des lieux : " + delError.message)
-
-                    const { error: insError } = await supabase.from('destinations').insert(destsToInsert)
-                    if (insError) throw new Error("Erreur lors de l'insertion des lieux : " + insError.message)
-                }
-            }
-
-            // Refresh local state after sync
-            const { data: newData } = await supabase.from('transports').select('*')
-            if (newData) {
-                const map = {}
-                newData.forEach(e => map[e.date_key] = e)
-                setEvents(map)
-            }
-
-            const { data: newDests } = await supabase.from('destinations').select('*')
-            if (newDests) {
-                setDestinations(newDests.filter(Boolean))
-            }
-
-            alert("Synchronisation terminée ! Vos données sont maintenant sur le Cloud.")
-        } catch (error) {
-            console.error('Fatal sync error:', error)
-            alert("Erreur lors de la synchronisation : " + (error.message || error))
-        } finally {
-            setIsSyncing(false)
-        }
-    }
 
     const saveEvents = async (newEvents, updatedKeys, updatedData) => {
         setEvents(newEvents)
-        localStorage.setItem('transport_events', JSON.stringify(newEvents))
 
         const keys = Array.isArray(updatedKeys) ? updatedKeys : (updatedKeys ? [updatedKeys] : [])
 
@@ -235,11 +142,19 @@ export default function AdminCalendar() {
 
                 if (!updatedData) {
                     // Deletion
-                    message = `Info Transport: Les transports du ${keys.join(', ')} ont été ANNULÉS par l'administrateur.`
+                    message = `Mes Transports: Les transports des dates suivantes ont été ANNULÉS: ${keys.map(k => {
+                        const [y, m, d] = k.split('-');
+                        return `${d}/${parseInt(m) + 1}`;
+                    }).join(', ')}.`
                 } else {
                     // Creation or Update
-                    const action = keys.length > 1 ? 'NOUVEAUX transports' : 'NOUVEAU transport'
-                    message = `Info Transport: ${action} le ${keys.join(', ')}. ${updatedData.title} (${updatedData.schoolClass || 'N/A'})\nDépart: ${updatedData.time_departure_origin || '?'}`
+                    const actionLabel = keys.length > 1 ? 'de NOUVEAUX transports en attente' : 'un NOUVEAU transport en attente';
+                    const datesStr = keys.map(k => {
+                        const [y, m, d] = k.split('-');
+                        return `${d}/${parseInt(m) + 1}`;
+                    }).join(', ');
+
+                    message = `Mes Transports: Vous avez ${actionLabel} pour le ${datesStr}.\nLieu: ${updatedData.title}\nDépart prévu: ${updatedData.time_departure_origin || 'Non défini'}`;
                 }
 
                 if (message) {
@@ -274,7 +189,6 @@ export default function AdminCalendar() {
 
     const saveDestinations = async (newDestinations) => {
         setDestinations(newDestinations)
-        localStorage.setItem('transport_destinations', JSON.stringify(newDestinations))
         await supabase.from('destinations').delete().neq('id', '00000000-0000-0000-0000-000000000000')
         await supabase.from('destinations').insert(newDestinations.map(d => ({
             name: d.name,
@@ -307,11 +221,9 @@ export default function AdminCalendar() {
             }
         })
 
-        // 3. Update local storage
+        // 3. Update state
         setEvents(newEvents)
         setDestinations(updatedDests)
-        localStorage.setItem('transport_events', JSON.stringify(newEvents))
-        localStorage.setItem('transport_destinations', JSON.stringify(updatedDests))
 
         // 4. Sync with Cloud (Cascade Delete)
         try {
@@ -335,6 +247,39 @@ export default function AdminCalendar() {
 
     const changeYear = (delta) => {
         setCurrentYear(currentYear + delta)
+    }
+
+    const handleDeleteMonth = async (monthIndex) => {
+        const monthName = monthNames[monthIndex]
+        if (!window.confirm(`Voulez-vous vraiment supprimer TOUS les transports de ${monthName} ${currentYear} ?`)) return
+
+        const prefix = `${currentYear}-${monthIndex}-`
+        const keysToDelete = Object.keys(events).filter(key => key.startsWith(prefix))
+
+        if (keysToDelete.length === 0) {
+            alert(`Aucun transport trouvé en ${monthName}.`)
+            return
+        }
+
+        try {
+            // Delete from Supabase
+            const { error } = await supabase
+                .from('transports')
+                .delete()
+                .in('date_key', keysToDelete)
+
+            if (error) throw error
+
+            // Update local state
+            const newEvents = { ...events }
+            keysToDelete.forEach(key => delete newEvents[key])
+            setEvents(newEvents)
+
+            alert(`${keysToDelete.length} transport(s) supprimé(s) pour le mois de ${monthName}.`)
+        } catch (err) {
+            console.error('Error deleting month:', err)
+            alert('Erreur lors de la suppression du mois.')
+        }
     }
 
     const handleDayClick = (year, month, day, e) => {
@@ -486,15 +431,7 @@ export default function AdminCalendar() {
                             {selectedDates.length > 1 ? `Planifier ${selectedDates.length} dates` : 'Planifier'}
                         </button>
                     )}
-                    <button
-                        onClick={syncLocalToCloud}
-                        className="btn btn-outline"
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#0891b2', borderColor: '#0891b2' }}
-                        disabled={isSyncing}
-                    >
-                        {isSyncing ? <RefreshCw size={18} className="animate-spin" /> : <CloudUpload size={18} />}
-                        {isSyncing ? "Envoi..." : "Envoyer vers Cloud"}
-                    </button>
+
                     <button onClick={() => setIsDestManagerOpen(true)} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <Settings size={18} /> Gérer les lieux
                     </button>
@@ -535,7 +472,32 @@ export default function AdminCalendar() {
 
                     return (
                         <div key={monthName} className="print-compact-month" style={{ maxWidth: '350px', margin: '0 auto', width: '100%', background: 'white', padding: '1rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-                            <h4 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '0.75rem', color: 'var(--primary)' }}>{monthName}</h4>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                                <div style={{ width: '24px' }}></div> {/* Spacer */}
+                                <h4 style={{ textAlign: 'center', fontWeight: 'bold', margin: 0, color: 'var(--primary)' }}>{monthName}</h4>
+                                <button
+                                    onClick={() => handleDeleteMonth(monthIndex)}
+                                    className="no-print"
+                                    title={`Supprimer tout le mois de ${monthName}`}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: '#ef4444',
+                                        cursor: 'pointer',
+                                        padding: '4px',
+                                        borderRadius: '4px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        opacity: 0.6,
+                                        transition: 'opacity 0.2s'
+                                    }}
+                                    onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                                    onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '2px', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '600' }}>
                                 {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, index) => (
                                     <div key={index} style={{ textAlign: 'center' }}>{d}</div>
