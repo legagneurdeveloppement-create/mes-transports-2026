@@ -4,14 +4,17 @@ import Navbar from '../components/layout/Navbar'
 import {
     Calendar, CheckCircle, XCircle, Clock, MapPin,
     Settings, Shield, User, Smartphone, CalendarPlus,
-    HelpCircle, ArrowRight, Printer
+    HelpCircle, ArrowRight, Printer, Bell, Info, Mail, Lock
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
 export default function Help() {
     const { user } = useAuth()
     const navigate = useNavigate()
-    const [activeTab, setActiveTab] = useState(user?.role === 'CHAUFFEUR' ? 'chauffeur' : 'admin')
+    const [activeTab, setActiveTab] = useState(
+        user?.role === 'CHAUFFEUR' ? 'chauffeur' :
+            (['ADMIN', 'SUPER_ADMIN'].includes(user?.role) ? 'admin' : 'general')
+    )
 
     return (
         <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
@@ -36,60 +39,85 @@ export default function Help() {
                         <ArrowRight size={18} style={{ transform: 'rotate(180deg)' }} /> <span className="mobile-hidden">Fermer / Retour</span><span className="mobile-only">Retour</span>
                     </button>
                     <h1 className="help-page-title mobile-hidden" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', color: 'var(--primary)', marginBottom: '1rem' }}>
-                        <HelpCircle size={32} className="help-icon" /> <span>Centre d'Aide</span>
+                        <HelpCircle size={32} className="help-icon" /> <span>Centre d'Aide Mes Transports</span>
                     </h1>
                     <p className="help-subtitle mobile-hidden" style={{ color: 'var(--text-light)', maxWidth: '600px', margin: '0 auto' }}>
-                        Retrouvez ici tous les guides pour utiliser efficacement l'application Mes Transports.
+                        Retrouvez ici tous les guides pour utiliser efficacement l'application.
                     </p>
                 </header>
 
-                <div className="card" style={{ maxWidth: '900px', margin: '0 auto', overflow: 'hidden' }}>
-                    <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0' }}>
+                <div className="card" style={{ maxWidth: '1000px', margin: '0 auto', overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
+                        <button
+                            onClick={() => setActiveTab('general')}
+                            className={`tab-btn ${activeTab === 'general' ? 'active' : ''}`}
+                        >
+                            <Info size={18} /> Général & Notifications
+                        </button>
                         <button
                             onClick={() => setActiveTab('chauffeur')}
-                            style={{
-                                flex: 1,
-                                padding: '1rem',
-                                background: activeTab === 'chauffeur' ? 'var(--primary)' : 'transparent',
-                                color: activeTab === 'chauffeur' ? 'white' : 'var(--text-light)',
-                                border: 'none',
-                                cursor: 'pointer',
-                                fontWeight: '600',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '0.5rem',
-                                transition: 'all 0.2s'
-                            }}
+                            className={`tab-btn ${activeTab === 'chauffeur' ? 'active' : ''}`}
                         >
                             <CarIcon /> Espace Chauffeur
                         </button>
                         <button
                             onClick={() => setActiveTab('admin')}
-                            style={{
-                                flex: 1,
-                                padding: '1rem',
-                                background: activeTab === 'admin' ? 'var(--primary)' : 'transparent',
-                                color: activeTab === 'admin' ? 'white' : 'var(--text-light)',
-                                border: 'none',
-                                cursor: 'pointer',
-                                fontWeight: '600',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '0.5rem',
-                                transition: 'all 0.2s'
-                            }}
+                            className={`tab-btn ${activeTab === 'admin' ? 'active' : ''}`}
                         >
-                            <ShieldIcon /> Espace Admin / Super Admin
+                            <ShieldIcon /> Espace Admin
                         </button>
                     </div>
 
                     <div style={{ padding: '2rem' }}>
-                        {activeTab === 'chauffeur' ? <ChauffeurGuide /> : <AdminGuide />}
+                        {activeTab === 'general' && <GeneralGuide />}
+                        {activeTab === 'chauffeur' && <ChauffeurGuide />}
+                        {activeTab === 'admin' && <AdminGuide />}
                     </div>
                 </div>
             </div>
+        </div>
+    )
+}
+
+function GeneralGuide() {
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            <GuideSection
+                title="1. Accès et Inscription"
+                icon={<Lock className="text-secondary" />}
+            >
+                <ul className="guide-list">
+                    <li><strong>Inscription :</strong> Après avoir créé votre compte, celui-ci est placé "en attente". Un administrateur doit l'approuver pour que vous puissiez accéder à l'intégralité des fonctions.</li>
+                    <li><strong>Statut Approbation :</strong> Si vous voyez un message "Compte en attente", contactez votre responsable.</li>
+                    <li><strong>Rôles :</strong> L'interface change selon si vous êtes Utilisateur (lecture seule), Chauffeur (gestion des courses) ou Administrateur (gestion du planning).</li>
+                </ul>
+            </GuideSection>
+
+            <GuideSection
+                title="2. Notifications Push & Alertes"
+                icon={<Bell className="text-primary" />}
+            >
+                <p>L'application utilise plusieurs moyens pour vous avertir des changements :</p>
+                <ul className="guide-list">
+                    <li><strong>SMS :</strong> Envoyés aux chauffeurs lors d'une nouvelle assignation urgente ou d'une modification de dernière minute.</li>
+                    <li><strong>Notifications Web (Push) :</strong> Si vous l'autorisez dans votre navigateur, une alerte apparaîtra sur votre écran (même si l'application est fermée).</li>
+                    <li><strong>Service Worker :</strong> Notre PWA permet de recevoir des alertes même hors-ligne si l'appareil est connecté à Internet.</li>
+                </ul>
+                <div className="tip-box">
+                    🔔 <strong>Conseil :</strong> Pensez à "Autoriser" les notifications quand le navigateur vous le demande pour ne rater aucune course.
+                </div>
+            </GuideSection>
+
+            <GuideSection
+                title="3. Aide Technique"
+                icon={<Settings className="text-dark" />}
+            >
+                <p>Pour un fonctionnement optimal :</p>
+                <ul className="guide-list">
+                    <li>Utilisez le navigateur <strong>Google Chrome</strong> ou <strong>Safari</strong> (sur iPhone).</li>
+                    <li>L'application peut être installée comme une "App" (PWA) sur votre écran d'accueil via le menu "Partager" ou "Installer l'application" de votre navigateur.</li>
+                </ul>
+            </GuideSection>
         </div>
     )
 }
@@ -101,13 +129,13 @@ function ChauffeurGuide() {
                 title="1. Recevoir et Valider un Transport"
                 icon={<CheckCircle className="text-success" />}
             >
-                <p>Dès qu'un administrateur vous assigne un transport, il apparaît dans l'onglet <strong>En attente</strong>.</p>
+                <p>Dès qu'un administrateur vous assigne un transport, il apparaît dans l'onglet <strong>En attente</strong> de votre Dashboard.</p>
                 <ul className="guide-list">
-                    <li>Cliquez sur <button className="btn-mini btn-success"><CheckCircle size={14} /> Valider</button> pour accepter la course.</li>
-                    <li>Cliquez sur <button className="btn-mini btn-danger"><XCircle size={14} /> Refuser</button> si vous n'êtes pas disponible.</li>
+                    <li>Cliquez sur <button className="btn-mini btn-success"><CheckCircle size={14} /> Valider</button> pour accepter la course. Cela informe immédiatement l'admin.</li>
+                    <li>Cliquez sur <button className="btn-mini btn-danger"><XCircle size={14} /> Refuser</button> si vous avez un empêchement.</li>
                 </ul>
                 <div className="tip-box">
-                    💡 <strong>Info :</strong> L'administrateur reçoit automatiquement un SMS quand vous acceptez ou refusez.
+                    💡 <strong>Info :</strong> L'administrateur reçoit automatiquement une notification quand vous répondez à une demande.
                 </div>
             </GuideSection>
 
@@ -115,24 +143,24 @@ function ChauffeurGuide() {
                 title="2. Saisir vos Horaires Réels"
                 icon={<Clock className="text-warning" />}
             >
-                <p>Pour chaque transport, il est important de noter vos heures exactes pour le calcul de vos heures travaillées.</p>
+                <p>Indispensable pour le suivi de votre temps de travail :</p>
                 <ol className="guide-steps">
-                    <li>Sur la carte du transport, cliquez sur <strong><Settings size={14} /> Gérer horaires</strong>.</li>
-                    <li>Dans la section <strong>Aller</strong>, ajoutez vos heures de départ et d'arrivée.</li>
+                    <li>Sur la fiche du transport, cliquez sur <strong><Settings size={14} /> Gérer horaires</strong>.</li>
+                    <li>Saisissez l'heure de départ et d'arrivée pour l'<strong>Aller</strong>.</li>
                     <li>Faites de même pour le <strong>Retour</strong>.</li>
-                    <li>Si vous restez sur place entre l'aller et le retour, cochez la case <strong>📍 Resté sur place</strong>.</li>
+                    <li><strong>📍 Resté sur place :</strong> Cochez cette case si vous n'êtes pas rentré ou reparti pour une autre course entre l'aller et le retour.</li>
                 </ol>
             </GuideSection>
 
             <GuideSection
-                title="3. Rappels Automatiques"
+                title="3. Rappels Automatiques (Agenda)"
                 icon={<CalendarPlus className="text-primary" />}
             >
-                <p>Ne manquez jamais un départ !</p>
-                <p>Cliquez sur le bouton <strong>📅 Rappel</strong> présent sur chaque fiche transport pour l'ajouter à l'agenda de votre téléphone. Cela configurera deux alarmes :</p>
+                <p>Pour ne rien oublier :</p>
+                <p>Cliquez sur le bouton <strong>📅 Rappel</strong> pour exporter le trajet dans le calendrier de votre téléphone (Android/iOS). Cela créera :</p>
                 <ul className="guide-list">
-                    <li>🔔 24 heures avant</li>
-                    <li>🔔 1 heure avant</li>
+                    <li>🔔 Une première alerte 24 heures avant.</li>
+                    <li>🔔 Une seconde alerte 1 heure avant le départ.</li>
                 </ul>
             </GuideSection>
         </div>
@@ -143,59 +171,36 @@ function AdminGuide() {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             <GuideSection
-                title="1. Planifier un Transport (Base)"
+                title="1. Planifier un Transport"
                 icon={<Calendar className="text-primary" />}
             >
-                <p>Cliquez sur une date dans le calendrier pour ouvrir le formulaire.</p>
+                <p>Cliquez simplement sur un jour vide dans le calendrier.</p>
                 <ul className="guide-list">
-                    <li><strong>Destination :</strong> Sélectionnez une ville ou un lieu existant. La couleur s'ajustera automatiquement.</li>
-                    <li><strong>Classe :</strong> Indiquez le groupe concerné (ex: CP, 6ème).</li>
-                    <li><strong>Horaires :</strong> Définissez l'heure de départ et de retour prévues.</li>
+                    <li><strong>Destinations :</strong> Sélectionnez un lieu existant pour automatiser les couleurs et les paramètres.</li>
+                    <li><strong>Chauffeur :</strong> Vous pouvez assigner un chauffeur immédiatement ou plus tard.</li>
+                    <li><strong>Actions Groupées :</strong> Maintenez <code>Ctrl</code> (Windows) ou <code>Cmd</code> (Mac) pour sélectionner plusieurs dates d'un coup.</li>
                 </ul>
                 <div className="tip-box">
-                    📱 <strong>Notification :</strong> Lors de la création ou modification, le chauffeur reçoit un SMS si son numéro est renseigné.
+                    📱 <strong>SMS automatique :</strong> Le chauffeur reçoit un SMS si son numéro est valide dès que vous sauvegardez.
                 </div>
             </GuideSection>
 
             <GuideSection
-                title="2. Sélection Multiple & Actions Groupées (Nouveau)"
-                icon={<CalendarPlus className="text-warning" />}
-            >
-                <p>Pour planifier rapidement plusieurs jours (ex: tous les lundis du mois) :</p>
-                <ol className="guide-steps">
-                    <li>Activez le bouton <strong>"Sélection Multiple"</strong> en haut du calendrier (il devient violet).</li>
-                    <li>Cliquez sur tous les jours souhaités (ils s'entourent de violet).</li>
-                    <li>Cliquez sur le bouton <strong>"Planifier X dates"</strong> qui apparaît.</li>
-                </ol>
-                <p>Dans la fenêtre qui s'ouvre :</p>
-                <ul className="guide-list">
-                    <li>Remplissez les infos : elles s'appliqueront à <strong>toutes</strong> les dates sélectionnées.</li>
-                    <li>Pour supprimer, cliquez sur le bouton <strong>Supprimer</strong> en bas à gauche : cela effacera tous les transports sélectionnés.</li>
-                </ul>
-                <div className="tip-box">
-                    💡 <strong>Astuce pro :</strong> Vous pouvez aussi maintenir la touche <code>Ctrl</code> (ou <code>Cmd</code>) enfoncée pour sélectionner des dates sans activer le bouton.
-                </div>
-            </GuideSection>
-
-            <GuideSection
-                title="3. Gestion des Utilisateurs"
+                title="2. Gestion des Utilisateurs"
                 icon={<User className="text-success" />}
             >
-                <p>Accédez à la gestion via le menu principal ou l'icône <Shield size={14} />.</p>
                 <ul className="guide-list">
-                    <li><strong>Approuver :</strong> Validez les nouveaux inscrits pour qu'ils puissent se connecter.</li>
-                    <li><strong>Rôle :</strong> Définissez qui est Chauffeur, Admin ou simple Utilisateur.</li>
-                    <li><strong>Direction :</strong> Attribuez une structure (Commune, Société...) pour soigner l'affichage.</li>
+                    <li><strong>Approuver :</strong> Un nouvel inscrit ne peut rien voir tant que vous ne l'approuvez pas.</li>
+                    <li><strong>Rôles :</strong> Changez un utilisateur en 'CHAUFFEUR' ou 'ADMIN' selon vos besoins.</li>
+                    <li><strong>Mots de passe :</strong> Si un utilisateur oublie ses accès, vous pouvez lui réinitialiser son mot de passe depuis cet écran.</li>
                 </ul>
             </GuideSection>
 
             <GuideSection
-                title="4. Impression & Export"
+                title="3. Impression & Export"
                 icon={<Printer className="text-dark" />}
             >
-                <ul className="guide-list">
-                    <li><strong>Impression du planning :</strong> Vous pouvez imprimer le planning annuel complet ou le résumé mensuel. L'affichage s'adapte automatiquement pour une lisibilité optimale sur papier.</li>
-                </ul>
+                <p>L'icône d'imprimante permet de télécharger un fichier PDF ou d'imprimer directement le planning mensuel/annuel dans une mise en page soignée.</p>
             </GuideSection>
         </div>
     )
@@ -237,6 +242,30 @@ const ShieldIcon = () => (
 )
 
 const styles = `
+.tab-btn {
+    flex: 1;
+    min-width: 150px;
+    padding: 1.25rem 1rem;
+    background: transparent;
+    color: var(--text-light);
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    alignItems: center;
+    justifyContent: center;
+    gap: 0.6rem;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+}
+.tab-btn:hover {
+    background: #f8fafc;
+}
+.tab-btn.active {
+    background: #f0f9ff;
+    color: var(--primary);
+    border-bottom: 2px solid var(--primary);
+}
 .guide-list {
     list-style: disc;
     padding-left: 1.5rem;
@@ -278,7 +307,7 @@ p:last-child {
 .btn-danger { background: #dc2626; }
 .tip-box {
     background: #f0f9ff;
-    border-left: 4px solid #0ea5e9;
+    border-left: 44px solid #0ea5e9;
     padding: 1rem;
     font-size: 0.9rem;
     color: #0c4a6e;
@@ -340,15 +369,8 @@ p:last-child {
         flex-direction: column !important;
     }
 
-    .card > div:first-child button {
-        padding: 1rem !important;
-        font-size: 1rem !important;
-        border-bottom: 1px solid #e2e8f0 !important;
-        width: 100% !important;
-    }
-    .card > div:first-child button:last-child {
-        border-bottom: none !important;
-    }
+    .tab-btn { padding: 1rem !important; min-width: 100% !important; border-bottom: 1px solid #e2e8f0 !important; }
+    .tab-btn.active { border-bottom: 1px solid var(--primary) !important; }
 
     /* Paragraphs wrapping */
     p {
