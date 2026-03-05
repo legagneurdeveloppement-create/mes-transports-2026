@@ -27,25 +27,22 @@ serve(async (req) => {
         const targetRole = record.target_role
 
         // 1. Chercher les abonnements correspondants
-        let query = supabase.from('push_subscriptions').select('subscription')
+        let query = supabase.from('push_subscriptions').select('subscription, email')
 
         if (targetEmail) {
             query = query.eq('email', targetEmail)
         } else if (targetRole) {
-            if (targetRole === 'ADMIN') {
-                query = query.in('role_assigned', ['ADMIN', 'SUPER_ADMIN']) // On peut rajouter un champ role_assigned dans push_subscriptions
+            if (targetRole === 'ADMIN' || targetRole === 'SUPER_ADMIN') {
+                query = query.in('role', ['ADMIN', 'SUPER_ADMIN'])
             } else {
-                // Note: On va chercher par email si on n'a pas mis le rôle dans push_subscriptions
-                // Pour l'instant on va chercher tous ceux qui matchent le rôle via une jointure ou filtrer simplement
-                // Simplification: Chercher tous les abonnements et filtrer (ou améliorer le schéma plus tard)
-                query = query.select('subscription, email')
+                query = query.eq('role', targetRole)
             }
         }
 
         const { data: subscriptions } = await query
 
         if (!subscriptions || subscriptions.length === 0) {
-            return new Response("No subscriptions found", { status: 200 })
+            return new Response(JSON.stringify({ message: "No subscriptions found" }), { status: 200 })
         }
 
         // 2. Envoyer les notifications
@@ -55,7 +52,7 @@ serve(async (req) => {
             url: '/dashboard'
         })
 
-        const results = await Promise.all(subscriptions.map(sub =>
+        const results = await Promise.all(subscriptions.map((sub: any) =>
             webpush.sendNotification(sub.subscription, payload).catch(e => {
                 console.error('Push error for', sub.email, e)
                 return null
@@ -66,10 +63,11 @@ serve(async (req) => {
             headers: { 'Content-Type': 'application/json' },
             status: 200,
         })
-    } catch (error) {
-        return new Response(JSON.stringify({ error: error.message }), {
+    } catch (error: any) {
+        return new Response(JSON.stringify({ error: error.message || 'Unknown error' }), {
             headers: { 'Content-Type': 'application/json' },
             status: 500,
         })
     }
 })
+
