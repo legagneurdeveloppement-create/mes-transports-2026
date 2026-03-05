@@ -1,6 +1,15 @@
-# React + Vite
+# 📱 Mes Transports 2026
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 📖 Documentation
+- [**Manuel d'Utilisation Complet**](./MANUEL_UTILISATION_COMPLET.md) (Guide des fonctionnalités)
+- [Guide Technique : Notifications Push](./GUIDE_NOTIFICATIONS_PUSH.md) (Configuration & Déploiement)
+
+---
+
+
+# React + Vite
+...
+
 
 Currently, two official plugins are available:
 
