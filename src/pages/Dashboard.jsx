@@ -114,7 +114,7 @@ export default function Dashboard() {
                         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem', fontSize: '0.7rem', color: '#94a3b8' }}>
                             <span>{user?.email}</span>
                             <span>•</span>
-                            <span>v3.1.3-push</span>
+                            <span>v3.1.4-push</span>
                         </div>
                     </div>
                     <div className="dashboard-actions">
@@ -248,12 +248,12 @@ function PushNotificationBanner({ user }) {
 
     const handleSubscribe = async () => {
         setLoading(true);
-        const success = await pushService.subscribeUser(user);
-        if (success) {
+        const result = await pushService.subscribeUser(user);
+        if (result.success) {
             setIsSubscribed(true);
             alert("✅ Super ! Les notifications sont maintenant activées sur cet appareil.");
         } else {
-            alert("❌ Impossible d'activer les notifications. Avez-vous bloqué l'autorisation dans votre navigateur ?");
+            alert(`❌ Impossible d'activer les notifications : ${result.message}\n\nAvez-vous bien ajouté ce site sur votre écran d'accueil ?`);
         }
         setLoading(false);
     };

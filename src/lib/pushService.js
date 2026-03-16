@@ -8,20 +8,21 @@ export const pushService = {
      */
     subscribeUser: async (user) => {
         if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-            console.warn('Push not supported');
-            return false;
+            return { success: false, message: "Navigateur non compatible" };
         }
 
         try {
             // 1. Demander permission
             const permission = await Notification.requestPermission();
             if (permission !== 'granted') {
-                console.warn('Permission denied');
-                return false;
+                return { success: false, message: `Permission refusée (${permission})` };
             }
 
             // 2. Récupérer le service worker
-            const registration = await navigator.serviceWorker.ready;
+            const registration = await navigator.serviceWorker.getRegistration();
+            if (!registration) {
+                return { success: false, message: "Service Worker non trouvé" };
+            }
 
             // 3. S'abonner
             const subscription = await registration.pushManager.subscribe({
@@ -45,13 +46,15 @@ export const pushService = {
                         created_at: new Date()
                     }, { onConflict: 'endpoint' });
 
-                if (error) throw error;
+                if (error) {
+                    return { success: false, message: `Erreur Supabase: ${error.message}` };
+                }
             }
 
-            return true;
+            return { success: true, message: "OK" };
         } catch (error) {
             console.error('Push Subscription Error:', error);
-            return false;
+            return { success: false, message: `Erreur interne: ${error.message || error}` };
         }
     },
 
