@@ -113,7 +113,7 @@ export default function Dashboard() {
                         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem', fontSize: '0.7rem', color: '#94a3b8' }}>
                             <span>{user?.email}</span>
                             <span>•</span>
-                            <span>v3.1.1-sec</span>
+                            <span>v3.1.2-push</span>
                         </div>
                     </div>
                     <div className="dashboard-actions">
