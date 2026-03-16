@@ -12,6 +12,11 @@ webpush.setVapidDetails(
 )
 
 serve(async (req) => {
+    // Gérer les requêtes OPTIONS pour CORS
+    if (req.method === 'OPTIONS') {
+        return new Response('ok', { headers: { 'Access-Control-Allow-Origin': '*' } })
+    }
+
     const supabase = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -19,7 +24,8 @@ serve(async (req) => {
 
     try {
         const { record } = await req.json()
-        console.log('Notification record received:', record)
+        console.log('--- Notification Process Started ---')
+        console.log('Record:', JSON.stringify(record))
 
         const title = 'Mes Transports'
         const message = record.message
@@ -30,8 +36,10 @@ serve(async (req) => {
         let query = supabase.from('push_subscriptions').select('subscription, email')
 
         if (targetEmail) {
+            console.log('Targeting email:', targetEmail)
             query = query.eq('email', targetEmail)
         } else if (targetRole) {
+            console.log('Targeting role:', targetRole)
             if (targetRole === 'ADMIN' || targetRole === 'SUPER_ADMIN') {
                 query = query.in('role', ['ADMIN', 'SUPER_ADMIN'])
             } else {
@@ -39,33 +47,53 @@ serve(async (req) => {
             }
         }
 
-        const { data: subscriptions } = await query
+        const { data: subscriptions, error: dbError } = await query
+
+        if (dbError) throw dbError
 
         if (!subscriptions || subscriptions.length === 0) {
-            return new Response(JSON.stringify({ message: "No subscriptions found" }), { status: 200 })
+            console.log('No subscriptions found for this target.')
+            return new Response(JSON.stringify({ message: "No subscriptions found" }), {
+                headers: { 'Content-Type': 'application/json' },
+                status: 200
+            })
         }
 
-        // 2. Envoyer les notifications
+        console.log(`Found ${subscriptions.length} subscriptions. Sending...`)
+
+        // 2. Préparer le contenu
         const payload = JSON.stringify({
             title: title,
             body: message,
             url: '/dashboard'
         })
 
-        const results = await Promise.all(subscriptions.map(sub =>
-            webpush.sendNotification(sub.subscription, payload).catch(e => {
-                console.error('Push error for', sub.email, e)
-                return null
-            })
-        ))
+        // 3. Envoyer les notifications en parallèle
+        const results = await Promise.all(subscriptions.map(async (sub) => {
+            try {
+                // S'assurer que la souscription est au bon format
+                const pushConfig = typeof sub.subscription === 'string'
+                    ? JSON.parse(sub.subscription)
+                    : sub.subscription
 
-        return new Response(JSON.stringify({ sent: results.length }), {
-            headers: { 'Content-Type': 'application/json' },
+                await webpush.sendNotification(pushConfig, payload)
+                return { email: sub.email, success: true }
+            } catch (e) {
+                console.error(`Push failed for ${sub.email}:`, e.message)
+                return { email: sub.email, success: false, error: e.message }
+            }
+        }))
+
+        console.log('Results:', JSON.stringify(results))
+
+        return new Response(JSON.stringify({ sent: results.length, details: results }), {
+            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
             status: 200,
         })
     } catch (error) {
+        console.error('Global Error:', error.message)
         return new Response(JSON.stringify({ error: error.message }), {
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
             status: 500,
         })
     }
