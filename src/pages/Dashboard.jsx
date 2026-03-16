@@ -7,6 +7,7 @@ import Calendar from '../components/calendar/Calendar'
 import AdminCalendar from '../components/calendar/AdminCalendar'
 import ChauffeurDashboard from '../components/chauffeur/ChauffeurDashboard'
 import { pushService } from '../lib/pushService'
+import { supabase } from '../lib/supabase'
 
 export default function Dashboard() {
     const { user, loading, viewAsChauffeur } = useAuth()
@@ -113,7 +114,7 @@ export default function Dashboard() {
                         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem', fontSize: '0.7rem', color: '#94a3b8' }}>
                             <span>{user?.email}</span>
                             <span>•</span>
-                            <span>v3.1.2-push</span>
+                            <span>v3.1.3-push</span>
                         </div>
                     </div>
                     <div className="dashboard-actions">
@@ -201,14 +202,7 @@ export default function Dashboard() {
                                     💡 Mode Simulation : Vous visualisez l'interface telle qu'un Chauffeur la voit.
                                 </div>
                             )}
-                            {(() => {
-                                try {
-                                    return <ChauffeurDashboard />
-                                } catch (e) {
-                                    console.error("Crash in ChauffeurDashboard:", e)
-                                    return <div style={{ padding: '1rem', color: '#ef4444' }}>⚠️ Erreur d'affichage du tableau de bord chauffeur.</div>
-                                }
-                            })()}
+                            <ChauffeurDashboard />
                         </div>
 
                         <section className="card" style={{ marginTop: '2rem' }}>
@@ -223,17 +217,10 @@ export default function Dashboard() {
                         <h2 className="dashboard-section-header">
                             Planning des Transports
                         </h2>
-                        {(() => {
-                            try {
-                                return (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN')
-                                    ? <AdminCalendar />
-                                    : <Calendar userRole={user.role} />
-                            } catch (e) {
-                                console.error("Render crash in Calendar section:", e)
-                                setHasError(true)
-                                return null
-                            }
-                        })()}
+                        {(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN')
+                            ? <AdminCalendar />
+                            : <Calendar userRole={user.role} />
+                        }
                     </section>
                 )}
             </div>
