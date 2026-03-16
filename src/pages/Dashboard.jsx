@@ -301,10 +301,40 @@ function PushNotificationBanner({ user }) {
                 borderRadius: '0.75rem'
             }}>
                 <div style={{ fontSize: '1.2rem' }}>✅</div>
-                <div>
-                    <h3 style={{ fontSize: '0.9rem', fontWeight: 'bold', margin: 0 }}>
+                <div style={{ flex: 1 }}>
+                    <h3 style={{ fontSize: '0.9rem', fontWeight: 'bold', margin: '0 0 0.5rem 0' }}>
                         Système d'alertes activé sur cet appareil
                     </h3>
+                    <button
+                        onClick={async () => {
+                            if ('serviceWorker' in navigator && Notification.permission === 'granted') {
+                                navigator.serviceWorker.ready.then(reg => {
+                                    reg.showNotification('Test Vibreur', {
+                                        body: 'Ceci est un test de vibration système.',
+                                        icon: '/logo.jpg',
+                                        badge: '/logo.jpg',
+                                        vibrate: [300, 100, 400, 100, 400, 100, 400],
+                                        requireInteraction: true,
+                                        silent: false,
+                                        data: { url: '/dashboard' }
+                                    });
+                                });
+                            } else {
+                                alert("Les notifications ne sont pas autorisées sur cet appareil.");
+                            }
+                        }}
+                        className="btn btn-primary"
+                        style={{
+                            padding: '0.4rem 0.8rem',
+                            fontSize: '0.8rem',
+                            background: '#166534',
+                            color: 'white',
+                            border: 'none',
+                            marginTop: '0.25rem'
+                        }}
+                    >
+                        Tester la notification (Vibreur)
+                    </button>
                 </div>
             </div>
         );
