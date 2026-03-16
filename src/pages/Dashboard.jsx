@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/layout/Navbar'
-import { Shield, Car, HelpCircle, RefreshCw, BellRing } from 'lucide-react'
+import { Shield, Car, HelpCircle, RefreshCw, BellRing, X } from 'lucide-react'
 import Calendar from '../components/calendar/Calendar'
 import AdminCalendar from '../components/calendar/AdminCalendar'
 import ChauffeurDashboard from '../components/chauffeur/ChauffeurDashboard'
@@ -117,37 +117,6 @@ export default function Dashboard() {
                             <span>v3.1.6</span>
                         </div>
                     </div>
-                    <div className="dashboard-actions">
-                        {user.role === 'CHAUFFEUR' && pendingCount > 0 && (
-                            <div className="notification-alert-badge" style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                color: '#92400e',
-                                background: '#fef3c7',
-                                padding: '0.5rem 1rem',
-                                borderRadius: '2rem',
-                                fontWeight: '600',
-                                fontSize: '0.9rem',
-                                border: '1px solid #fde68a'
-                            }}>
-                                <span style={{ position: 'relative', display: 'flex' }}>
-                                    <span style={{
-                                        position: 'absolute',
-                                        top: '-4px',
-                                        right: '-4px',
-                                        width: '10px',
-                                        height: '10px',
-                                        background: '#dc2626',
-                                        borderRadius: '50%',
-                                        boxShadow: '0 0 0 2px white'
-                                    }}></span>
-                                    🔔
-                                </span>
-                                {pendingCount} transport{pendingCount > 1 ? 's' : ''} à valider
-                            </div>
-                        )}
-                    </div>
                 </header>
 
                 {user.role === 'SUPER_ADMIN' && !viewAsChauffeur && (
@@ -232,8 +201,15 @@ function PushNotificationBanner({ user }) {
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [isSupported, setIsSupported] = useState(true);
     const [loading, setLoading] = useState(true);
+    const [isVisible, setIsVisible] = useState(true);
 
     useEffect(() => {
+        // Vérifier si l'utilisateur a déjà fermé la bannière sur cet appareil
+        const dismissed = localStorage.getItem('push-banner-dismissed');
+        if (dismissed === 'true') {
+            setIsVisible(false);
+        }
+
         const checkStatus = async () => {
             const supported = ('serviceWorker' in navigator) && ('PushManager' in window);
             setIsSupported(supported);
@@ -245,6 +221,11 @@ function PushNotificationBanner({ user }) {
         };
         checkStatus();
     }, []);
+
+    const handleDismiss = () => {
+        setIsVisible(false);
+        localStorage.setItem('push-banner-dismissed', 'true');
+    };
 
     const handleSubscribe = async () => {
         setLoading(true);
@@ -258,38 +239,7 @@ function PushNotificationBanner({ user }) {
         setLoading(false);
     };
 
-    if (loading) return null;
-
-    if (!isSupported) {
-        return (
-            <div className="card" style={{
-                background: '#fffbeb',
-                color: '#92400e',
-                marginBottom: '1.5rem',
-                border: '1px solid #f59e0b',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '1rem',
-                padding: '1rem',
-                borderRadius: '0.75rem'
-            }}>
-                <div style={{ fontSize: '1.5rem' }}>📱</div>
-                <div>
-                    <h3 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '0.2rem' }}>
-                        Notifications non supportées ici
-                    </h3>
-                    <p style={{ fontSize: '0.85rem', margin: 0 }}>
-                        Pour recevoir les alertes sur <b>iPhone / iOS</b>, vous devez ouvrir ce site dans Safari, cliquer sur "Partager" puis <b>"Sur l'écran d'accueil"</b>.
-                        Sur Android, assurez-vous d'utiliser Chrome en <b>HTTPS</b>.
-                    </p>
-                </div>
-            </div>
-        );
-    }
-
-    if (isSubscribed) {
-        return null;
-    }
+    if (loading || !isSupported || isSubscribed || !isVisible) return null;
 
     return (
         <div className="card" style={{
@@ -302,8 +252,26 @@ function PushNotificationBanner({ user }) {
             justifyContent: 'space-between',
             gap: '1rem',
             flexWrap: 'wrap',
-            animation: 'fadeIn 0.5s ease-out'
+            animation: 'fadeIn 0.5s ease-out',
+            position: 'relative'
         }}>
+            <button
+                onClick={handleDismiss}
+                style={{
+                    position: 'absolute',
+                    top: '0.5rem',
+                    right: '0.5rem',
+                    background: 'none',
+                    border: 'none',
+                    color: 'white',
+                    opacity: 0.5,
+                    cursor: 'pointer',
+                    padding: '0.2rem'
+                }}
+                title="Ne plus afficher"
+            >
+                <X size={18} />
+            </button>
             <div style={{ flex: 1, minWidth: '250px' }}>
                 <h3 style={{ color: 'white', fontSize: '1.1rem', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <BellRing size={20} className="notif-pulse" /> ✨ Alertes Instantanées
