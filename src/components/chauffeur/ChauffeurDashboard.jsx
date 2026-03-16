@@ -134,16 +134,9 @@ export default function ChauffeurDashboard() {
                     try {
                         await supabase.from('notifications').insert([
                             {
-                                target_role: 'ADMIN', // Cible ADMIN et SUPER_ADMIN (via UI)
+                                target_role: 'SUPER_ADMIN',
                                 message: `${chauffeurName} a ${actionLabel} le transport "${transport.title}" du ${dateStr}.`,
                                 type: newStatus === 'validated' ? 'success' : 'warning',
-                                related_transport_date: dateKey,
-                                meta: { transport_title: transport.title, chauffeur_email: user?.email }
-                            },
-                            {
-                                target_role: 'CHAUFFEUR', // Informe les autres chauffeurs
-                                message: `${chauffeurName} a ${actionLabel} le transport "${transport.title}" du ${dateStr}.`,
-                                type: 'info',
                                 related_transport_date: dateKey,
                                 meta: { transport_title: transport.title, chauffeur_email: user?.email }
                             }
