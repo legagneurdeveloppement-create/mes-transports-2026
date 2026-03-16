@@ -28,8 +28,8 @@ self.addEventListener('push', (event) => {
 
     const options = {
         body: data.body,
-        icon: '/logo.jpg',
-        badge: '/logo.jpg',
+        icon: '/notification-bus.svg',
+        badge: '/notification-bus.svg',
         vibrate: [300, 100, 400, 100, 400, 100, 400], // Motif de vibration fort
         requireInteraction: true, // Force la notification à rester à l'écran
         silent: false, // Tente de forcer le son du système
