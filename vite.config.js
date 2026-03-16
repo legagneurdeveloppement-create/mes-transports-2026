@@ -10,7 +10,7 @@ export default defineConfig({
       strategies: 'injectManifest',
       srcDir: 'src',
       filename: 'service-worker.js',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg', 'logo.jpg', 'notification-bus.png'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg', 'logo.jpg', 'notif-bus-v2.png'],
       manifest: {
         name: 'Mes Transports 2026',
         short_name: 'Mes Transports',

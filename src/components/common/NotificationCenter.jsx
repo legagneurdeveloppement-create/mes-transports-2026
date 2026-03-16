@@ -104,8 +104,8 @@ export default function NotificationCenter() {
                             navigator.serviceWorker.ready.then(reg => {
                                 reg.showNotification('Mes Transports', {
                                     body: newNotif.message,
-                                    icon: '/notification-bus.png',
-                                    badge: '/notification-bus.png',
+                                    icon: '/notif-bus-v2.png',
+                                    badge: '/notif-bus-v2.png',
                                     vibrate: [300, 100, 400, 100, 400, 100, 400],
                                     requireInteraction: true,
                                     silent: false,

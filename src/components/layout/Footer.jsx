@@ -13,7 +13,7 @@ export default function Footer() {
                 legagneur.developpement © 2026 Mes Transports
             </p>
             <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.75rem', opacity: 0.7 }}>
-                v3.1.6 - Mise à jour : 16 Mars 2026
+                v3.1.7 - Mise à jour : 16 Mars 2026 (Nuit)
             </p>
         </footer>
     )
