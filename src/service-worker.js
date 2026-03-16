@@ -30,7 +30,9 @@ self.addEventListener('push', (event) => {
         body: data.body,
         icon: '/logo.jpg',
         badge: '/logo.jpg',
-        vibrate: [100, 50, 100],
+        vibrate: [300, 100, 400, 100, 400, 100, 400], // Motif de vibration fort
+        requireInteraction: true, // Force la notification à rester à l'écran
+        silent: false, // Tente de forcer le son du système
         data: {
             url: data.url || '/dashboard'
         },

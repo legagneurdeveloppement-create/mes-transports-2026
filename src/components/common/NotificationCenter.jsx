@@ -106,7 +106,9 @@ export default function NotificationCenter() {
                                     body: newNotif.message,
                                     icon: '/logo.jpg',
                                     badge: '/logo.jpg',
-                                    vibrate: [100, 50, 100],
+                                    vibrate: [300, 100, 400, 100, 400, 100, 400],
+                                    requireInteraction: true,
+                                    silent: false,
                                     data: { url: '/dashboard' }
                                 });
                             }).catch(err => console.error('Error showing notification from SW:', err));
