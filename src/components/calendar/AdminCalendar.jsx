@@ -127,7 +127,7 @@ export default function AdminCalendar() {
 
         const keys = Array.isArray(updatedKeys) ? updatedKeys : (updatedKeys ? [updatedKeys] : [])
 
-        // SMS Notification Logic
+        // Notification Logic (Push + SMS Simulé)
         try {
             const { data: chauffeurs } = await supabase
                 .from('profiles')
@@ -158,11 +158,26 @@ export default function AdminCalendar() {
                 }
 
                 if (message) {
+                    // 1. Simuler l'envoi SMS
                     await smsService.sendSMS(recipientPhones, message)
+
+                    // 2. Déclencher la notification Push en insérant dans public.notifications
+                    try {
+                        await supabase.from('notifications').insert([{
+                            target_role: 'CHAUFFEUR',
+                            message: message,
+                            type: updatedData ? 'info' : 'warning',
+                            related_transport_date: keys[0],
+                            meta: { action: updatedData ? 'created' : 'deleted' }
+                        }])
+                        console.log('Notification Push enregistrée avec succès.')
+                    } catch (pushErr) {
+                        console.error('Erreur lors de la création de la notification Push:', pushErr)
+                    }
                 }
             }
         } catch (error) {
-            console.error("Erreur lors de l'envoi du SMS aux chauffeurs:", error)
+            console.error("Erreur lors de la création des notifications:", error)
         }
 
         if (keys.length > 0) {

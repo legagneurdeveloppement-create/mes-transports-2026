@@ -262,11 +262,66 @@ function PushNotificationBanner({ user }) {
     const handleSubscribe = async () => {
         setLoading(true);
         const success = await pushService.subscribeUser(user);
-        if (success) setIsSubscribed(true);
+        if (success) {
+            setIsSubscribed(true);
+            alert("✅ Super ! Les notifications sont maintenant activées sur cet appareil.");
+        } else {
+            alert("❌ Impossible d'activer les notifications. Avez-vous bloqué l'autorisation dans votre navigateur ?");
+        }
         setLoading(false);
     };
 
-    if (!isSupported || loading || isSubscribed) return null;
+    if (loading) return null;
+
+    if (!isSupported) {
+        return (
+            <div className="card" style={{
+                background: '#fffbeb',
+                color: '#92400e',
+                marginBottom: '1.5rem',
+                border: '1px solid #f59e0b',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1rem',
+                padding: '1rem',
+                borderRadius: '0.75rem'
+            }}>
+                <div style={{ fontSize: '1.5rem' }}>📱</div>
+                <div>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '0.2rem' }}>
+                        Notifications non supportées ici
+                    </h3>
+                    <p style={{ fontSize: '0.85rem', margin: 0 }}>
+                        Pour recevoir les alertes sur <b>iPhone / iOS</b>, vous devez ouvrir ce site dans Safari, cliquer sur "Partager" puis <b>"Sur l'écran d'accueil"</b>.
+                        Sur Android, assurez-vous d'utiliser Chrome en <b>HTTPS</b>.
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
+    if (isSubscribed) {
+        return (
+            <div className="card" style={{
+                background: '#f0fdf4',
+                color: '#166534',
+                marginBottom: '1.5rem',
+                border: '1px solid #bbf7d0',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1rem',
+                padding: '0.8rem 1rem',
+                borderRadius: '0.75rem'
+            }}>
+                <div style={{ fontSize: '1.2rem' }}>✅</div>
+                <div>
+                    <h3 style={{ fontSize: '0.9rem', fontWeight: 'bold', margin: 0 }}>
+                        Système d'alertes activé sur cet appareil
+                    </h3>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="card" style={{

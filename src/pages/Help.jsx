@@ -22,22 +22,36 @@ export default function Help() {
             <Navbar />
             <div className="container help-container">
                 <header className="help-header" style={{ marginBottom: '2rem', textAlign: 'center', position: 'relative' }}>
-                    <button
-                        onClick={() => navigate('/dashboard')}
-                        className="btn btn-outline help-close-btn"
-                        style={{
-                            position: 'absolute',
-                            right: 0,
-                            top: 0,
-                            padding: '0.5rem 1rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            fontSize: '0.9rem'
-                        }}
-                    >
-                        <ArrowRight size={18} style={{ transform: 'rotate(180deg)' }} /> <span className="mobile-hidden">Fermer / Retour</span><span className="mobile-only">Retour</span>
-                    </button>
+                    <div className="help-actions" style={{ position: 'absolute', right: 0, top: 0, display: 'flex', gap: '0.5rem' }}>
+                        <button
+                            onClick={() => window.print()}
+                            className="btn btn-outline show-on-desktop"
+                            style={{
+                                padding: '0.5rem 1rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                fontSize: '0.9rem',
+                                color: 'var(--primary)',
+                                borderColor: 'var(--primary)'
+                            }}
+                        >
+                            <Printer size={18} /> <span>Imprimer / PDF</span>
+                        </button>
+                        <button
+                            onClick={() => navigate('/dashboard')}
+                            className="btn btn-outline help-close-btn"
+                            style={{
+                                padding: '0.5rem 1rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                fontSize: '0.9rem'
+                            }}
+                        >
+                            <ArrowRight size={18} style={{ transform: 'rotate(180deg)' }} /> <span className="mobile-hidden">Fermer / Retour</span><span className="mobile-only">Retour</span>
+                        </button>
+                    </div>
                     <h1 className="help-page-title mobile-hidden" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', color: 'var(--primary)', marginBottom: '1rem' }}>
                         <HelpCircle size={32} className="help-icon" /> <span>Centre d'Aide Mes Transports</span>
                     </h1>

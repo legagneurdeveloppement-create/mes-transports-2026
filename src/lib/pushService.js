@@ -60,9 +60,19 @@ export const pushService = {
      */
     checkSubscription: async () => {
         if (!('serviceWorker' in navigator)) return false;
-        const registration = await navigator.serviceWorker.ready;
-        const subscription = await registration.pushManager.getSubscription();
-        return !!subscription;
+        try {
+            const registration = await navigator.serviceWorker.getRegistration();
+            if (!registration) return false;
+
+            // Check pushManager directly to be safe
+            if (!registration.pushManager) return false;
+
+            const subscription = await registration.pushManager.getSubscription();
+            return !!subscription;
+        } catch (e) {
+            console.warn('Error checking push subscription:', e);
+            return false;
+        }
     }
 };
 
