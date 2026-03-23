@@ -8,7 +8,6 @@ import { smsService } from '../../lib/smsService'
 export default function AdminCalendar() {
     const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
     const [events, setEvents] = useState({})
-    const [isSyncing, setIsSyncing] = useState(false)
 
     // Destinations state
     const [destinations, setDestinations] = useState([])
@@ -143,14 +142,14 @@ export default function AdminCalendar() {
                 if (!updatedData) {
                     // Deletion
                     message = `Mes Transports: Les transports des dates suivantes ont été ANNULÉS: ${keys.map(k => {
-                        const [y, m, d] = k.split('-');
+                        const [, m, d] = k.split('-');
                         return `${d}/${parseInt(m) + 1}`;
                     }).join(', ')}.`
                 } else {
                     // Creation or Update
                     const actionLabel = keys.length > 1 ? 'de NOUVEAUX transports en attente' : 'un NOUVEAU transport en attente';
                     const datesStr = keys.map(k => {
-                        const [y, m, d] = k.split('-');
+                        const [, m, d] = k.split('-');
                         return `${d}/${parseInt(m) + 1}`;
                     }).join(', ');
 

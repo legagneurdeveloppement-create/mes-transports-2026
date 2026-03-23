@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Check, X, Shield, Trash2, ArrowLeft, Pencil, Eye, EyeOff, Key } from 'lucide-react'
-import { useAuth } from '../../context/AuthContext'
+
 import { supabase } from '../../lib/supabase'
 
 export default function UserManagement() {
-    const { user: currentUser } = useAuth()
+
     const [users, setUsers] = useState([])
     const [loading, setLoading] = useState(true)
     const [editingUser, setEditingUser] = useState(null)
@@ -110,7 +110,7 @@ export default function UserManagement() {
             console.log('DEBUG: Mise à jour du profil pour:', editingUser.email)
 
             // 1. Mise à jour du profil (Rôle, Direction, Note du mot de passe)
-            const { data, error: updateError } = await supabase
+            const { error: updateError } = await supabase
                 .from('profiles')
                 .update({
                     role: formData.role,

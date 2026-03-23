@@ -13,7 +13,7 @@ export default function Dashboard() {
     const { user, loading, viewAsChauffeur } = useAuth()
     const navigate = useNavigate()
     const [pendingCount, setPendingCount] = useState(0)
-    const [hasError, setHasError] = useState(false)
+    const [hasError] = useState(false)
 
     useEffect(() => {
         if (loading) return
@@ -207,6 +207,7 @@ function PushNotificationBanner({ user }) {
         // Vérifier si l'utilisateur a déjà fermé la bannière sur cet appareil
         const dismissed = localStorage.getItem('push-banner-dismissed');
         if (dismissed === 'true') {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setIsVisible(false);
         }
 

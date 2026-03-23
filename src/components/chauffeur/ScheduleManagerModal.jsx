@@ -1,6 +1,31 @@
 import { useState, useEffect } from 'react'
 import { X, Plus, Trash2, ArrowRight, ArrowLeft, Copy, Clipboard } from 'lucide-react'
 
+// Convert time HH:MM to minutes for comparison
+const timeToMinutes = (timeStr) => {
+    if (!timeStr || !timeStr.includes(':')) return null
+    const [hours, minutes] = timeStr.split(':').map(Number)
+    if (isNaN(hours) || isNaN(minutes)) return null
+    return hours * 60 + minutes
+}
+
+// Validate time order in steps
+const validateTimeOrder = (steps) => {
+    const errors = []
+    for (let i = 1; i < steps.length; i++) {
+        const prevTime = timeToMinutes(steps[i - 1].time)
+        const currTime = timeToMinutes(steps[i].time)
+
+        if (prevTime !== null && currTime !== null && currTime < prevTime) {
+            errors.push({
+                index: i,
+                message: `${steps[i].time} est antérieur à ${steps[i - 1].time}`
+            })
+        }
+    }
+    return errors
+}
+
 export default function ScheduleManagerModal({ isOpen, onClose, transport, onSave, copiedSchedule, onCopy }) {
     const [allerSteps, setAllerSteps] = useState([])
     const [retourSteps, setRetourSteps] = useState([])
@@ -33,13 +58,19 @@ export default function ScheduleManagerModal({ isOpen, onClose, transport, onSav
                         : transport.time_arrival_school)
                     : []
 
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setAllerSteps(Array.isArray(aller) ? aller : [])
+                 
                 setRetourSteps(Array.isArray(retour) ? retour : [])
+                 
                 setStayedOnSite(stayed)
             } catch (e) {
                 console.error('Error parsing schedule data:', e)
+                 
                 setAllerSteps([])
+                 
                 setRetourSteps([])
+                 
                 setStayedOnSite(false)
             }
         }
@@ -74,31 +105,6 @@ export default function ScheduleManagerModal({ isOpen, onClose, transport, onSav
         }
     }
 
-    // Convert time HH:MM to minutes for comparison
-    const timeToMinutes = (timeStr) => {
-        if (!timeStr || !timeStr.includes(':')) return null
-        const [hours, minutes] = timeStr.split(':').map(Number)
-        if (isNaN(hours) || isNaN(minutes)) return null
-        return hours * 60 + minutes
-    }
-
-    // Validate time order in steps
-    const validateTimeOrder = (steps) => {
-        const errors = []
-        for (let i = 1; i < steps.length; i++) {
-            const prevTime = timeToMinutes(steps[i - 1].time)
-            const currTime = timeToMinutes(steps[i].time)
-
-            if (prevTime !== null && currTime !== null && currTime < prevTime) {
-                errors.push({
-                    index: i,
-                    message: `${steps[i].time} est antérieur à ${steps[i - 1].time}`
-                })
-            }
-        }
-        return errors
-    }
-
     // Validate overall schedule
     useEffect(() => {
         const allerErrors = validateTimeOrder(allerSteps)
@@ -117,6 +123,7 @@ export default function ScheduleManagerModal({ isOpen, onClose, transport, onSav
             }
         }
 
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setTimeErrors({ aller: allerErrors, retour: retourErrors, global: globalErrors })
     }, [allerSteps, retourSteps, stayedOnSite])
 

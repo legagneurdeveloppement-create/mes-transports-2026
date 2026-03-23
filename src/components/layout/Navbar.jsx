@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Car, LogOut, User, ArrowRight, HelpCircle } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useState, useEffect } from 'react'
@@ -8,7 +8,6 @@ import NotificationCenter from '../common/NotificationCenter'
 
 export default function Navbar({ hideUserInfo = false }) {
     const { user, logout, viewAsChauffeur, setViewAsChauffeur } = useAuth() || {}
-    const navigate = useNavigate()
     const [dbStatus, setDbStatus] = useState('connecting')
 
     useEffect(() => {

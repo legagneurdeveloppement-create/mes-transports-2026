@@ -307,7 +307,7 @@ export default function Calendar({ userRole }) {
                                                     : selectedEventDetails.time_departure_school;
                                                 const steps = Array.isArray(rawAller) ? rawAller : (rawAller?.steps || []);
                                                 return steps[0]?.time || '--:--';
-                                            } catch (e) {
+                                            } catch {
                                                 return '--:--';
                                             }
                                         })()}
@@ -335,7 +335,7 @@ export default function Calendar({ userRole }) {
                                                     return allerSteps[allerSteps.length - 1]?.time || '--:--';
                                                 }
                                                 return '--:--';
-                                            } catch (e) {
+                                            } catch {
                                                 return '--:--';
                                             }
                                         })()}

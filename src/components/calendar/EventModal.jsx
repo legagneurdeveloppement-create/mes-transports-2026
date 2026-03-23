@@ -2,6 +2,14 @@ import { useState, useEffect } from 'react'
 import { X, Calendar as CalendarIcon } from 'lucide-react'
 import { generateICS } from '../../lib/calendarService'
 
+const schoolClasses = [
+    "MAT / CP", "CE / CM",
+    "Petite Section", "Moyenne Section", "Grande Section",
+    "CP", "CE1", "CE2", "CM1", "CM2",
+    "6ème", "5ème", "4ème", "3ème",
+    "Seconde", "Première", "Terminale"
+]
+
 export default function EventModal({ isOpen, onClose, onSave, eventData, selectedDate, selectedDates = [], destinations = [] }) {
     const [title, setTitle] = useState('')
     const [schoolClass, setSchoolClass] = useState('')
@@ -17,14 +25,6 @@ export default function EventModal({ isOpen, onClose, onSave, eventData, selecte
     const availableDestinations = destinations
 
     console.log('🎯 EventModal - Received destinations:', availableDestinations?.length || 0, availableDestinations)
-
-    const schoolClasses = [
-        "MAT / CP", "CE / CM",
-        "Petite Section", "Moyenne Section", "Grande Section",
-        "CP", "CE1", "CE2", "CM1", "CM2",
-        "6ème", "5ème", "4ème", "3ème",
-        "Seconde", "Première", "Terminale"
-    ]
 
     useEffect(() => {
         if (eventData) {

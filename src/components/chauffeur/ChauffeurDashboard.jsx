@@ -43,7 +43,7 @@ export default function ChauffeurDashboard() {
         // Realtime subscription
         const channel = supabase
             .channel('transports-all')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'transports' }, (payload) => {
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'transports' }, () => {
                 fetchTransports() // Refresh on any change
             })
             .subscribe()
@@ -51,6 +51,7 @@ export default function ChauffeurDashboard() {
         return () => {
             supabase.removeChannel(channel)
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeTab, selectedMonth, selectedYear, searchDate, isFilteredByMonth])
 
     const filterTransports = (allEvents, tab) => {
@@ -277,7 +278,7 @@ export default function ChauffeurDashboard() {
                     rawAller = typeof transport.time_departure_school === 'string'
                         ? JSON.parse(transport.time_departure_school || '[]')
                         : transport.time_departure_school
-                } catch (pe) {
+                } catch {
                     rawAller = []
                 }
 
@@ -309,7 +310,7 @@ export default function ChauffeurDashboard() {
                         ? JSON.parse(transport.time_arrival_school || '[]')
                         : transport.time_arrival_school
                     retourSteps = Array.isArray(parsed) ? parsed : (parsed?.steps || [])
-                } catch (pe) {
+                } catch {
                     retourSteps = []
                 }
 

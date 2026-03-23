@@ -7,7 +7,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 async function testColumn() {
     console.log('Testing if column "managed_password" exists...')
-    const { data, error } = await supabase
+    const { error } = await supabase
         .from('profiles')
         .select('managed_password')
         .limit(1)

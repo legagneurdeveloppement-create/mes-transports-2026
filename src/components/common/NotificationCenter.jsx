@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Bell, Check, Info, AlertTriangle, X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
@@ -10,7 +10,7 @@ export default function NotificationCenter() {
     const [isOpen, setIsOpen] = useState(false)
     const dropdownRef = useRef(null)
 
-    const fetchNotifications = async () => {
+    const fetchNotifications = useCallback(async () => {
         if (!user) return
 
         try {
@@ -60,7 +60,7 @@ export default function NotificationCenter() {
         } catch (e) {
             console.error('Exception chargement notifications:', e)
         }
-    }
+    }, [user])
 
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
 
@@ -80,11 +80,13 @@ export default function NotificationCenter() {
             window.removeEventListener('resize', handleResize)
             document.removeEventListener('visibilitychange', handleVisibilityChange)
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {
         if (!user) return
 
+         
         fetchNotifications()
 
         // Realtime subscription
@@ -138,6 +140,7 @@ export default function NotificationCenter() {
             supabase.removeChannel(channel)
             clearInterval(interval)
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user])
 
     // Close dropdown on click outside

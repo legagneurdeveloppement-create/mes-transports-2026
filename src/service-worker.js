@@ -21,7 +21,7 @@ self.addEventListener('push', (event) => {
         try {
             data = event.data.json();
             console.log('Push data received:', data);
-        } catch (e) {
+        } catch {
             data = { title: 'Mes Transports', body: event.data.text() };
         }
     }
