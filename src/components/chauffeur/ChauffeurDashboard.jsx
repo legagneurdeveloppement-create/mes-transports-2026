@@ -54,6 +54,29 @@ export default function ChauffeurDashboard() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeTab, selectedMonth, selectedYear, searchDate, isFilteredByMonth])
 
+    useEffect(() => {
+        if (activeTab === 'pending' && isFilteredByMonth && filteredTransports.length === 0) {
+            const pendingEvents = Object.values(events || {}).filter(e => e && (e.status === 'pending' || !e.status))
+            if (pendingEvents.length > 0) {
+                // Find earliest pending event
+                const sortedPending = [...pendingEvents].sort((a, b) => {
+                    const [yA, mA, dA] = (a.date_key || '').split('-').map(Number)
+                    const [yB, mB, dB] = (b.date_key || '').split('-').map(Number)
+                    if (yA !== yB) return yA - yB;
+                    if (mA !== mB) return mA - mB;
+                    return dA - dB;
+                })
+                const firstEvent = sortedPending[0]
+                const [y, m] = firstEvent.date_key.split('-').map(Number)
+                
+                if (y !== selectedYear || m !== selectedMonth) {
+                    setSelectedYear(y)
+                    setSelectedMonth(m)
+                }
+            }
+        }
+    }, [activeTab, isFilteredByMonth, filteredTransports.length, events, selectedYear, selectedMonth])
+
     const filterTransports = (allEvents, tab) => {
         const list = Object.entries(allEvents || {})
             .map(([dateKey, data]) => ({
@@ -672,38 +695,7 @@ export default function ChauffeurDashboard() {
                         )}
                     </div>
                 )}
-                {/* Notice for pending transports in other months */}
-                {activeTab === 'pending' && isFilteredByMonth && filteredTransports.length === 0 && eventsValues.filter(e => e && (e.status === 'pending' || !e.status)).length > 0 && (
-                    <div className="no-print" style={{
-                        textAlign: 'center',
-                        padding: '1.25rem',
-                        background: '#fffbeb',
-                        borderRadius: '0.75rem',
-                        marginBottom: '1.5rem',
-                        border: '1px solid #f59e0b',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-                    }}>
-                        <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>ℹ️</div>
-                        <p style={{ color: '#92400e', fontWeight: '600', marginBottom: '0.85rem', fontSize: '0.95rem' }}>
-                            Vous avez {eventsValues.filter(e => e && (e.status === 'pending' || !e.status)).length} transport(s) en attente dans d'autres mois.
-                        </p>
-                        <button
-                            onClick={() => {
-                                setIsFilteredByMonth(false)
-                                setSearchDate('')
-                            }}
-                            className="btn btn-primary"
-                            style={{
-                                fontSize: '0.9rem',
-                                padding: '0.6rem 1.25rem',
-                                background: '#f59e0b',
-                                border: 'none'
-                            }}
-                        >
-                            Voir tous les transports en attente
-                        </button>
-                    </div>
-                )}
+                {/* Notice for pending transports automatically jumps to missing month now */}
 
                 {filteredTransports.length === 0 ? (
                     <div className="card empty-state" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-light)' }}>
