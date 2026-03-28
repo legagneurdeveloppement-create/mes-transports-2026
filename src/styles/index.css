@@ -160,6 +160,13 @@ h6 {
   box-shadow: var(--shadow);
 }
 
+/* Print Visibility defaults */
+.print-only-title,
+.print-continued,
+.print-page-break {
+  display: none;
+}
+
 /* Print Styles */
 @media print {
   @page {
@@ -227,6 +234,20 @@ h6 {
     display: block !important;
     text-align: center;
     font-size: 14pt !important;
+    margin-bottom: 0.1cm !important;
+    color: #0f172a !important;
+  }
+
+  .print-page-break {
+    display: block !important;
+    page-break-before: always;
+  }
+
+  .print-continued {
+    display: block !important;
+    text-align: center;
+    font-size: 14pt !important;
+    margin-top: 0cm !important;
     margin-bottom: 0.1cm !important;
     color: #0f172a !important;
   }
