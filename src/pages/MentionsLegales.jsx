@@ -4,13 +4,13 @@ import { Link } from 'react-router-dom';
 const MentionsLegales = () => {
     return (
         <div className="container" style={{ padding: '4rem 1.5rem', maxWidth: '800px' }}>
-            <Link 
-                to="/" 
-                style={{ 
-                    display: 'inline-flex', 
-                    alignItems: 'center', 
-                    gap: '0.5rem', 
-                    color: 'var(--text-light)', 
+            <Link
+                to="/"
+                style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    color: 'var(--text-light)',
                     textDecoration: 'none',
                     marginBottom: '2rem',
                     fontWeight: '500'
@@ -33,11 +33,10 @@ const MentionsLegales = () => {
                     </h2>
                     <p>
                         L'édition du site <strong>Mes Transports</strong> est assurée par :<br />
-                        <strong>legagneur.developpement</strong><br />
-                        [Votre Nom/Raison Sociale]<br />
-                        [Votre Adresse Postale]<br />
-                        Email : [Votre Email de contact]<br />
-                        SIRET : [Votre Numéro SIRET si applicable]
+                        <strong>legagneur developpement</strong><br />
+                        2 les saussois, 21430 Brazey en Morvan<br />
+                        Email : legagneur.developpement@gmail.com<br />
+                        SIRET : 000 000 000 00000
                     </p>
                 </section>
 
@@ -46,10 +45,16 @@ const MentionsLegales = () => {
                         2. Hébergeur
                     </h2>
                     <p>
-                        Le site est hébergé par :<br />
-                        <strong>[Nom de l'hébergeur - ex: Vercel / Cloudflare]</strong><br />
-                        [Adresse de l'hébergeur]<br />
-                        Site web : [URL de l'hébergeur]
+                        <strong>Hébergement du site (Frontend) :</strong><br />
+                        Vercel Inc.<br />
+                        440 N Barranca Ave #4133, Covina, CA 91723, USA<br />
+                        Site web : https://vercel.com
+                    </p>
+                    <p style={{ marginTop: '1rem' }}>
+                        <strong>Gestion des données (Backend & Base de données) :</strong><br />
+                        Supabase Inc.<br />
+                        970 Summer St, Stamford, CT 06905, USA<br />
+                        Site web : https://supabase.com
                     </p>
                 </section>
 
@@ -58,11 +63,11 @@ const MentionsLegales = () => {
                         3. Propriété intellectuelle
                     </h2>
                     <p>
-                        L'ensemble de ce site relève de la législation française et internationale sur le droit d'auteur et la propriété intellectuelle. 
+                        L'ensemble de ce site relève de la législation française et internationale sur le droit d'auteur et la propriété intellectuelle.
                         Tous les droits de reproduction sont réservés, y compris pour les documents téléchargeables et les représentations iconographiques et photographiques.
                     </p>
                     <p style={{ marginTop: '1rem' }}>
-                        Toute reproduction, représentation, modification, publication, adaptation de tout ou partie des éléments du site, 
+                        Toute reproduction, représentation, modification, publication, adaptation de tout ou partie des éléments du site,
                         quel que soit le moyen ou le procédé utilisé, est interdite, sauf autorisation écrite préalable de l'éditeur.
                     </p>
                 </section>
@@ -72,12 +77,12 @@ const MentionsLegales = () => {
                         4. Données personnelles & RGPD
                     </h2>
                     <p>
-                        L’application <strong>Mes Transports</strong> collecte des données personnelles (noms, prénoms, coordonnées, trajets) 
+                        L’application <strong>Mes Transports</strong> collecte des données personnelles (noms, prénoms, coordonnées, trajets)
                         nécessaires au bon fonctionnement du service de transport.
                     </p>
                     <p style={{ marginTop: '1rem' }}>
-                        Conformément à la loi « informatique et libertés » et au Règlement Général sur la Protection des Données (RGPD), 
-                        vous disposez d'un droit d'accès, de rectification, de suppression et d'opposition aux données personnelles vous concernant. 
+                        Conformément à la loi « informatique et libertés » et au Règlement Général sur la Protection des Données (RGPD),
+                        vous disposez d'un droit d'accès, de rectification, de suppression et d'opposition aux données personnelles vous concernant.
                         Pour exercer ce droit, vous pouvez nous contacter par email à l'adresse indiquée ci-dessus.
                     </p>
                 </section>
@@ -87,7 +92,7 @@ const MentionsLegales = () => {
                         5. Cookies
                     </h2>
                     <p>
-                        L’application utilise des cookies techniques strictement nécessaires à la navigation et à l'authentification des utilisateurs. 
+                        L’application utilise des cookies techniques strictement nécessaires à la navigation et à l'authentification des utilisateurs.
                         Aucun cookie de traçage publicitaire n'est utilisé.
                     </p>
                 </section>
@@ -97,7 +102,7 @@ const MentionsLegales = () => {
                         6. Responsabilité
                     </h2>
                     <p>
-                        L'éditeur s'efforce de fournir des informations aussi précises que possible. Toutefois, il ne pourra être tenu responsable 
+                        L'éditeur s'efforce de fournir des informations aussi précises que possible. Toutefois, il ne pourra être tenu responsable
                         des omissions, des inexactitudes et des carences dans la mise à jour, qu'elles soient de son fait ou du fait des tiers partenaires qui lui fournissent ces informations.
                     </p>
                 </section>
