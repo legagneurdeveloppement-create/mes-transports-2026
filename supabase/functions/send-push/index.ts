@@ -1,12 +1,12 @@
-import { serve } from "https://deno.land/std@0.131.0/http/server.ts"
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
-import * as webpush from "https://esm.sh/web-push@3.4.5"
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1"
+import * as webpush from "https://esm.sh/web-push@3.6.7?target=deno"
 
 const VAPID_PUBLIC_KEY = "BHPj4IaJOPBJYRxKF9aUcC5IGG2EUvA30yP5tump8qR5i2kHtmEzFe4BNI17baHWUlh6JniSPjxibHKe5_juhiU"
 const VAPID_PRIVATE_KEY = "JPGWKHr_HDPPXi19d-JlgmStRxkPV0HfJbv0Zt7XB38"
 
 webpush.setVapidDetails(
-    'mailto:votre-email@exemple.com',
+    'mailto:legagneur.developpement@gmail.com',
     VAPID_PUBLIC_KEY,
     VAPID_PRIVATE_KEY
 )
@@ -65,7 +65,7 @@ serve(async (req) => {
         const payload = JSON.stringify({
             title: title,
             body: message,
-            url: '/dashboard'
+            url: 'https://mes-transports-prod.vercel.app/dashboard'
         })
 
         // 3. Envoyer les notifications en parallèle
