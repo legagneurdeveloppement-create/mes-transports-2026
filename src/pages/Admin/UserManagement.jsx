@@ -174,7 +174,7 @@ export default function UserManagement() {
                         <Link to="/dashboard" className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem' }}>
                             <ArrowLeft size={18} /> Retour au tableau de bord
                         </Link>
-                        <h1 className="admin-title">Gestion des Utilisateurs <span style={{ fontSize: '0.4em', background: 'var(--accent)', color: 'white', padding: '0.2rem 0.6rem', borderRadius: '1rem', verticalAlign: 'middle', marginLeft: '0.5rem' }}>v3.1.7</span></h1>
+                        <h1 className="admin-title">Gestion des Utilisateurs <span style={{ fontSize: '0.4em', background: 'var(--accent)', color: 'white', padding: '0.2rem 0.6rem', borderRadius: '1rem', verticalAlign: 'middle', marginLeft: '0.5rem' }}>v3.1.8</span></h1>
                     </div>
                 </div>
 
