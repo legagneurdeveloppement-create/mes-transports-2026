@@ -123,9 +123,6 @@ export default function Dashboard() {
                     <section className="no-print" style={{ marginBottom: '2rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
                             <h2 className="dashboard-section-header" style={{ marginBottom: 0 }}>Panel Administration</h2>
-                            <div style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', background: '#e2e8f0', borderRadius: '0.3rem', color: '#475569' }}>
-                                Diagnostics: {window.location.hostname}
-                            </div>
                         </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
