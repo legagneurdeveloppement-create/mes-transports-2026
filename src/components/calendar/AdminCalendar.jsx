@@ -479,179 +479,88 @@ export default function AdminCalendar() {
                     ))}
             </div>
 
-            <div className="calendar-semesters-container">
-                <div className="calendar-semester-grid">
-                    {(monthNames.slice(0, 6) || []).map((monthName, i) => {
-                        const monthIndex = i;
-                        const { days, firstDay } = getDaysInMonth(currentYear, monthIndex)
-                        const startOffset = Math.max(0, firstDay === 0 ? 6 : firstDay - 1)
+            <div className="calendar-semester-grid">
+                {(monthNames || []).map((monthName, monthIndex) => {
+                    const { days, firstDay } = getDaysInMonth(currentYear, monthIndex)
+                    const startOffset = Math.max(0, firstDay === 0 ? 6 : firstDay - 1)
 
-                        return (
-                            <div key={monthName} className="print-compact-month" style={{ maxWidth: '350px', margin: '0 auto', width: '100%', background: 'white', padding: '1rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                                    <div style={{ width: '24px' }}></div> {/* Spacer */}
-                                    <h4 style={{ textAlign: 'center', fontWeight: 'bold', margin: 0, color: 'var(--primary)' }}>{monthName}</h4>
-                                    <button
-                                        onClick={() => handleDeleteMonth(monthIndex)}
-                                        className="no-print"
-                                        title={`Supprimer tout le mois de ${monthName}`}
-                                        style={{
-                                            background: 'none',
-                                            border: 'none',
-                                            color: '#ef4444',
-                                            cursor: 'pointer',
-                                            padding: '4px',
-                                            borderRadius: '4px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            opacity: 0.6,
-                                            transition: 'opacity 0.2s'
-                                        }}
-                                        onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-                                        onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '2px', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '600' }}>
-                                    {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, index) => (
-                                        <div key={index} style={{ textAlign: 'center' }}>{d}</div>
-                                    ))}
-                                </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '2px' }}>
-                                    {[...Array(startOffset)].map((_, i) => <div key={`empty-${i}`} />)}
-                                    {[...Array(days)].map((_, i) => {
-                                        const day = i + 1
-                                        const dateKey = `${currentYear}-${monthIndex}-${day}`
-                                        const hasEvent = events[dateKey]
-                                        const isToday = new Date().toDateString() === new Date(currentYear, monthIndex, day).toDateString()
-                                        return (
-                                            <div
-                                                key={day}
-                                                onClick={(e) => handleDayClick(currentYear, monthIndex, day, e)}
-                                                style={{
-                                                    aspectRatio: '1',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    cursor: 'pointer',
-                                                    fontSize: '0.9rem',
-                                                    fontWeight: '600',
-                                                    borderRadius: '0.25rem',
-                                                    backgroundColor: hasEvent ? getEventColor(hasEvent) : (selectedDates.includes(dateKey) ? '#ddd6fe' : 'transparent'),
-                                                    color: hasEvent ? 'white' : 'inherit',
-                                                    border: selectedDates.includes(dateKey) ? '3px solid #8b5cf6' : (
-                                                        isToday ? '3px solid #3b82f6' : (
-                                                            hasEvent?.status === 'validated' ? '3px solid #16a34a' :
-                                                                hasEvent?.status === 'rejected' ? '3px solid #dc2626' : 'none'
-                                                        )
-                                                    ),
-                                                    position: 'relative',
-                                                    boxShadow: hasEvent?.status === 'pending' ? '0 0 0 2px #eab308' : 'none',
-                                                    transform: selectedDates.includes(dateKey) ? 'scale(0.95)' : 'none',
-                                                    transition: 'all 0.2s ease'
-                                                }}
-                                                title={hasEvent ? `${hasEvent.title} (${hasEvent.schoolClass || ''})` : ''}
-                                            >
-                                                <span className="day-number">{day}</span>
-                                                {hasEvent && <span className="print-day-label">{hasEvent.title}</span>}
-                                            </div>
-                                        )
-                                    })}
-                                </div>
+                    return (
+                        <div key={monthName} className="print-compact-month" style={{ maxWidth: '350px', margin: '0 auto', width: '100%', background: 'white', padding: '1rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                                <div style={{ width: '24px' }}></div> {/* Spacer */}
+                                <h4 style={{ textAlign: 'center', fontWeight: 'bold', margin: 0, color: 'var(--primary)' }}>{monthName}</h4>
+                                <button
+                                    onClick={() => handleDeleteMonth(monthIndex)}
+                                    className="no-print"
+                                    title={`Supprimer tout le mois de ${monthName}`}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: '#ef4444',
+                                        cursor: 'pointer',
+                                        padding: '4px',
+                                        borderRadius: '4px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        opacity: 0.6,
+                                        transition: 'opacity 0.2s'
+                                    }}
+                                    onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                                    onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}
+                                >
+                                    <Trash2 size={16} />
+                                </button>
                             </div>
-                        )
-                    })}
-                </div>
-
-                <div className="print-page-break"></div>
-                <h1 className="print-only-title print-continued">{currentYear} (Suite)</h1>
-
-                <div className="calendar-semester-grid">
-                    {(monthNames.slice(6, 12) || []).map((monthName, i) => {
-                        const monthIndex = i + 6;
-                        const { days, firstDay } = getDaysInMonth(currentYear, monthIndex)
-                        const startOffset = Math.max(0, firstDay === 0 ? 6 : firstDay - 1)
-
-                        return (
-                            <div key={monthName} className="print-compact-month" style={{ maxWidth: '350px', margin: '0 auto', width: '100%', background: 'white', padding: '1rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                                    <div style={{ width: '24px' }}></div> {/* Spacer */}
-                                    <h4 style={{ textAlign: 'center', fontWeight: 'bold', margin: 0, color: 'var(--primary)' }}>{monthName}</h4>
-                                    <button
-                                        onClick={() => handleDeleteMonth(monthIndex)}
-                                        className="no-print"
-                                        title={`Supprimer tout le mois de ${monthName}`}
-                                        style={{
-                                            background: 'none',
-                                            border: 'none',
-                                            color: '#ef4444',
-                                            cursor: 'pointer',
-                                            padding: '4px',
-                                            borderRadius: '4px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            opacity: 0.6,
-                                            transition: 'opacity 0.2s'
-                                        }}
-                                        onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-                                        onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '2px', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '600' }}>
-                                    {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, index) => (
-                                        <div key={index} style={{ textAlign: 'center' }}>{d}</div>
-                                    ))}
-                                </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '2px' }}>
-                                    {[...Array(startOffset)].map((_, i) => <div key={`empty-${i}`} />)}
-                                    {[...Array(days)].map((_, i) => {
-                                        const day = i + 1
-                                        const dateKey = `${currentYear}-${monthIndex}-${day}`
-                                        const hasEvent = events[dateKey]
-                                        const isToday = new Date().toDateString() === new Date(currentYear, monthIndex, day).toDateString()
-                                        return (
-                                            <div
-                                                key={day}
-                                                onClick={(e) => handleDayClick(currentYear, monthIndex, day, e)}
-                                                style={{
-                                                    aspectRatio: '1',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    cursor: 'pointer',
-                                                    fontSize: '0.9rem',
-                                                    fontWeight: '600',
-                                                    borderRadius: '0.25rem',
-                                                    backgroundColor: hasEvent ? getEventColor(hasEvent) : (selectedDates.includes(dateKey) ? '#ddd6fe' : 'transparent'),
-                                                    color: hasEvent ? 'white' : 'inherit',
-                                                    border: selectedDates.includes(dateKey) ? '3px solid #8b5cf6' : (
-                                                        isToday ? '3px solid #3b82f6' : (
-                                                            hasEvent?.status === 'validated' ? '3px solid #16a34a' :
-                                                                hasEvent?.status === 'rejected' ? '3px solid #dc2626' : 'none'
-                                                        )
-                                                    ),
-                                                    position: 'relative',
-                                                    boxShadow: hasEvent?.status === 'pending' ? '0 0 0 2px #eab308' : 'none',
-                                                    transform: selectedDates.includes(dateKey) ? 'scale(0.95)' : 'none',
-                                                    transition: 'all 0.2s ease'
-                                                }}
-                                                title={hasEvent ? `${hasEvent.title} (${hasEvent.schoolClass || ''})` : ''}
-                                            >
-                                                <span className="day-number">{day}</span>
-                                                {hasEvent && <span className="print-day-label">{hasEvent.title}</span>}
-                                            </div>
-                                        )
-                                    })}
-                                </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '2px', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '600' }}>
+                                {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, index) => (
+                                    <div key={index} style={{ textAlign: 'center' }}>{d}</div>
+                                ))}
                             </div>
-                        )
-                    })}
-                </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '2px' }}>
+                                {[...Array(startOffset)].map((_, i) => <div key={`empty-${i}`} />)}
+                                {[...Array(days)].map((_, i) => {
+                                    const day = i + 1
+                                    const dateKey = `${currentYear}-${monthIndex}-${day}`
+                                    const hasEvent = events[dateKey]
+                                    const isToday = new Date().toDateString() === new Date(currentYear, monthIndex, day).toDateString()
+                                    return (
+                                        <div
+                                            key={day}
+                                            onClick={(e) => handleDayClick(currentYear, monthIndex, day, e)}
+                                            style={{
+                                                aspectRatio: '1',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                cursor: 'pointer',
+                                                fontSize: '0.9rem',
+                                                fontWeight: '600',
+                                                borderRadius: '0.25rem',
+                                                backgroundColor: hasEvent ? getEventColor(hasEvent) : (selectedDates.includes(dateKey) ? '#ddd6fe' : 'transparent'),
+                                                color: hasEvent ? 'white' : 'inherit',
+                                                border: selectedDates.includes(dateKey) ? '3px solid #8b5cf6' : (
+                                                    isToday ? '3px solid #3b82f6' : (
+                                                        hasEvent?.status === 'validated' ? '3px solid #16a34a' :
+                                                            hasEvent?.status === 'rejected' ? '3px solid #dc2626' : 'none'
+                                                    )
+                                                ),
+                                                position: 'relative',
+                                                boxShadow: hasEvent?.status === 'pending' ? '0 0 0 2px #eab308' : 'none',
+                                                transform: selectedDates.includes(dateKey) ? 'scale(0.95)' : 'none',
+                                                transition: 'all 0.2s ease'
+                                            }}
+                                            title={hasEvent ? `${hasEvent.title} (${hasEvent.schoolClass || ''})` : ''}
+                                        >
+                                            <span className="day-number">{day}</span>
+                                            {hasEvent && <span className="print-day-label">{hasEvent.title}</span>}
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    )
+                })}
             </div>
 
 
