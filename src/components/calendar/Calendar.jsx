@@ -1,12 +1,17 @@
 import { useState, useEffect, useMemo } from 'react'
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, AlertCircle, MessageSquare } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../context/AuthContext'
 
 export default function Calendar({ userRole }) {
+    const { user } = useAuth()
     const [currentDate, setCurrentDate] = useState(new Date())
     const [events, setEvents] = useState({})
     const [destinations, setDestinations] = useState([])
     const [fetchError, setFetchError] = useState(null)
+    const [reportingIssue, setReportingIssue] = useState(false)
+    const [issueMessage, setIssueMessage] = useState("")
+    const [sendingIssue, setSendingIssue] = useState(false)
 
     useEffect(() => {
         const fetchData = async () => {
@@ -154,6 +159,44 @@ export default function Calendar({ userRole }) {
     }
 
     const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"]
+
+    const handleSendIssue = async () => {
+        if (!issueMessage.trim() || !selectedEventDetails) return;
+
+        setSendingIssue(true);
+        const dateStr = `${selectedEventDetails.day} ${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+        const transporterName = selectedEventDetails.chauffeur_name ? ` (Chauffeur assigné: ${selectedEventDetails.chauffeur_name})` : '';
+        const bodyMsg = `Signalement Utilisateur (${user?.full_name || user?.email || 'Inconnu'}) concernant le transport du ${dateStr} pour ${selectedEventDetails.title}${transporterName} :\n\n"${issueMessage}"`;
+
+        try {
+            await supabase.from('notifications').insert({
+                title: "⚠️ Signalement Utilisateur",
+                message: bodyMsg,
+                target_role: 'SUPER_ADMIN',
+                type: 'alert',
+                is_read: false
+            });
+
+            if (selectedEventDetails.chauffeur_id) {
+                await supabase.from('notifications').insert({
+                    title: "⚠️ Signalement sur votre course",
+                    message: bodyMsg,
+                    target_user_id: selectedEventDetails.chauffeur_id,
+                    type: 'alert',
+                    is_read: false
+                });
+            }
+
+            alert('Votre message a bien été envoyé aux responsables et au chauffeur !');
+            setReportingIssue(false);
+            setIssueMessage('');
+        } catch (err) {
+            console.error('Erreur :', err);
+            alert("Erreur lors de l'envoi du message.");
+        } finally {
+            setSendingIssue(false);
+        }
+    };
 
     return (
         <div>
@@ -446,9 +489,56 @@ export default function Calendar({ userRole }) {
                                     {selectedEventDetails.status === 'validated' ? '✓ Validé' : selectedEventDetails.status === 'rejected' ? '✕ Refusé' : '⌚ En attente'}
                                 </div>
                             </div>
+
+                            {/* Section Signalement (réservée aux Utilisateurs) */}
+                            {userRole === 'USER' && (
+                                <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #e2e8f0' }}>
+                                    {!reportingIssue ? (
+                                        <button 
+                                            onClick={() => setReportingIssue(true)}
+                                            className="btn btn-outline" 
+                                            style={{ width: '100%', borderColor: '#f59e0b', color: '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                                        >
+                                            <AlertCircle size={18} /> Signaler un empêchement ou annulation
+                                        </button>
+                                    ) : (
+                                        <div style={{ background: '#fffbeb', padding: '1rem', borderRadius: '0.5rem', border: '1px solid #fde68a' }}>
+                                            <h4 style={{ margin: '0 0 0.5rem 0', color: '#92400e', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <MessageSquare size={16} /> Que se passe-t-il ?
+                                            </h4>
+                                            <textarea
+                                                className="input"
+                                                rows="3"
+                                                placeholder="Ex: L'enfant est malade, merci d'annuler cette course le concernant."
+                                                value={issueMessage}
+                                                onChange={e => setIssueMessage(e.target.value)}
+                                                style={{ marginBottom: '1rem', borderColor: '#fcd34d', fontSize: '0.85rem' }}
+                                            />
+                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                <button 
+                                                    onClick={handleSendIssue} 
+                                                    disabled={sendingIssue || !issueMessage.trim()}
+                                                    className="btn btn-primary" 
+                                                    style={{ flex: 1, background: '#d97706', borderColor: '#d97706', fontSize: '0.85rem' }}
+                                                >
+                                                    {sendingIssue ? 'Envoi...' : 'Envoyer au Chauffeur & Admin'}
+                                                </button>
+                                                <button 
+                                                    onClick={() => { setReportingIssue(false); setIssueMessage(''); }} 
+                                                    className="btn btn-outline" 
+                                                    style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
+                                                >
+                                                    Annuler
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
+
                         <div className="modal-footer">
-                            <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => setSelectedEventDetails(null)}>Fermer</button>
+                            <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => { setSelectedEventDetails(null); setReportingIssue(false); setIssueMessage(''); }}>Fermer</button>
                         </div>
                     </div>
                 </div>

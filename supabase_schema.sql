@@ -29,14 +29,29 @@ create policy "Users can update own profile." on profiles
 -- See https://supabase.com/docs/guides/auth/managing-user-data#using-triggers for more details.
 create or replace function public.handle_new_user()
 returns trigger as $$
+declare
+  user_count int;
+  assigned_role text;
+  is_approved boolean;
 begin
+  -- Vérifie si c'est le tout premier utilisateur inscrit
+  select count(*) into user_count from public.profiles;
+
+  if user_count = 0 then
+    assigned_role := 'SUPER_ADMIN';
+    is_approved := true;
+  else
+    assigned_role := COALESCE(new.raw_user_meta_data->>'role', 'USER');
+    is_approved := false; -- Default to not approved
+  end if;
+
   insert into public.profiles (id, email, full_name, role, approved, direction)
   values (
     new.id, 
     new.email, 
     new.raw_user_meta_data->>'full_name',
-    COALESCE(new.raw_user_meta_data->>'role', 'USER'),
-    false, -- Default to not approved
+    assigned_role,
+    is_approved,
     new.raw_user_meta_data->>'direction'
   );
   return new;
