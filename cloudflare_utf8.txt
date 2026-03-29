@@ -1,0 +1,80 @@
+﻿node.exe : 2026-01-15T20:59:03Z INF Thank you for 
+trying Cloudflare Tunnel. Doing so, without a 
+Cloudflare account, is a quick way to experiment and 
+try it out. However, be aware that these account-less 
+Tunnels have no uptime guarantee, are subject to the 
+Cloudflare Online Services Terms of Use 
+(https://www.cloudflare.com/website-terms/), and 
+Cloudflare reserves the right to investigate your use 
+of Tunnels for violations of such terms. If you intend 
+to use Tunnels in production you should use a 
+pre-created named tunnel by following: https://developer
+s.cloudflare.com/cloudflare-one/connections/connect-apps
+Au caractère Ligne:1 : 1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (2026-01-15 
+   T20:5...ns/connect-apps:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+2026-01-15T20:59:03Z INF Requesting new quick Tunnel on 
+trycloudflare.com...
+2026-01-15T20:59:08Z INF +------------------------------
+--------------------------------------------------------
+------+
+2026-01-15T20:59:08Z INF |  Your quick Tunnel has been 
+created! Visit it at (it may take some time to be 
+reachable):  |
+2026-01-15T20:59:08Z INF |  https://halloween-schedule-m
+eetup-attached.trycloudflare.com                        
+      |
+2026-01-15T20:59:08Z INF +------------------------------
+--------------------------------------------------------
+------+
+2026-01-15T20:59:08Z INF Cannot determine default 
+configuration path. No file [config.yml config.yaml] in 
+[~/.cloudflared ~/.cloudflare-warp ~/cloudflare-warp]
+2026-01-15T20:59:08Z INF Version 2025.11.1 (Checksum 413
+f9b24dc6e61a455564651524f167b8ce29ac4ccd40703dea7af93cd3
+7ed39)
+2026-01-15T20:59:08Z INF GOOS: windows, GOVersion: 
+go1.24.9, GoArch: amd64
+2026-01-15T20:59:08Z INF Settings: map[ha-connections:1 
+protocol:quic url:http://localhost:5173]
+2026-01-15T20:59:08Z INF cloudflared will not 
+automatically update on Windows systems.
+2026-01-15T20:59:08Z INF Generated Connector ID: 
+d1e2dce6-170f-479b-9376-d00f70cb6afd
+2026-01-15T20:59:08Z INF Initial protocol quic
+2026-01-15T20:59:08Z INF ICMP proxy will use 
+192.168.1.159 as source for IPv4
+2026-01-15T20:59:08Z INF ICMP proxy will use 
+fe80::5b3b:e7d1:f8c9:2def in zone Ethernet 2 as source 
+for IPv6
+2026-01-15T20:59:08Z ERR Cannot determine default 
+origin certificate path. No file cert.pem in 
+[~/.cloudflared ~/.cloudflare-warp ~/cloudflare-warp]. 
+You need to specify the origin certificate path by 
+specifying the origincert option in the configuration 
+file, or set TUNNEL_ORIGIN_CERT environment variable 
+originCertPath=
+2026-01-15T20:59:08Z INF cloudflared does not support 
+loading the system root certificate pool on Windows. 
+Please use --origin-ca-pool <PATH> to specify the path 
+to the certificate pool
+2026-01-15T20:59:08Z INF ICMP proxy will use 
+192.168.1.159 as source for IPv4
+2026-01-15T20:59:08Z INF Tunnel connection curve 
+preferences: [X25519MLKEM768 CurveP256] connIndex=0 
+event=0 ip=198.41.192.27
+2026-01-15T20:59:08Z INF ICMP proxy will use 
+fe80::5b3b:e7d1:f8c9:2def in zone Ethernet 2 as source 
+for IPv6
+2026-01-15T20:59:08Z INF Starting metrics server on 
+127.0.0.1:20243/metrics
+2026-01-15T20:59:08Z INF Registered tunnel connection 
+connIndex=0 
+connection=2ecfd45f-9533-46f0-b4b6-c103967ee2c4 event=0 
+ip=198.41.192.27 location=mrs01 protocol=quic

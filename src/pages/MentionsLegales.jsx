@@ -36,7 +36,8 @@ const MentionsLegales = () => {
                         <strong>legagneur developpement</strong><br />
                         2 les saussois, 21430 Brazey en Morvan<br />
                         Email : legagneur.developpement@gmail.com<br />
-                        SIRET : 000 000 000 00000
+                        SIRET : 000 000 000 00000<br />
+                        URL du site : <strong>https://mes-transports-prod.vercel.app</strong>
                     </p>
                 </section>
 
