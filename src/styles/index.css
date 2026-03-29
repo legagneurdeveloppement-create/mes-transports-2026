@@ -206,6 +206,11 @@ h6 {
   }
 
   /* Calendar Scaling */
+  .calendar-semesters-container {
+    zoom: 0.80 !important;
+    page-break-inside: avoid !important;
+  }
+
   .calendar-semester-grid {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
