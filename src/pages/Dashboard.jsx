@@ -240,7 +240,7 @@ function PushNotificationBanner({ user }) {
     if (loading || !isSupported || isSubscribed || !isVisible) return null;
 
     return (
-        <div className="card" style={{
+        <div className="card no-print" style={{
             background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
             color: 'white',
             marginBottom: '1.5rem',

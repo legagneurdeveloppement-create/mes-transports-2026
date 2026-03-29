@@ -209,7 +209,7 @@ h6 {
   .calendar-semester-grid {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
-    gap: 0.1cm !important;
+    gap: 0.05cm !important;
     margin-top: 0cm !important;
   }
 

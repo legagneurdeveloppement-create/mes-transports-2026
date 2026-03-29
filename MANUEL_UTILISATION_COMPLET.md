@@ -21,9 +21,9 @@ Bienvenue dans le guide officiel de l'application **Mes Transports 2026**. Ce do
 -   **Connexion** : Une fois approuvé, utilisez votre email et mot de passe.
 -   **Rôles** : Votre interface s'adapte automatiquement selon votre rôle attribué par l'administrateur.
 
----
 
-## 2. Guide de l'Utilisateur (Passager)
+
+## 2. Guide de l'Utilisateur
 
 En tant qu'utilisateur standard, vous pouvez consulter vos trajets prévus.
 
