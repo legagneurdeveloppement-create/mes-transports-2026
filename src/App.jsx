@@ -6,6 +6,7 @@ import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import UserManagement from './pages/Admin/UserManagement'
 import Help from './pages/Help'
+import MentionsLegales from './pages/MentionsLegales'
 import Footer from './components/layout/Footer'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 
@@ -37,6 +38,8 @@ function App() {
               <Help />
             </ProtectedRoute>
           } />
+
+          <Route path="/mentions-legales" element={<MentionsLegales />} />
         </Routes>
       </div>
       <Footer />
