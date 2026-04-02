@@ -11,10 +11,15 @@ webpush.setVapidDetails(
     VAPID_PRIVATE_KEY
 )
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
 serve(async (req) => {
     // Gérer les requêtes OPTIONS pour CORS
     if (req.method === 'OPTIONS') {
-        return new Response('ok', { headers: { 'Access-Control-Allow-Origin': '*' } })
+        return new Response('ok', { headers: corsHeaders })
     }
 
     const supabase = createClient(
@@ -31,11 +36,15 @@ serve(async (req) => {
         const message = record.message
         const targetEmail = record.user_email
         const targetRole = record.target_role
+        const targetUserId = record.target_user_id
 
         // 1. Chercher les abonnements correspondants
         let query = supabase.from('push_subscriptions').select('subscription, email')
 
-        if (targetEmail) {
+        if (targetUserId) {
+            console.log('Targeting user_id:', targetUserId)
+            query = query.eq('user_id', targetUserId)
+        } else if (targetEmail) {
             console.log('Targeting email:', targetEmail)
             query = query.eq('email', targetEmail)
         } else if (targetRole) {
@@ -45,6 +54,12 @@ serve(async (req) => {
             } else {
                 query = query.eq('role', targetRole)
             }
+        } else {
+            console.log('No specific target found. Aborting to avoid spamming everyone.')
+            return new Response(JSON.stringify({ message: "No specific target found for notification" }), {
+                headers: { 'Content-Type': 'application/json', ...corsHeaders },
+                status: 200
+            })
         }
 
         const { data: subscriptions, error: dbError } = await query
@@ -87,13 +102,13 @@ serve(async (req) => {
         console.log('Results:', JSON.stringify(results))
 
         return new Response(JSON.stringify({ sent: results.length, details: results }), {
-            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
             status: 200,
         })
     } catch (error) {
         console.error('Global Error:', error.message)
         return new Response(JSON.stringify({ error: error.message }), {
-            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
             status: 500,
         })
     }
