@@ -8,18 +8,6 @@ import NotificationCenter from '../common/NotificationCenter'
 
 export default function Navbar({ hideUserInfo = false }) {
     const { user, logout, viewAsChauffeur, setViewAsChauffeur } = useAuth() || {}
-    const [dbStatus, setDbStatus] = useState('connecting')
-
-    useEffect(() => {
-        const channel = supabase.channel('status-check')
-            .on('system', { event: '*' }, (payload) => {
-                console.log('Realtime System:', payload)
-            })
-            .subscribe((status) => {
-                setDbStatus(status)
-            })
-        return () => { supabase.removeChannel(channel) }
-    }, [])
 
     const isAdmin = user && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN')
 
@@ -35,18 +23,6 @@ export default function Navbar({ hideUserInfo = false }) {
                     <span className="navbar-logo-text">
                         Mes Transports
                     </span>
-                    <div
-                        title={`Statut Synchro: ${dbStatus}`}
-                        style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: dbStatus === 'SUBSCRIBED' ? '#22c55e' : dbStatus === 'connecting' ? '#eab308' : '#ef4444',
-                            marginLeft: '-0.25rem',
-                            marginTop: '-0.5rem',
-                            border: '1px solid white'
-                        }}
-                    ></div>
                 </Link>
 
                 <div className="navbar-actions">
