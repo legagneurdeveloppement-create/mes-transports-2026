@@ -28,8 +28,8 @@ self.addEventListener('push', (event) => {
 
     const options = {
         body: data.body,
-        icon: '/notif-bus-v2.png',
-        badge: '/notif-bus-v2.png',
+        icon: data.icon || '/notif-bus-v2.png',
+        badge: data.badge || '/notif-bus-v2.png',
         vibrate: [300, 100, 400, 100, 400, 100, 400], // Motif de vibration fort
         requireInteraction: true, // Force la notification à rester à l'écran
         silent: false, // Tente de forcer le son du système
@@ -48,7 +48,22 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
     event.notification.close();
+    
+    const urlToOpen = new URL(event.notification.data.url, self.location.origin).href;
+
     event.waitUntil(
-        self.clients.openWindow(event.notification.data.url)
+        self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+            .then((windowClients) => {
+                // Si un onglet est déjà ouvert sur notre site, on lui donne le focus
+                for (let client of windowClients) {
+                    if (client.url === urlToOpen && 'focus' in client) {
+                        return client.focus();
+                    }
+                }
+                // Sinon, on ouvre une nouvelle fenêtre
+                if (self.clients.openWindow) {
+                    return self.clients.openWindow(urlToOpen);
+                }
+            })
     );
 });
