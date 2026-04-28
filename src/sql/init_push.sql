@@ -28,7 +28,7 @@ returns trigger as $$
 begin
   perform
     net.http_post(
-      url := 'https://eldwlltbpjjfapveicvs.supabase.co/functions/v1/send-push',
+      url := 'https://exokpntpblfyrltcxvxk.supabase.co/functions/v1/send-push',
       headers := jsonb_build_object(
         'Content-Type', 'application/json',
         'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVsZHdsbHRicGpqZmFwdmVpY3ZzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2ODUxMDk1MCwiZXhwIjoyMDg0MDg2OTUwfQ.s9cMxhWQ9LQS9FJFMUbizmDhIAKcbPgS6SfGuZNFY7I'
